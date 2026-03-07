@@ -9,7 +9,7 @@ from supabase import AsyncClient
 from app.core.security import get_current_user
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
-from app.models.student import StudentCreate, StudentOut
+from app.models.student import StudentCreate, StudentOut, StudentUpdate
 from app.models.application import ConsultantCreate, ConsultantOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -74,6 +74,38 @@ async def register_consultant(
         user_id,
         {"app_metadata": {"role": "consultant", "agency_id": body.agency_id}},
     )
+    return res.data[0]
+
+
+@router.patch("/student/profile", response_model=StudentOut)
+async def update_student_profile(
+    body: StudentUpdate,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    student = await get_student_by_user_id(client, user["sub"])
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    update: dict = {}
+    if body.full_name is not None:
+        update["full_name"] = body.full_name
+    if body.phone is not None:
+        update["phone"] = body.phone
+    if body.academic_history is not None:
+        update["academic_history"] = body.academic_history.model_dump()
+    if body.test_scores is not None:
+        update["test_scores"] = body.test_scores.model_dump()
+    if body.budget_usd_per_year is not None:
+        update["budget_usd_per_year"] = body.budget_usd_per_year
+    if body.preferred_countries is not None:
+        update["preferred_countries"] = body.preferred_countries
+    if body.preferred_degree is not None:
+        update["preferred_degree"] = body.preferred_degree
+    if body.preferred_fields is not None:
+        update["preferred_fields"] = body.preferred_fields
+
+    res = await client.table("students").update(update).eq("id", student["id"]).execute()
     return res.data[0]
 
 

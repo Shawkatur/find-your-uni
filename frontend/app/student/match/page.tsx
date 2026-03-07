@@ -19,8 +19,12 @@ export default function MatchPage() {
   const { data: results = [], isLoading: resultsLoading } = useQuery<MatchResultItem[]>({
     queryKey: ["match-results"],
     queryFn: async () => {
-      const res = await api.get("/match/results");
-      return res.data?.results ?? [];
+      try {
+        const res = await api.get("/match/results");
+        return res.data?.results ?? [];
+      } catch {
+        return [];
+      }
     },
   });
 

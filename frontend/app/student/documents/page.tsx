@@ -45,23 +45,16 @@ export default function DocumentsPage() {
   const handleUpload = async (file: File) => {
     setUploading(true);
     try {
-      // 1. Get pre-signed URL
-      const { data } = await api.post("/documents/upload-url", {
+      // 1. Get pre-signed URL (backend also creates the DB record)
+      const { data } = await api.post("/documents/upload", {
         doc_type: docType,
         filename: file.name,
         content_type: file.type,
       });
 
-      // 2. PUT to R2
+      // 2. PUT file directly to R2
       await axios.put(data.upload_url, file, {
         headers: { "Content-Type": file.type },
-      });
-
-      // 3. Confirm upload
-      await api.post("/documents", {
-        doc_type: docType,
-        filename: file.name,
-        r2_key: data.key,
       });
 
       toast.success("Document uploaded successfully!");

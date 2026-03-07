@@ -29,7 +29,7 @@ const schema = z.object({
   toefl_score: z.coerce.number().optional(),
   gre_score: z.coerce.number().optional(),
   gmat_score: z.coerce.number().optional(),
-  target_degree: z.enum(["bachelors", "masters", "phd", "diploma"]).optional(),
+  target_degree: z.enum(["bachelor", "master", "phd", "diploma"]).optional(),
   budget_usd: z.coerce.number().optional(),
   target_countries_str: z.string().optional(),
   target_fields_str: z.string().optional(),
@@ -47,8 +47,25 @@ export default function StudentProfilePage() {
   const { data: student } = useQuery<Student>({
     queryKey: ["student-me"],
     queryFn: async () => {
-      const res = await api.get("/students/me");
-      return res.data;
+      const res = await api.get("/auth/me");
+      const profile = res.data?.profile ?? res.data;
+      // Flatten nested academic_history and test_scores for the form
+      return {
+        ...profile,
+        ssc_gpa:              profile?.academic_history?.ssc_gpa,
+        hsc_gpa:              profile?.academic_history?.hsc_gpa,
+        bachelor_gpa:         profile?.academic_history?.bachelor_cgpa,
+        bachelor_institution: profile?.academic_history?.bachelor_institution,
+        bachelor_field:       profile?.academic_history?.bachelor_subject,
+        ielts_score:          profile?.test_scores?.ielts,
+        toefl_score:          profile?.test_scores?.toefl,
+        gre_score:            profile?.test_scores?.gre,
+        gmat_score:           profile?.test_scores?.gmat,
+        target_degree:        profile?.preferred_degree,
+        budget_usd:           profile?.budget_usd_per_year,
+        target_countries:     profile?.preferred_countries,
+        target_fields:        profile?.preferred_fields,
+      };
     },
   });
 
@@ -82,10 +99,26 @@ export default function StudentProfilePage() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      await api.patch("/students/me", {
-        ...data,
-        target_countries: data.target_countries_str?.split(",").map((s) => s.trim()).filter(Boolean),
-        target_fields: data.target_fields_str?.split(",").map((s) => s.trim()).filter(Boolean),
+      await api.patch("/auth/student/profile", {
+        full_name: data.full_name,
+        phone: data.phone || undefined,
+        academic_history: {
+          ssc_gpa:          data.ssc_gpa || undefined,
+          hsc_gpa:          data.hsc_gpa || undefined,
+          bachelor_cgpa:    data.bachelor_gpa || undefined,
+          bachelor_institution: data.bachelor_institution || undefined,
+          bachelor_subject: data.bachelor_field || undefined,
+        },
+        test_scores: {
+          ielts: data.ielts_score || undefined,
+          toefl: data.toefl_score || undefined,
+          gre:   data.gre_score   || undefined,
+          gmat:  data.gmat_score  || undefined,
+        },
+        preferred_degree:    data.target_degree,
+        budget_usd_per_year: data.budget_usd,
+        preferred_countries: data.target_countries_str?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean),
+        preferred_fields:    data.target_fields_str?.split(",").map((s) => s.trim()).filter(Boolean),
       });
     },
     onSuccess: () => {
@@ -181,8 +214,8 @@ export default function StudentProfilePage() {
                   {...register("target_degree")}
                   className="w-full bg-white/8 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                 >
-                  <option value="bachelors">Bachelor&apos;s</option>
-                  <option value="masters">Master&apos;s</option>
+                  <option value="bachelor">Bachelor&apos;s</option>
+                  <option value="master">Master&apos;s</option>
                   <option value="phd">PhD</option>
                   <option value="diploma">Diploma</option>
                 </select>
