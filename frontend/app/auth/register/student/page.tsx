@@ -70,7 +70,7 @@ export default function StudentRegisterPage() {
   const router = useRouter();
   const supabase = createClient();
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState<FormValues>({ target_degree: "masters" });
+  const [values, setValues] = useState<FormValues>({ target_degree: "master" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -119,7 +119,7 @@ export default function StudentRegisterPage() {
           gmat:  values.gmat_score  ? parseInt(values.gmat_score)    : undefined,
         },
         budget_usd_per_year: values.budget_usd ? parseInt(values.budget_usd) : 20000,
-        preferred_degree:    values.target_degree ?? "bachelor",
+        preferred_degree:    values.target_degree ?? "master",
         preferred_countries: values.target_countries?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
         preferred_fields:    values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
       }, { headers });
@@ -204,8 +204,8 @@ export default function StudentRegisterPage() {
                     onChange={(e) => setValue("target_degree", e.target.value)}
                     className="w-full bg-white/8 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                   >
-                    <option value="bachelors">Bachelor&apos;s</option>
-                    <option value="masters">Master&apos;s</option>
+                    <option value="bachelor">Bachelor&apos;s</option>
+                    <option value="master">Master&apos;s</option>
                     <option value="phd">PhD</option>
                     <option value="diploma">Diploma</option>
                   </select>
