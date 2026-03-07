@@ -49,69 +49,77 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      {/* Background glow */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-96 h-96 bg-blue-600/8 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-4">
-            <GraduationCap size={28} className="text-white" />
+          <div className="relative mb-5">
+            <div className="glow-blue" />
+            <div className="relative w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30">
+              <GraduationCap size={30} className="text-white" />
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-          <p className="text-slate-400 mt-1">Sign in to your account</p>
+          <h1 className="text-3xl font-black tracking-tight text-white">Welcome back</h1>
+          <p className="text-slate-400 mt-1 font-normal">Sign in to your account</p>
         </div>
 
         {/* Card */}
         <div className="glass-card p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <Label className="text-slate-300 mb-1.5 block">Email</Label>
+              <Label className="text-slate-300 mb-2 block font-semibold text-sm">Email</Label>
               <Input
                 {...register("email")}
                 type="email"
                 placeholder="you@example.com"
-                className="bg-white/8 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500"
               />
-              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+              {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email.message}</p>}
             </div>
 
             <div>
-              <Label className="text-slate-300 mb-1.5 block">Password</Label>
+              <Label className="text-slate-300 mb-2 block font-semibold text-sm">Password</Label>
               <div className="relative">
                 <Input
                   {...register("password")}
                   type={showPw ? "text" : "password"}
                   placeholder="••••••••"
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500 pr-10"
+                  className="pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                 >
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+              {errors.password && <p className="text-red-400 text-xs mt-1.5">{errors.password.message}</p>}
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5"
+              size="lg"
+              className="w-full mt-2"
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 
-          <div className="mt-6 text-center space-y-2">
+          <div className="mt-6 pt-6 border-t border-white/8 text-center space-y-2">
             <p className="text-slate-400 text-sm">
               Don&apos;t have an account?{" "}
-              <Link href="/auth/register/student" className="text-blue-400 hover:text-blue-300">
+              <Link href="/auth/register/student" className="text-blue-400 hover:text-blue-300 font-semibold">
                 Register as Student
               </Link>
             </p>
             <p className="text-slate-400 text-sm">
               Are you a consultant?{" "}
-              <Link href="/auth/register/consultant" className="text-blue-400 hover:text-blue-300">
+              <Link href="/auth/register/consultant" className="text-blue-400 hover:text-blue-300 font-semibold">
                 Register here
               </Link>
             </p>
@@ -119,7 +127,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-slate-500 text-sm mt-6">
-          <Link href="/" className="hover:text-slate-300">← Back to home</Link>
+          <Link href="/" className="hover:text-slate-300 transition-colors">← Back to home</Link>
         </p>
       </div>
     </div>

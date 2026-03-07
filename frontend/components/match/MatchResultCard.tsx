@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, Star, DollarSign, Globe, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, DollarSign, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import type { MatchResultItem } from "@/types";
@@ -36,36 +36,46 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
   const score = result.score;
   const pct = Math.round(score.total);
 
-  const scoreColor = pct >= 80 ? "text-green-400" : pct >= 60 ? "text-blue-400" : "text-yellow-400";
-  const barColor = pct >= 80
-    ? "from-green-500 to-emerald-400"
-    : pct >= 60
+  const isHighMatch = pct >= 80;
+  const isMidMatch = pct >= 60;
+
+  const scoreColor = isHighMatch ? "text-emerald-400" : isMidMatch ? "text-blue-400" : "text-yellow-400";
+  const glowClass = isHighMatch ? "glow-green" : "glow-blue";
+  const barColor = isHighMatch
+    ? "from-emerald-500 to-green-400"
+    : isMidMatch
     ? "from-blue-500 to-cyan-400"
     : "from-yellow-500 to-orange-400";
 
   return (
-    <GlassCard className="glass-card-hover">
+    <GlassCard hover className="transition-all duration-200">
       <div className="flex items-start gap-5">
-        {/* Rank & Score */}
+        {/* Score ring with glow */}
         <div className="flex flex-col items-center gap-1 shrink-0">
-          <div className="w-10 h-10 bg-white/8 rounded-xl flex items-center justify-center">
-            <span className="text-slate-400 font-semibold text-sm">#{rank}</span>
+          <div className="relative">
+            <div className={glowClass} />
+            <div className="relative w-14 h-14 rounded-2xl bg-slate-900/60 border border-white/10 flex flex-col items-center justify-center z-10">
+              <span className={`text-xl font-black tracking-tight leading-none ${scoreColor}`}>{pct}%</span>
+              <span className="text-slate-500 text-[10px] font-medium uppercase tracking-wide">match</span>
+            </div>
           </div>
-          <span className={`text-lg font-bold ${scoreColor}`}>{pct}%</span>
-          <span className="text-slate-500 text-xs">match</span>
+          <span className="text-slate-500 text-xs font-medium mt-1">#{rank}</span>
         </div>
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <h3 className="text-white font-semibold">{result.university.name}</h3>
-              <p className="text-slate-400 text-sm">{result.program.name}</p>
+              <h3 className="text-white font-black tracking-tight">{result.university.name}</h3>
+              <p className="text-slate-300 text-sm font-medium mt-0.5">{result.program.name}</p>
               <p className="text-slate-500 text-xs mt-0.5">{result.university.country}</p>
             </div>
-            <div className="flex flex-col gap-1 shrink-0 items-end">
+            <div className="flex flex-col gap-1.5 shrink-0 items-end">
+              {isHighMatch && (
+                <span className="tag-pill tag-pill-green">High Match</span>
+              )}
               {result.university.qs_rank && (
-                <span className="flex items-center gap-1 text-yellow-400 text-xs">
+                <span className="flex items-center gap-1 text-yellow-400 text-xs font-semibold">
                   <Star size={11} /> QS #{result.university.qs_rank}
                 </span>
               )}
@@ -80,9 +90,9 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
 
           {/* Overall score bar */}
           <div className="mb-3">
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-2 bg-white/8 rounded-full overflow-hidden">
               <div
-                className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all`}
+                className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-700`}
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -96,11 +106,11 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
                 { label: "Cost Fit", value: Math.round(score.cost_efficiency * 100), icon: DollarSign },
                 { label: "BD Accept", value: Math.round(score.bd_acceptance * 100), icon: Globe },
               ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="bg-white/4 rounded-lg p-2.5 text-center">
+                <div key={label} className="bg-slate-900/60 border border-white/8 rounded-xl p-3 text-center">
                   <Icon size={14} className="text-slate-400 mx-auto mb-1" />
-                  <div className="text-white font-semibold text-sm">{value}%</div>
-                  <div className="text-slate-500 text-xs">{label}</div>
-                  <Progress value={value} className="h-1 mt-1.5 bg-white/10" />
+                  <div className="text-white font-black text-sm tracking-tight">{value}%</div>
+                  <div className="text-slate-500 text-[10px] uppercase tracking-wide font-medium">{label}</div>
+                  <Progress value={value} className="h-1 mt-2 bg-white/8" />
                 </div>
               ))}
             </div>
@@ -108,8 +118,8 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
 
           {/* AI Summary */}
           {result.ai_summary && (
-            <p className="text-slate-400 text-sm italic mb-3 leading-relaxed">
-              &ldquo;{result.ai_summary}&rdquo;
+            <p className="text-slate-400 text-sm italic mb-3 leading-relaxed border-l-2 border-blue-500/30 pl-3">
+              {result.ai_summary}
             </p>
           )}
 
@@ -119,16 +129,15 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
               size="sm"
               onClick={() => applyMutation.mutate()}
               disabled={applyMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {applyMutation.isPending ? "Creating..." : "Apply Now"}
             </Button>
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-1 text-slate-400 hover:text-white text-xs transition-colors"
+              className="flex items-center gap-1 text-slate-400 hover:text-blue-400 text-xs transition-colors font-medium"
             >
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              {expanded ? "Less" : "Score breakdown"}
+              {expanded ? "Hide breakdown" : "Score breakdown"}
             </button>
           </div>
         </div>
