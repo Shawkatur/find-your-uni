@@ -19,7 +19,7 @@ const schema = z.object({
   password: z.string().min(8, "At least 8 characters"),
   full_name: z.string().min(2),
   phone: z.string().optional(),
-  agency_name: z.string().optional(),
+  agency_name: z.string().min(2, "Agency name required"),
   role_title: z.string().optional(),
 });
 
@@ -37,27 +37,46 @@ export default function ConsultantRegisterPage() {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
+      // 1. Supabase signup (ignore "already registered" errors in testing)
+      let accessToken: string | undefined;
       const { data: authData, error: authErr } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-          data: { full_name: data.full_name, role: "consultant" },
-        },
+        options: { data: { full_name: data.full_name, role: "consultant" } },
       });
-      if (authErr) throw authErr;
+      if (authErr && !authErr.message.includes("already") && !authErr.message.includes("rate")) {
+        throw authErr;
+      }
+      accessToken = authData?.session?.access_token;
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 
-      await api.post("/consultants", {
-        user_id: authData.user?.id,
+      // 2. Create agency
+      const agencyRes = await api.post("/agencies", {
+        name: data.agency_name,
+        license_no: null,
+        address: null,
+        avg_rating: 0,
+        review_count: 0,
+        is_active: true,
+      }, { headers });
+      const agencyId: string = agencyRes.data.id;
+
+      // 3. Register consultant profile
+      await api.post("/auth/consultant/register", {
+        agency_id: agencyId,
         full_name: data.full_name,
-        email: data.email,
-        phone: data.phone,
-        agency_name: data.agency_name,
-        role_title: data.role_title,
-      });
+        role: "staff",
+      }, { headers });
 
       toast.success("Consultant account created!");
       router.push("/consultant/dashboard");
     } catch (err: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((err as any)?.response?.status === 409) {
+        toast.success("Welcome back!");
+        router.push("/consultant/dashboard");
+        return;
+      }
       const msg = err instanceof Error ? err.message : "Registration failed";
       toast.error(msg);
     } finally {
@@ -103,9 +122,10 @@ export default function ConsultantRegisterPage() {
                   className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
               </div>
               <div>
-                <Label className="text-slate-300 mb-1.5 block">Agency Name (optional)</Label>
+                <Label className="text-slate-300 mb-1.5 block">Agency Name</Label>
                 <Input {...register("agency_name")} placeholder="Your agency name"
                   className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
+                {errors.agency_name && <p className="text-red-400 text-xs mt-1">{errors.agency_name.message}</p>}
               </div>
               <div>
                 <Label className="text-slate-300 mb-1.5 block">Role / Title</Label>

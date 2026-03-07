@@ -52,7 +52,7 @@ async def register_consultant(
     user_id: str = user["sub"]
 
     # Verify agency exists
-    agency_res = await client.table("agencies").select("id").eq("id", body.agency_id).single().execute()
+    agency_res = await client.table("agencies").select("id").eq("id", body.agency_id).limit(1).execute()
     if not agency_res.data:
         raise HTTPException(status_code=404, detail="Agency not found")
 
@@ -69,11 +69,13 @@ async def register_consultant(
     }
     res = await client.table("consultants").insert(row).execute()
 
-    # Set role in Supabase auth metadata
-    await client.auth.admin.update_user_by_id(
-        user_id,
-        {"app_metadata": {"role": "consultant", "agency_id": body.agency_id}},
-    )
+    # Set role in Supabase auth metadata (skip in BYPASS_AUTH mode)
+    from app.core.config import get_settings as _gs
+    if not _gs().BYPASS_AUTH:
+        await client.auth.admin.update_user_by_id(
+            user_id,
+            {"app_metadata": {"role": "consultant", "agency_id": body.agency_id}},
+        )
     return res.data[0]
 
 
