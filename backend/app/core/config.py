@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     APP_SECRET: str = "change-me-in-prod"
     BYPASS_AUTH: bool = False       # set to true to skip JWT checks during testing
     # Accept comma-separated string OR JSON array from env
-    CORS_ORIGINS: str = "http://localhost:3000"
+    # Default * allows all origins during testing
+    CORS_ORIGINS: str = "*"
 
     # ── Rate limiting ─────────────────────────────────────────────────────────
     MATCH_RATE_LIMIT: str = "10/minute"
