@@ -127,6 +127,13 @@ export default function StudentRegisterPage() {
       toast.success("Account created! Welcome aboard.");
       router.push("/student/dashboard");
     } catch (err: unknown) {
+      // 409 = profile already exists (e.g. during testing with BYPASS_AUTH)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((err as any)?.response?.status === 409) {
+        toast.success("Welcome back! Redirecting…");
+        router.push("/student/dashboard");
+        return;
+      }
       const msg = err instanceof Error ? err.message : "Registration failed";
       toast.error(msg);
     } finally {
