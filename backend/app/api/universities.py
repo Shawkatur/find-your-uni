@@ -48,7 +48,7 @@ async def list_universities(
     if field:
         query = query.eq("programs.field", field)
 
-    res = await query.order("ranking_qs", nulls_last=True).range(offset, offset + page_size - 1).execute()
+    res = await query.order("ranking_qs", nullslast=True).range(offset, offset + page_size - 1).execute()
     return res.data or []
 
 

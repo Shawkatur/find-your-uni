@@ -83,14 +83,13 @@ async def filter_programs(
 
 
 async def get_student_by_user_id(client: AsyncClient, user_id: str) -> dict | None:
-    # maybe_single() returns None (not an exception) when no row is found
-    res = await client.table("students").select("*").eq("user_id", user_id).maybe_single().execute()
-    return res.data
+    res = await client.table("students").select("*").eq("user_id", user_id).limit(1).execute()
+    return res.data[0] if res.data else None
 
 
 async def get_application(client: AsyncClient, app_id: str) -> dict | None:
-    res = await client.table("applications").select("*").eq("id", app_id).maybe_single().execute()
-    return res.data
+    res = await client.table("applications").select("*").eq("id", app_id).limit(1).execute()
+    return res.data[0] if res.data else None
 
 
 async def upsert_match_cache(
@@ -106,11 +105,5 @@ async def upsert_match_cache(
 
 
 async def get_match_cache(client: AsyncClient, student_id: str) -> dict | None:
-    res = (
-        await client.table("match_cache")
-        .select("*")
-        .eq("student_id", student_id)
-        .maybe_single()
-        .execute()
-    )
-    return res.data
+    res = await client.table("match_cache").select("*").eq("student_id", student_id).limit(1).execute()
+    return res.data[0] if res.data else None
