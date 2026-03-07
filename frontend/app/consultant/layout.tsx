@@ -16,7 +16,6 @@ export default function ConsultantLayout({ children }: { children: React.ReactNo
   }));
 
   if (loading) return <FullPageLoader />;
-  if (!user) return null;
 
   return (
     <QueryClientProvider client={queryClient}>

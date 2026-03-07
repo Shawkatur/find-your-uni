@@ -6,7 +6,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach Supabase JWT to every request
+// Attach Supabase JWT if a session exists, otherwise send no auth header
 api.interceptors.request.use(async (config) => {
   try {
     const supabase = createClient();
@@ -15,20 +15,9 @@ api.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${data.session.access_token}`;
     }
   } catch {
-    // ignore
+    // no session — request goes through without auth header
   }
   return config;
 });
-
-// Handle 401 → redirect to login
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401 && typeof window !== "undefined") {
-      window.location.href = "/auth/login";
-    }
-    return Promise.reject(err);
-  }
-);
 
 export default api;

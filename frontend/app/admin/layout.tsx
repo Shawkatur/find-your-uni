@@ -16,7 +16,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }));
 
   if (loading) return <FullPageLoader />;
-  if (!user) return null;
 
   return (
     <QueryClientProvider client={queryClient}>

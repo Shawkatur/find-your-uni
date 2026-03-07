@@ -16,7 +16,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }));
 
   if (loading) return <FullPageLoader />;
-  if (!user) return null; // middleware handles redirect
 
   return (
     <QueryClientProvider client={queryClient}>

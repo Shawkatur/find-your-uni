@@ -10,11 +10,14 @@ export interface AuthProfile {
   role?: string;
 }
 
+// Guest user shown when no session exists (auth bypass mode)
+const GUEST_PROFILE: AuthProfile = { full_name: "Guest", role: "student" };
+
 export function useAuth() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<AuthProfile | null>(null);
+  const [profile, setProfile] = useState<AuthProfile>(GUEST_PROFILE);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +26,8 @@ export function useAuth() {
       if (session?.user) {
         const meta = session.user.user_metadata;
         setProfile({ full_name: meta?.full_name, role: session.user.app_metadata?.role ?? meta?.role });
+      } else {
+        setProfile(GUEST_PROFILE);
       }
       setLoading(false);
     });
@@ -33,7 +38,7 @@ export function useAuth() {
         const meta = session.user.user_metadata;
         setProfile({ full_name: meta?.full_name, role: session.user.app_metadata?.role ?? meta?.role });
       } else {
-        setProfile(null);
+        setProfile(GUEST_PROFILE);
       }
     });
 
@@ -42,10 +47,10 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-    router.push("/auth/login");
-  }, [supabase, router]);
+    router.push("/");
+  }, [supabase, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const role = profile?.role ?? null;
+  const role = profile?.role ?? "student";
 
   return { user, profile, role, loading, signOut };
 }

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     # ── App ──────────────────────────────────────────────────────────────────
     APP_ENV: str = "development"
     APP_SECRET: str = "change-me-in-prod"
+    BYPASS_AUTH: bool = False       # set to true to skip JWT checks during testing
     # Accept comma-separated string OR JSON array from env
     CORS_ORIGINS: str = "http://localhost:3000"
 
