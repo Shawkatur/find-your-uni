@@ -41,7 +41,7 @@ export interface Student {
   gmat_score?: number;
 
   // Preferences
-  target_degree: "bachelors" | "masters" | "phd" | "diploma";
+  target_degree: "bachelor" | "master" | "phd" | "diploma";
   target_fields: string[];
   target_countries: string[];
   budget_usd?: number;
@@ -76,7 +76,7 @@ export interface Program {
   id: string;
   university_id: string;
   name: string;
-  degree_level: "bachelors" | "masters" | "phd" | "diploma";
+  degree_level: "bachelor" | "master" | "phd" | "diploma";
   field: string;
   duration_years?: number;
   annual_tuition_usd?: number;
