@@ -97,26 +97,32 @@ export default function StudentRegisterPage() {
       });
       if (authErr) throw authErr;
 
-      await api.post("/students", {
-        user_id: authData.user?.id,
+      // Attach the new session token so the backend accepts the request
+      const session = authData.session;
+      const headers = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {};
+
+      await api.post("/auth/student/register", {
         full_name: values.full_name,
-        email: values.email,
         phone: values.phone || undefined,
-        nationality: values.nationality || undefined,
-        ssc_gpa: values.ssc_gpa ? parseFloat(values.ssc_gpa) : undefined,
-        hsc_gpa: values.hsc_gpa ? parseFloat(values.hsc_gpa) : undefined,
-        bachelor_gpa: values.bachelor_gpa ? parseFloat(values.bachelor_gpa) : undefined,
-        bachelor_institution: values.bachelor_institution || undefined,
-        bachelor_field: values.bachelor_field || undefined,
-        ielts_score: values.ielts_score ? parseFloat(values.ielts_score) : undefined,
-        toefl_score: values.toefl_score ? parseFloat(values.toefl_score) : undefined,
-        gre_score: values.gre_score ? parseFloat(values.gre_score) : undefined,
-        gmat_score: values.gmat_score ? parseFloat(values.gmat_score) : undefined,
-        target_degree: values.target_degree ?? "masters",
-        budget_usd: values.budget_usd ? parseFloat(values.budget_usd) : undefined,
-        target_countries: values.target_countries?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
-        target_fields: values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
-      });
+        academic_history: {
+          ssc_gpa:          values.ssc_gpa          ? parseFloat(values.ssc_gpa)          : undefined,
+          hsc_gpa:          values.hsc_gpa          ? parseFloat(values.hsc_gpa)          : undefined,
+          bachelor_cgpa:    values.bachelor_gpa     ? parseFloat(values.bachelor_gpa)     : undefined,
+          bachelor_subject: values.bachelor_field   || undefined,
+        },
+        test_scores: {
+          ielts: values.ielts_score ? parseFloat(values.ielts_score) : undefined,
+          toefl: values.toefl_score ? parseInt(values.toefl_score)   : undefined,
+          gre:   values.gre_score   ? parseInt(values.gre_score)     : undefined,
+          gmat:  values.gmat_score  ? parseInt(values.gmat_score)    : undefined,
+        },
+        budget_usd_per_year: values.budget_usd ? parseInt(values.budget_usd) : 20000,
+        preferred_degree:    values.target_degree ?? "bachelor",
+        preferred_countries: values.target_countries?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
+        preferred_fields:    values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
+      }, { headers });
 
       toast.success("Account created! Welcome aboard.");
       router.push("/student/dashboard");
