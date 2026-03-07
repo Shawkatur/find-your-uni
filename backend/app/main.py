@@ -65,11 +65,13 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS
+# CORS — allow all origins during testing
+_origins = settings.cors_origins_list
+_allow_all = "*" in _origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
+    allow_origins=["*"] if _allow_all else _origins,
+    allow_credentials=False if _allow_all else True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
