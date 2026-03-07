@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Find Your University",
@@ -26,7 +20,7 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         />
       </head>
-      <body className={`${inter.variable} antialiased bg-[#0F172A] text-slate-100`}>
+      <body className="antialiased bg-[#0F172A] text-slate-100">
         {children}
         <Toaster position="top-right" theme="dark" richColors />
       </body>
