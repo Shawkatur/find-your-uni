@@ -30,7 +30,7 @@ async def list_consultants(
     query = (
         client.table("consultants")
         .select("*, agencies(name, avg_rating, review_count)")
-        .order("agencies.avg_rating", desc=True)
+        .order("created_at", desc=True)
     )
     if agency_id:
         query = query.eq("agency_id", agency_id)

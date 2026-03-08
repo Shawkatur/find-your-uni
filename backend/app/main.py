@@ -94,8 +94,7 @@ async def health():
 # ─── Global error handler ─────────────────────────────────────────────────────
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    import traceback
     return JSONResponse(
         status_code=500,
-        content={"detail": str(exc), "type": type(exc).__name__, "trace": traceback.format_exc()[-800:]},
+        content={"detail": "Internal server error", "type": type(exc).__name__},
     )
