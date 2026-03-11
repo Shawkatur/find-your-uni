@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
   async redirects() {
     return [
       { source: "/student/register",    destination: "/auth/register/student",    permanent: true },
