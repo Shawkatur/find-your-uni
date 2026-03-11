@@ -2,19 +2,27 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, Zap, Trophy, Globe } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import type { MatchResultItem } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { MatchResultCard } from "@/components/match/MatchResultCard";
 import { Button } from "@/components/ui/button";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+
+const LOADING_STEPS = [
+  "Scanning 1,200+ universities...",
+  "Analyzing QS rankings & tuition costs...",
+  "Calculating Bangladeshi acceptance rates...",
+  "Running AI profile matching...",
+  "Ranking universities by fit score...",
+];
 
 export default function MatchPage() {
   const qc = useQueryClient();
   const [hasRun, setHasRun] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
 
   const { data: results = [], isLoading: resultsLoading } = useQuery<MatchResultItem[]>({
     queryKey: ["match-results"],
@@ -30,8 +38,19 @@ export default function MatchPage() {
 
   const runMatch = useMutation({
     mutationFn: async () => {
-      const res = await api.post("/match");
-      return res.data;
+      // Cycle through loading steps while waiting
+      let step = 0;
+      const interval = setInterval(() => {
+        step = (step + 1) % LOADING_STEPS.length;
+        setLoadingStep(step);
+      }, 3000);
+      try {
+        const res = await api.post("/match");
+        return res.data;
+      } finally {
+        clearInterval(interval);
+        setLoadingStep(0);
+      }
     },
     onSuccess: (data) => {
       toast.success(`Found ${data?.results?.length ?? 0} matched universities!`);
@@ -43,6 +62,7 @@ export default function MatchPage() {
   });
 
   const isEmpty = !resultsLoading && results.length === 0;
+  const highMatches = results.filter((r) => Math.round(r.score.total) >= 80).length;
 
   return (
     <PageWrapper
@@ -54,7 +74,6 @@ export default function MatchPage() {
             variant="outline"
             onClick={() => runMatch.mutate()}
             disabled={runMatch.isPending}
-            className="border-white/10 text-slate-300 hover:bg-white/8"
           >
             <RefreshCw size={14} className={`mr-2 ${runMatch.isPending ? "animate-spin" : ""}`} />
             Refresh Results
@@ -62,50 +81,116 @@ export default function MatchPage() {
         )
       }
     >
-      {/* Run Matchmaking Hero */}
-      {isEmpty && !hasRun && (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Sparkles size={36} className="text-blue-400" />
+      {/* Hero — shown when no results yet */}
+      {isEmpty && !hasRun && !runMatch.isPending && (
+        <div className="relative flex flex-col items-center text-center py-20 overflow-hidden">
+          {/* Background radial glow */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 50% at 50% 40%, rgba(79,70,229,0.15) 0%, transparent 70%)",
+            }}
+          />
+
+          {/* Icon */}
+          <div className="relative mb-8">
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: "radial-gradient(circle, rgba(79,70,229,0.4) 0%, transparent 70%)",
+                filter: "blur(24px)",
+              }}
+            />
+            <div className="relative w-24 h-24 rounded-3xl bg-indigo-600/15 border border-indigo-500/25 flex items-center justify-center backdrop-blur-sm">
+              <Sparkles size={40} className="text-indigo-400" />
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Find Your Best Universities</h2>
-          <p className="text-slate-400 max-w-md mx-auto mb-8">
-            Our AI analyzes your profile against 1,200+ universities using QS rankings,
-            cost efficiency, and Bangladeshi acceptance rates.
+
+          <h2 className="relative text-4xl font-black tracking-tight mb-3">
+            <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              Find Your Best Universities
+            </span>
+          </h2>
+          <p className="relative text-slate-400 max-w-md mx-auto mb-3 leading-relaxed">
+            Our AI analyzes your academic profile against <strong className="text-white">1,200+ universities</strong> using
+            QS rankings, cost efficiency, and Bangladeshi acceptance rates.
           </p>
+
+          {/* Feature pills */}
+          <div className="relative flex flex-wrap gap-2 justify-center mb-10">
+            <span className="tag-pill tag-pill-indigo"><Zap size={9} /> QS Rankings</span>
+            <span className="tag-pill tag-pill-green"><Globe size={9} /> BD Acceptance</span>
+            <span className="tag-pill tag-pill-purple"><Sparkles size={9} /> AI Matching</span>
+          </div>
+
           <Button
+            size="xl"
             onClick={() => runMatch.mutate()}
             disabled={runMatch.isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 text-base font-semibold"
+            className="relative"
           >
-            {runMatch.isPending ? (
-              <>
-                <RefreshCw size={16} className="mr-2 animate-spin" /> Running Match...
-              </>
-            ) : (
-              <>
-                <Sparkles size={16} className="mr-2" /> Run Matchmaking
-              </>
-            )}
+            <Sparkles size={18} className="mr-2" />
+            Calculate My Matches
           </Button>
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading State */}
       {runMatch.isPending && (
-        <div className="flex flex-col items-center justify-center py-16 gap-4">
-          <LoadingSpinner size="lg" />
-          <p className="text-slate-400">Analyzing your profile across 1,200+ universities...</p>
-          <p className="text-slate-500 text-sm">This usually takes 10–20 seconds.</p>
+        <div className="flex flex-col items-center justify-center py-20 gap-6">
+          {/* Animated rings */}
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 rounded-full border-2 border-indigo-600/30 animate-ping" />
+            <div className="absolute inset-2 rounded-full border-2 border-indigo-500/50 animate-spin" style={{ animationDuration: "2s" }} />
+            <div className="absolute inset-4 rounded-full border-2 border-t-indigo-400 border-transparent animate-spin" style={{ animationDuration: "1s" }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Sparkles size={18} className="text-indigo-400" />
+            </div>
+          </div>
+
+          <div className="text-center">
+            <p className="text-white font-bold text-lg mb-1 transition-all duration-500">
+              {LOADING_STEPS[loadingStep]}
+            </p>
+            <p className="text-slate-500 text-sm">This usually takes 10–20 seconds.</p>
+          </div>
+
+          {/* Progress dots */}
+          <div className="flex gap-2">
+            {LOADING_STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                  i <= loadingStep ? "bg-indigo-500" : "bg-white/10"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       )}
 
       {/* Results */}
       {!runMatch.isPending && results.length > 0 && (
         <div>
-          <p className="text-slate-400 mb-6 text-sm">
-            Found <span className="text-white font-semibold">{results.length}</span> matched universities, ranked by fit score.
-          </p>
+          {/* Results header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-white font-black text-lg">
+                {results.length} universities matched
+              </p>
+              <p className="text-slate-500 text-sm mt-0.5">
+                Ranked by fit score · your profile vs. admission requirements
+              </p>
+            </div>
+            {highMatches > 0 && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/10 border border-emerald-500/20">
+                <Trophy size={14} className="text-emerald-400" />
+                <span className="text-emerald-400 font-bold text-sm">{highMatches} High Matches</span>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-4">
             {results.map((result, i) => (
               <MatchResultCard key={i} result={result} rank={i + 1} />
@@ -119,8 +204,8 @@ export default function MatchPage() {
         <EmptyState
           icon={Sparkles}
           title="No matches found"
-          description="Try updating your profile with test scores or expanding your preferences."
-          action={{ label: "Edit Profile", onClick: () => window.location.href = "/student/profile" }}
+          description="Try updating your profile with test scores or expanding your target countries and degree level."
+          action={{ label: "Edit Profile", onClick: () => (window.location.href = "/student/profile") }}
         />
       )}
     </PageWrapper>

@@ -6,13 +6,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-xl text-sm font-bold whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-150 outline-none select-none disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        // 3D primary button per design spec
+        // Electric Indigo → Blue gradient — the flagship CTA
         default:
-          "bg-blue-600 text-white border-b-4 border-blue-800 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(59,130,246,0.8)] active:border-b-0 active:translate-y-0.5",
+          "bg-gradient-to-br from-indigo-600 to-blue-500 text-white shadow-[0_4px_0_#312e81] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#312e81,0_14px_28px_-8px_rgba(79,70,229,0.55)] active:translate-y-[3px] active:shadow-none",
+        // Magic Purple — for AI/premium features
+        magic:
+          "bg-gradient-to-br from-violet-700 to-violet-500 text-white shadow-[0_4px_0_#4c1d95] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#4c1d95,0_14px_28px_-8px_rgba(139,92,246,0.6)] active:translate-y-[3px] active:shadow-none",
         outline:
           "border border-white/10 bg-transparent text-slate-300 hover:bg-white/8 hover:text-white hover:border-white/20",
         secondary:
@@ -28,6 +31,7 @@ const buttonVariants = cva(
         xs: "h-6 gap-1 px-2 text-xs rounded-lg",
         sm: "h-8 gap-1 px-3 text-xs",
         lg: "h-11 gap-2 px-6 text-base",
+        xl: "h-13 gap-2.5 px-8 text-base",
         icon: "size-9",
         "icon-xs": "size-6 rounded-lg",
         "icon-sm": "size-8",
