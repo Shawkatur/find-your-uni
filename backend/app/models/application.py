@@ -34,7 +34,7 @@ STATUS_TRANSITIONS: dict[str, list[str]] = {
 
 class ApplicationCreate(BaseModel):
     student_id: str
-    program_id: str
+    program_id: str | None = None   # nullable for lead-stage applications
     consultant_id: str | None = None
     agency_id: str | None = None
     notes: str | None = None
@@ -55,7 +55,7 @@ class StatusHistoryEntry(BaseModel):
 class ApplicationOut(BaseModel):
     id: str
     student_id: str
-    program_id: str
+    program_id: str | None
     consultant_id: str | None
     agency_id: str | None
     status: str
@@ -106,4 +106,15 @@ class ConsultantOut(BaseModel):
     agency_id: str
     role: str
     full_name: str
+    status: str = "pending"
     created_at: datetime
+
+
+class ConsultantStatusUpdate(BaseModel):
+    status: Literal["pending", "active", "banned"]
+
+
+class ReassignBody(BaseModel):
+    consultant_id: str
+    agency_id: str
+    note: str | None = None

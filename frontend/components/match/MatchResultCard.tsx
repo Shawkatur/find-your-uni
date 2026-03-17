@@ -72,7 +72,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
         }`} />
       )}
 
-      <div className="flex items-start gap-5">
+      <div className="flex items-start gap-3 sm:gap-5">
         {/* Score ring */}
         <div className="flex flex-col items-center gap-2 shrink-0">
           <div className="relative">
@@ -160,7 +160,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
 
           {/* Score breakdown */}
           {expanded && (
-            <div className="grid grid-cols-3 gap-2.5 mb-3">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 mb-3">
               {[
                 { label: "Ranking", value: Math.round(score.ranking * 100), icon: Star },
                 { label: "Cost Fit", value: Math.round(score.cost_efficiency * 100), icon: DollarSign },

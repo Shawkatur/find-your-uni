@@ -46,7 +46,7 @@ function UniversityDetailContent() {
             <Building2 size={28} className="text-blue-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">{uni.name}</h1>
+            <h1 className="text-xl sm:text-3xl font-bold text-white mb-2">{uni.name}</h1>
             <div className="flex flex-wrap gap-2 items-center">
               <span className="flex items-center gap-1 text-slate-400 text-sm">
                 <MapPin size={14} /> {uni.city ? `${uni.city}, ` : ""}{uni.country}
@@ -93,7 +93,7 @@ function UniversityDetailContent() {
         {(uni.ielts_min || uni.toefl_min || uni.gpa_min) && (
           <GlassCard className="mb-8">
             <h2 className="text-lg font-semibold text-white mb-4">Minimum Requirements</h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               {uni.ielts_min && (
                 <div>
                   <div className="text-slate-400 text-xs mb-1">IELTS</div>

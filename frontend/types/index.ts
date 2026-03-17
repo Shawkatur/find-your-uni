@@ -212,3 +212,45 @@ export interface PaginatedResponse<T> {
   page: number;
   page_size: number;
 }
+
+// ─── Tracking Links ──────────────────────────────────────────────────────────
+export interface TrackingLink {
+  id: string;
+  consultant_id: string;
+  agency_id: string;
+  code: string;
+  name?: string;
+  clicks: number;
+  created_at: string;
+}
+
+// ─── Consultant with status ───────────────────────────────────────────────────
+export interface ConsultantWithStatus extends Consultant {
+  status: "pending" | "active" | "banned";
+  agencies?: { name: string };
+  student_count?: number;
+}
+
+// ─── Lead Application ─────────────────────────────────────────────────────────
+export interface LeadApplication {
+  id: string;
+  student_id: string;
+  consultant_id: string | null;
+  agency_id: string | null;
+  status: string;
+  notes?: string;
+  created_at: string;
+  students?: {
+    full_name: string;
+    phone?: string;
+    created_at: string;
+  };
+}
+
+// ─── Intake Info (public tracking endpoint) ───────────────────────────────────
+export interface IntakeInfo {
+  code: string;
+  consultant_name: string | null;
+  agency_name: string | null;
+  is_admin: boolean;
+}

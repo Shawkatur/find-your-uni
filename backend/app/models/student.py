@@ -32,6 +32,7 @@ class StudentCreate(BaseModel):
     preferred_countries: list[str] = Field(default_factory=list, max_length=10)
     preferred_degree: DegreeLevel | None = None
     preferred_fields: list[str] = Field(default_factory=list, max_length=10)
+    ref_code: str | None = None         # tracking link code or "admin"
 
     @field_validator("preferred_countries")
     @classmethod

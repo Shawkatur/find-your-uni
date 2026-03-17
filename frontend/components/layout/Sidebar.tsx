@@ -11,9 +11,12 @@ import {
   Upload,
   User,
   Users,
+  Users2,
   Settings,
   Database,
   GraduationCap,
+  Inbox,
+  Link2,
 } from "lucide-react";
 
 interface NavItem {
@@ -34,12 +37,15 @@ const studentNav: NavItem[] = [
 const consultantNav: NavItem[] = [
   { label: "Dashboard", href: "/consultant/dashboard", icon: LayoutDashboard },
   { label: "Applications", href: "/consultant/applications", icon: FileText },
+  { label: "Tracking", href: "/consultant/tracking", icon: Link2 },
   { label: "Agencies", href: "/consultant/agencies", icon: Users },
   { label: "Profile", href: "/consultant/profile", icon: User },
 ];
 
 const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Leads", href: "/admin/leads", icon: Inbox },
+  { label: "Consultants", href: "/admin/consultants", icon: Users2 },
   { label: "Universities", href: "/admin/universities", icon: Building2 },
   { label: "Settings", href: "/admin/settings", icon: Settings },
   { label: "Import", href: "/admin/import", icon: Database },
@@ -54,7 +60,7 @@ export function Sidebar({ role }: SidebarProps) {
   const nav = role === "student" ? studentNav : role === "consultant" ? consultantNav : adminNav;
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 sidebar-gradient z-40 flex flex-col">
+    <aside className="fixed left-0 top-0 h-full w-64 sidebar-gradient z-40 hidden md:flex flex-col">
       {/* Logo */}
       <div className="h-16 flex items-center px-5 border-b border-white/6">
         <Link href="/" className="flex items-center gap-2.5 group">

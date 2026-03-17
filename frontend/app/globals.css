@@ -314,6 +314,18 @@
   z-index: 0;
 }
 
+/* ─── Mobile Bottom Nav Glass ─────────────────────────── */
+.bottom-nav-glass {
+  background: rgba(6, 10, 18, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 -8px 32px -8px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* ─── Scrollbar ───────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 5px;

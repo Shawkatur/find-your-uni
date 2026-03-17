@@ -57,7 +57,7 @@ export default function StudentDashboard() {
             <p className="text-slate-500 text-sm font-semibold uppercase tracking-widest mb-1">
               Student Portal
             </p>
-            <h1 className="text-4xl font-black tracking-tight leading-none">
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-none">
               <span className="text-white">Welcome back,</span>
               <br />
               <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
@@ -81,7 +81,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-indigo-600/15 border border-indigo-500/20 flex items-center justify-center">

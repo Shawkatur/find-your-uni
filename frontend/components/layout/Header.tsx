@@ -9,8 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, User, Settings } from "lucide-react";
+import { Bell, LogOut, User, Settings, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
@@ -21,7 +22,15 @@ export function Header() {
     : user?.email?.slice(0, 2).toUpperCase() ?? "??";
 
   return (
-    <header className="h-16 flex items-center justify-end px-6 border-b border-white/8 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-30">
+    <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/8 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-30">
+      {/* Mobile brand mark */}
+      <Link href="/" className="md:hidden flex items-center gap-2">
+        <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+          <GraduationCap size={16} className="text-white" />
+        </div>
+        <span className="font-black tracking-tight text-white text-sm">Find Your Uni</span>
+      </Link>
+      <div className="hidden md:block" />
       <div className="flex items-center gap-4">
         <button className="relative p-2 rounded-lg hover:bg-white/8 transition-colors">
           <Bell size={18} className="text-slate-400" />

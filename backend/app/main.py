@@ -13,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.config import get_settings
 from app.core.limiter import limiter
 from app.api import auth, match, universities, applications, consultants, documents
+from app.api import admin_routes, tracking
 
 settings = get_settings()
 
@@ -83,6 +84,8 @@ app.include_router(universities.router)
 app.include_router(applications.router)
 app.include_router(consultants.router)
 app.include_router(documents.router)
+app.include_router(admin_routes.router)
+app.include_router(tracking.router)
 
 
 # ─── Health ───────────────────────────────────────────────────────────────────

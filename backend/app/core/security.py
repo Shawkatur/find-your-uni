@@ -4,8 +4,9 @@ Set BYPASS_AUTH=true in env to skip verification during testing.
 """
 from typing import Annotated, Optional
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from supabase import AsyncClient
 
 from app.core.config import get_settings
 
@@ -68,3 +69,62 @@ def require_role(role: str):
             )
         return user
     return _check
+
+
+async def require_admin_secret(request: Request) -> None:
+    """
+    Extra guard for /admin/* routes.
+    If ADMIN_SECRET is configured, the request must include the
+    X-Admin-Secret header with a matching value, even if the JWT is valid.
+    """
+    settings = get_settings()
+    secret = settings.ADMIN_SECRET
+    if secret and request.headers.get("X-Admin-Secret") != secret:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+
+async def get_consultant_profile(
+    user: Annotated[dict, Depends(get_current_user)],
+    client: "AsyncClient" = None,
+) -> dict:
+    """
+    Dependency that resolves the consultant row for the current user
+    and enforces status='active'.
+    Import get_client separately and use both as Depends in route signatures.
+    Use _get_consultant_profile_factory below for proper DI.
+    """
+    raise NotImplementedError("Use get_active_consultant_dep instead")
+
+
+def get_active_consultant_dep():
+    """
+    Returns a FastAPI dependency that fetches the consultant profile
+    and rejects requests from non-active consultants.
+    """
+    from app.db.client import get_client  # late import to avoid circular deps
+
+    async def _dep(
+        user: Annotated[dict, Depends(get_current_user)],
+        client: AsyncClient = Depends(get_client),
+    ) -> dict:
+        settings = get_settings()
+        if settings.BYPASS_AUTH:
+            return {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "user_id": user["sub"],
+                "agency_id": "00000000-0000-0000-0000-000000000003",
+                "status": "active",
+                "full_name": "Test Consultant",
+            }
+        res = await client.table("consultants").select("*").eq("user_id", user["sub"]).limit(1).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Consultant profile not found")
+        consultant = res.data[0]
+        if consultant.get("status") != "active":
+            raise HTTPException(
+                status_code=403,
+                detail="Consultant account is not yet approved. Please wait for admin approval.",
+            )
+        return consultant
+
+    return _dep

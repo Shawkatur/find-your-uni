@@ -1,5 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { GraduationCap, Sparkles, FileText, Building2, Users, Star, ArrowRight, CheckCircle } from "lucide-react";
+import { GraduationCap, Sparkles, FileText, Building2, Users, Star, ArrowRight, CheckCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const stats = [
@@ -37,6 +40,8 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#0F172A] text-white">
       {/* Nav */}
@@ -49,7 +54,8 @@ export default function LandingPage() {
             <span className="font-black tracking-tight text-white text-base">Find Your University</span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/universities" className="text-slate-400 hover:text-white text-sm transition-colors font-medium">
               Universities
             </Link>
@@ -63,14 +69,43 @@ export default function LandingPage() {
               <Button size="sm">Get Started</Button>
             </Link>
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden border-t border-white/8 bg-[#0F172A]/95 backdrop-blur-md px-6 py-4 flex flex-col gap-4">
+            <Link href="/universities" onClick={() => setMenuOpen(false)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">
+              Universities
+            </Link>
+            <Link href="/agencies" onClick={() => setMenuOpen(false)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">
+              Agencies
+            </Link>
+            <div className="flex gap-3 pt-1">
+              <Link href="/auth/login" className="flex-1" onClick={() => setMenuOpen(false)}>
+                <Button variant="outline" size="lg" className="w-full">Sign In</Button>
+              </Link>
+              <Link href="/auth/register/student" className="flex-1" onClick={() => setMenuOpen(false)}>
+                <Button size="lg" className="w-full">Get Started</Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 pt-28 pb-20 text-center relative">
         {/* Background glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[400px] bg-blue-600/10 rounded-full blur-3xl" />
+          <div className="w-[90vw] max-w-[600px] h-[300px] sm:h-[400px] bg-blue-600/10 rounded-full blur-3xl" />
         </div>
 
         <div className="relative">

@@ -83,7 +83,7 @@ export default function MatchPage() {
     >
       {/* Hero — shown when no results yet */}
       {isEmpty && !hasRun && !runMatch.isPending && (
-        <div className="relative flex flex-col items-center text-center py-20 overflow-hidden">
+        <div className="relative flex flex-col items-center text-center py-10 md:py-20 overflow-hidden">
           {/* Background radial glow */}
           <div
             className="absolute inset-0 pointer-events-none"
@@ -107,7 +107,7 @@ export default function MatchPage() {
             </div>
           </div>
 
-          <h2 className="relative text-4xl font-black tracking-tight mb-3">
+          <h2 className="relative text-2xl sm:text-4xl font-black tracking-tight mb-3">
             <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
               Find Your Best Universities
             </span>
@@ -138,7 +138,7 @@ export default function MatchPage() {
 
       {/* Loading State */}
       {runMatch.isPending && (
-        <div className="flex flex-col items-center justify-center py-20 gap-6">
+        <div className="flex flex-col items-center justify-center py-10 md:py-20 gap-6">
           {/* Animated rings */}
           <div className="relative w-20 h-20">
             <div className="absolute inset-0 rounded-full border-2 border-indigo-600/30 animate-ping" />
@@ -174,7 +174,7 @@ export default function MatchPage() {
       {!runMatch.isPending && results.length > 0 && (
         <div>
           {/* Results header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between mb-6">
             <div>
               <p className="text-white font-black text-lg">
                 {results.length} universities matched

@@ -6,7 +6,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach Supabase JWT if a session exists, otherwise send no auth header
+// Attach Supabase JWT + admin secret header where applicable
 api.interceptors.request.use(async (config) => {
   try {
     const supabase = createClient();
@@ -17,6 +17,13 @@ api.interceptors.request.use(async (config) => {
   } catch {
     // no session — request goes through without auth header
   }
+
+  // Attach admin secret for /admin/* routes
+  const adminSecret = process.env.NEXT_PUBLIC_ADMIN_SECRET ?? "";
+  if (adminSecret && config.url?.startsWith("/admin")) {
+    config.headers["X-Admin-Secret"] = adminSecret;
+  }
+
   return config;
 });
 

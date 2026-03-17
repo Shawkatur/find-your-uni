@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { GraduationCap, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase";
@@ -66,8 +66,10 @@ const stepFields: FieldDef[][] = [
   ],
 ];
 
-export default function StudentRegisterPage() {
+function StudentRegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref") ?? undefined;
   const supabase = createClient();
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<FormValues>({ target_degree: "master" });
@@ -122,6 +124,7 @@ export default function StudentRegisterPage() {
         preferred_degree:    values.target_degree ?? "master",
         preferred_countries: values.target_countries?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
         preferred_fields:    values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
+        ref_code:            refCode,
       }, { headers });
 
       toast.success("Account created! Welcome aboard.");
@@ -263,5 +266,13 @@ export default function StudentRegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function StudentRegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <StudentRegisterForm />
+    </Suspense>
   );
 }

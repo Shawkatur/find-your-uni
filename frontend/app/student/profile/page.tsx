@@ -159,7 +159,7 @@ export default function StudentProfilePage() {
       }
     >
       <Tabs defaultValue="personal">
-        <TabsList className="bg-white/8 border border-white/10 mb-6">
+        <TabsList className="bg-white/8 border border-white/10 mb-6 flex-wrap">
           {["personal", "academics", "scores", "preferences"].map((tab) => (
             <TabsTrigger
               key={tab}

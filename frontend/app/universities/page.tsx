@@ -67,7 +67,7 @@ function UniversitiesList() {
               placeholder="Filter by country..."
               value={country}
               onChange={(e) => { setCountry(e.target.value); setPage(1); }}
-              className="pl-9 bg-white/8 border-white/10 text-white placeholder:text-slate-500 w-48"
+              className="pl-9 bg-white/8 border-white/10 text-white placeholder:text-slate-500 w-full sm:w-48"
             />
           </div>
         </div>

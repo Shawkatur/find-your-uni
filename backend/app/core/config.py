@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     APP_SECRET: str = "change-me-in-prod"
     BYPASS_AUTH: bool = False       # set to true to skip JWT checks during testing
+    ADMIN_SECRET: str = ""          # if set, all /admin/* routes require X-Admin-Secret header
     # Accept comma-separated string OR JSON array from env
     # Default * allows all origins during testing
     CORS_ORIGINS: str = "*"

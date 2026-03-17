@@ -14,6 +14,8 @@ from app.models.application import ConsultantCreate, ConsultantOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+ADMIN_REF_CODE = "admin"
+
 
 @router.post("/student/register", response_model=StudentOut, status_code=201)
 async def register_student(
@@ -39,8 +41,46 @@ async def register_student(
         "preferred_degree":    body.preferred_degree,
         "preferred_fields":    body.preferred_fields,
     }
+    if body.ref_code:
+        row["referral_source"] = body.ref_code
+
     res = await client.table("students").insert(row).execute()
-    return res.data[0]
+    student = res.data[0]
+
+    # Create lead application based on ref_code
+    if body.ref_code:
+        await _create_lead_application(client, student["id"], body.ref_code)
+
+    return student
+
+
+async def _create_lead_application(client: AsyncClient, student_id: str, ref_code: str) -> None:
+    """Insert a lead-stage application linked to the tracking code's consultant."""
+    lead: dict = {
+        "student_id": student_id,
+        "status":     "lead",
+    }
+
+    if ref_code == ADMIN_REF_CODE:
+        # Unassigned lead — goes to admin pool
+        pass
+    else:
+        link_res = await (
+            client.table("tracking_links")
+            .select("consultant_id, agency_id")
+            .eq("code", ref_code)
+            .limit(1)
+            .execute()
+        )
+        if link_res.data:
+            lead["consultant_id"] = link_res.data[0]["consultant_id"]
+            lead["agency_id"]     = link_res.data[0]["agency_id"]
+
+    try:
+        await client.table("applications").insert(lead).execute()
+    except Exception:
+        # Non-fatal — student profile already created
+        pass
 
 
 @router.post("/consultant/register", response_model=ConsultantOut, status_code=201)
@@ -66,6 +106,7 @@ async def register_consultant(
         "agency_id": body.agency_id,
         "role":      body.role,
         "full_name": body.full_name,
+        "status":    "pending",
     }
     res = await client.table("consultants").insert(row).execute()
 
