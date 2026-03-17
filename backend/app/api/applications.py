@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import AsyncClient
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_active_consultant_dep
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id, get_application
 from app.models.application import (
@@ -45,10 +45,12 @@ async def list_applications(
     user_id = user["sub"]
 
     if role == "consultant":
-        # Consultant sees all applications in their agency
-        consultant_res = await client.table("consultants").select("agency_id").eq("user_id", user_id).single().execute()
+        # Consultant sees all applications in their agency; must be active
+        consultant_res = await client.table("consultants").select("agency_id, status").eq("user_id", user_id).single().execute()
         if not consultant_res.data:
             raise HTTPException(status_code=404, detail="Consultant profile not found")
+        if consultant_res.data.get("status") != "active":
+            raise HTTPException(status_code=403, detail="Consultant account is not yet approved. Please wait for admin approval.")
         agency_id = consultant_res.data["agency_id"]
         res = await (
             client.table("applications")
@@ -87,7 +89,27 @@ async def get_application_detail(
     )
     if not res.data:
         raise HTTPException(status_code=404, detail="Application not found")
-    return res.data
+
+    app = res.data
+    role = (user.get("app_metadata") or {}).get("role", "student")
+    user_id = user["sub"]
+
+    if role == "student":
+        student = await get_student_by_user_id(client, user_id)
+        if not student or app["student_id"] != student["id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    elif role == "consultant":
+        c_res = await client.table("consultants").select("agency_id, status").eq("user_id", user_id).limit(1).execute()
+        if not c_res.data:
+            raise HTTPException(status_code=403, detail="Consultant profile not found")
+        consultant = c_res.data[0]
+        if consultant.get("status") != "active":
+            raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
+        if app.get("agency_id") != consultant["agency_id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    # role == "admin": allow through
+
+    return app
 
 
 @router.patch("/{app_id}/status", response_model=ApplicationOut)
@@ -97,6 +119,16 @@ async def update_status(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
+    role = (user.get("app_metadata") or {}).get("role", "student")
+    if role == "consultant":
+        c_res = await client.table("consultants").select("agency_id, status").eq("user_id", user["sub"]).limit(1).execute()
+        if not c_res.data:
+            raise HTTPException(status_code=403, detail="Consultant profile not found")
+        if c_res.data[0].get("status") != "active":
+            raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
+    elif role == "student":
+        raise HTTPException(status_code=403, detail="Students cannot update application status")
+
     app = await get_application(client, app_id)
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")

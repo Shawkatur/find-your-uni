@@ -9,7 +9,7 @@ GET  /agencies/{id}/reviews    — paginated reviews for an agency
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
 from app.models.application import ReviewCreate, ReviewOut, AgencyOut, ConsultantOut
@@ -79,11 +79,9 @@ async def list_agencies(
 @router.post("/agencies", response_model=AgencyOut, status_code=201)
 async def create_agency(
     body: dict,
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_role("admin")),
     client: AsyncClient = Depends(get_client),
 ):
-    # Only service-role / admin can create agencies in production
-    # For dev, any authenticated user can create
     res = await client.table("agencies").insert(body).execute()
     return res.data[0]
 

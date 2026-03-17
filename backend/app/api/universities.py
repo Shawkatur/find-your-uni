@@ -142,7 +142,7 @@ async def create_university(
     client: AsyncClient = Depends(get_client),
 ):
     role = (user.get("app_metadata") or {}).get("role", "student")
-    if role not in ("admin", "superadmin"):
+    if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
     row = body.model_dump()
@@ -158,7 +158,7 @@ async def update_university(
     client: AsyncClient = Depends(get_client),
 ):
     role = (user.get("app_metadata") or {}).get("role", "student")
-    if role not in ("admin", "superadmin"):
+    if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
     res = await (

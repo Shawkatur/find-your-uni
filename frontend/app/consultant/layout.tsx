@@ -2,6 +2,8 @@
 
 export const dynamic = "force-dynamic";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -11,12 +13,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
 export default function ConsultantLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { role, loading } = useAuth();
+  const router = useRouter();
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
   }));
 
+  useEffect(() => {
+    if (!loading && role !== "consultant") {
+      router.replace("/");
+    }
+  }, [loading, role, router]);
+
   if (loading) return <FullPageLoader />;
+  if (role !== "consultant") return null;
 
   return (
     <QueryClientProvider client={queryClient}>

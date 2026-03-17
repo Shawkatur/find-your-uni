@@ -118,3 +118,22 @@ class ReassignBody(BaseModel):
     consultant_id: str
     agency_id: str
     note: str | None = None
+
+
+class MatchSettingsUpdate(BaseModel):
+    weight_ranking: float | None = Field(None, ge=0, le=1)
+    weight_cost: float | None = Field(None, ge=0, le=1)
+    weight_bd_acceptance: float | None = Field(None, ge=0, le=1)
+    ai_top_n: int | None = Field(None, ge=1, le=20)
+    budget_buffer_pct: int | None = Field(None, ge=0, le=100)
+
+
+class AdminAuditLog(BaseModel):
+    id: str
+    admin_user_id: str
+    action: str
+    resource_type: str
+    resource_id: str | None
+    old_value: dict | None
+    new_value: dict | None
+    created_at: datetime

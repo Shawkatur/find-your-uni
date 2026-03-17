@@ -19,7 +19,7 @@ export default function AdminSettingsPage() {
   const { data: settings, isLoading } = useQuery<MatchSettings>({
     queryKey: ["match-settings"],
     queryFn: async () => {
-      const res = await api.get("/match/settings");
+      const res = await api.get("/admin/match-settings");
       return res.data;
     },
   });
@@ -46,7 +46,7 @@ export default function AdminSettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      await api.patch("/match/settings", weights);
+      await api.patch("/admin/match-settings", weights);
     },
     onSuccess: () => {
       toast.success("Settings saved!");
