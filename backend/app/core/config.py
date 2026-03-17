@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     # Default * allows all origins during testing
     CORS_ORIGINS: str = "*"
 
+    # ── SSLCommerz (payment gateway) ─────────────────────────────────────────
+    SSLCOMMERZ_STORE_ID: str = ""
+    SSLCOMMERZ_STORE_PASS: str = ""
+    SSLCOMMERZ_API_URL: str = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+    APP_BASE_URL: str = "http://localhost:8000"
+
     # ── Rate limiting ─────────────────────────────────────────────────────────
     MATCH_RATE_LIMIT: str = "10/minute"
 

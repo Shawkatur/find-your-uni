@@ -49,6 +49,10 @@ class StudentUpdate(BaseModel):
     preferred_countries: list[str] | None = None
     preferred_degree: DegreeLevel | None = None
     preferred_fields: list[str] | None = None
+    push_enabled: bool | None = None
+    notify_status_changes: bool | None = None
+    notify_deadlines: bool | None = None
+    onboarding_completed: bool | None = None
 
 
 class StudentOut(BaseModel):
@@ -62,5 +66,9 @@ class StudentOut(BaseModel):
     preferred_countries: list[str]
     preferred_degree: str | None
     preferred_fields: list[str]
+    push_enabled: bool = True
+    notify_status_changes: bool = True
+    notify_deadlines: bool = True
+    onboarding_completed: bool = False
     created_at: datetime
     updated_at: datetime

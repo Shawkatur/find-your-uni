@@ -92,6 +92,49 @@ async def get_university(
     return res.data
 
 
+@router.get("/featured", response_model=list[dict])
+async def get_featured_universities(
+    limit: int = Query(10, ge=1, le=50),
+    client: AsyncClient = Depends(get_client),
+):
+    """Return top-ranked universities with logo_url for the mobile home screen."""
+    res = await (
+        client.table("universities")
+        .select("id, name, country, city, ranking_qs, tuition_usd_per_year, scholarships_available, logo_url, description, acceptance_rate_bd")
+        .not_.is_("ranking_qs", "null")
+        .order("ranking_qs", desc=False)
+        .limit(limit)
+        .execute()
+    )
+    return res.data or []
+
+
+@router.get("/{university_id}/programs", response_model=list[dict])
+async def get_university_programs(
+    university_id: str,
+    degree_level: str | None = None,
+    field: str | None = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=50),
+    client: AsyncClient = Depends(get_client),
+):
+    """Paginated programs for a specific university."""
+    offset = (page - 1) * page_size
+    query = (
+        client.table("programs")
+        .select("*")
+        .eq("university_id", university_id)
+        .eq("is_active", True)
+    )
+    if degree_level:
+        query = query.eq("degree_level", degree_level)
+    if field:
+        query = query.eq("field", field)
+
+    res = await query.order("name").range(offset, offset + page_size - 1).execute()
+    return res.data or []
+
+
 @router.post("", response_model=dict, status_code=201)
 async def create_university(
     body: UniversityCreate,

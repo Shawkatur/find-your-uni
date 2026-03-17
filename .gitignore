@@ -16,6 +16,18 @@ node_modules/
 out/
 *.local
 
+# Expo / React Native
+mobile/.expo/
+mobile/dist/
+mobile/android/
+mobile/ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
 # Env files (keep .env.example, ignore actual secrets)
 .env.local
 .env.*.local

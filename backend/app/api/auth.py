@@ -147,6 +147,14 @@ async def update_student_profile(
         update["preferred_degree"] = body.preferred_degree
     if body.preferred_fields is not None:
         update["preferred_fields"] = body.preferred_fields
+    if body.push_enabled is not None:
+        update["push_enabled"] = body.push_enabled
+    if body.notify_status_changes is not None:
+        update["notify_status_changes"] = body.notify_status_changes
+    if body.notify_deadlines is not None:
+        update["notify_deadlines"] = body.notify_deadlines
+    if body.onboarding_completed is not None:
+        update["onboarding_completed"] = body.onboarding_completed
 
     res = await client.table("students").update(update).eq("id", student["id"]).execute()
     return res.data[0]

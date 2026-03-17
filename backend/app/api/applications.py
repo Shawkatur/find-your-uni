@@ -144,6 +144,7 @@ async def update_status(
             application_id=app_id,
             student_user_id=student_data["user_id"],
             new_status=new_status,
+            student_id=app["student_id"],
             note=body.note,
         )
 
