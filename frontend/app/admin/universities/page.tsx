@@ -93,14 +93,14 @@ export default function AdminUniversitiesPage() {
                     </td>
                     <td className="px-5 py-3 text-slate-300 text-sm">{uni.country}</td>
                     <td className="px-5 py-3">
-                      {uni.qs_rank ? (
+                      {uni.ranking_qs ? (
                         <Badge variant="outline" className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10 text-xs">
-                          #{uni.qs_rank}
+                          #{uni.ranking_qs}
                         </Badge>
                       ) : <span className="text-slate-600 text-sm">—</span>}
                     </td>
                     <td className="px-5 py-3 text-slate-300 text-sm">
-                      {uni.annual_tuition_usd ? `$${uni.annual_tuition_usd.toLocaleString()}` : "—"}
+                      {uni.tuition_usd_per_year ? `$${uni.tuition_usd_per_year.toLocaleString()}` : "—"}
                     </td>
                     <td className="px-5 py-3 text-slate-300 text-sm">
                       {uni.programs?.length ?? 0}

@@ -17,13 +17,13 @@ const schema = z.object({
   country: z.string().min(2),
   city: z.string().optional(),
   website: z.string().url().optional().or(z.literal("")),
-  qs_rank: z.coerce.number().optional().or(z.literal("")),
-  acceptance_rate: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
-  bd_acceptance_rate: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
-  annual_tuition_usd: z.coerce.number().optional().or(z.literal("")),
-  ielts_min: z.coerce.number().optional().or(z.literal("")),
-  toefl_min: z.coerce.number().optional().or(z.literal("")),
-  gpa_min: z.coerce.number().optional().or(z.literal("")),
+  ranking_qs: z.coerce.number().optional().or(z.literal("")),
+  acceptance_rate_overall: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
+  acceptance_rate_bd: z.coerce.number().min(0).max(100).optional().or(z.literal("")),
+  tuition_usd_per_year: z.coerce.number().optional().or(z.literal("")),
+  min_ielts: z.coerce.number().optional().or(z.literal("")),
+  min_toefl: z.coerce.number().optional().or(z.literal("")),
+  min_gpa_percentage: z.coerce.number().optional().or(z.literal("")),
   scholarships_available: z.boolean().optional(),
   description: z.string().optional(),
 });
@@ -49,13 +49,13 @@ export function UniversityForm({ defaultValues, onSubmit, isSubmitting }: Univer
         country: defaultValues.country,
         city: defaultValues.city,
         website: defaultValues.website,
-        qs_rank: defaultValues.qs_rank,
-        acceptance_rate: defaultValues.acceptance_rate,
-        bd_acceptance_rate: defaultValues.bd_acceptance_rate,
-        annual_tuition_usd: defaultValues.annual_tuition_usd,
-        ielts_min: defaultValues.ielts_min,
-        toefl_min: defaultValues.toefl_min,
-        gpa_min: defaultValues.gpa_min,
+        ranking_qs: defaultValues.ranking_qs,
+        acceptance_rate_overall: defaultValues.acceptance_rate_overall,
+        acceptance_rate_bd: defaultValues.acceptance_rate_bd,
+        tuition_usd_per_year: defaultValues.tuition_usd_per_year,
+        min_ielts: defaultValues.min_ielts,
+        min_toefl: defaultValues.min_toefl,
+        min_gpa_percentage: defaultValues.min_gpa_percentage,
         scholarships_available: defaultValues.scholarships_available,
         description: defaultValues.description,
       });
@@ -102,19 +102,19 @@ export function UniversityForm({ defaultValues, onSubmit, isSubmitting }: Univer
         <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
           <div>
             <Label className="text-slate-300 mb-1.5 block">QS Rank</Label>
-            <Input {...register("qs_rank")} type="number" placeholder="e.g. 21" className={inputClass} />
+            <Input {...register("ranking_qs")} type="number" placeholder="e.g. 21" className={inputClass} />
           </div>
           <div>
             <Label className="text-slate-300 mb-1.5 block">Acceptance Rate (%)</Label>
-            <Input {...register("acceptance_rate")} type="number" step="0.1" placeholder="35.0" className={inputClass} />
+            <Input {...register("acceptance_rate_overall")} type="number" step="0.1" placeholder="35.0" className={inputClass} />
           </div>
           <div>
             <Label className="text-slate-300 mb-1.5 block">BD Acceptance Rate (%)</Label>
-            <Input {...register("bd_acceptance_rate")} type="number" step="0.1" placeholder="15.0" className={inputClass} />
+            <Input {...register("acceptance_rate_bd")} type="number" step="0.1" placeholder="15.0" className={inputClass} />
           </div>
           <div>
             <Label className="text-slate-300 mb-1.5 block">Annual Tuition (USD)</Label>
-            <Input {...register("annual_tuition_usd")} type="number" placeholder="35000" className={inputClass} />
+            <Input {...register("tuition_usd_per_year")} type="number" placeholder="35000" className={inputClass} />
           </div>
         </div>
       </GlassCard>
@@ -125,15 +125,15 @@ export function UniversityForm({ defaultValues, onSubmit, isSubmitting }: Univer
         <div className="grid grid-cols-3 gap-5">
           <div>
             <Label className="text-slate-300 mb-1.5 block">IELTS Min</Label>
-            <Input {...register("ielts_min")} type="number" step="0.5" placeholder="6.5" className={inputClass} />
+            <Input {...register("min_ielts")} type="number" step="0.5" placeholder="6.5" className={inputClass} />
           </div>
           <div>
             <Label className="text-slate-300 mb-1.5 block">TOEFL Min</Label>
-            <Input {...register("toefl_min")} type="number" placeholder="85" className={inputClass} />
+            <Input {...register("min_toefl")} type="number" placeholder="85" className={inputClass} />
           </div>
           <div>
-            <Label className="text-slate-300 mb-1.5 block">GPA Min</Label>
-            <Input {...register("gpa_min")} type="number" step="0.01" placeholder="3.0" className={inputClass} />
+            <Label className="text-slate-300 mb-1.5 block">GPA Min (%)</Label>
+            <Input {...register("min_gpa_percentage")} type="number" step="0.01" placeholder="65" className={inputClass} />
           </div>
         </div>
         <div className="mt-4">
