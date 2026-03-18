@@ -195,11 +195,11 @@ export default function ApplicationDetailPage() {
                       </p>
                       {/* Show timestamp from history if available */}
                       {state !== "future" && app.status_history && (() => {
-                        const entry = app.status_history.find((h) => h.to_status === step.status);
+                        const entry = app.status_history.find((h) => h.status === step.status);
                         return entry ? (
                           <p className="text-[10px] text-slate-600 mt-1 flex items-center gap-1">
                             <Clock size={9} />
-                            {new Date(entry.created_at).toLocaleDateString("en-US", {
+                            {new Date(entry.changed_at).toLocaleDateString("en-US", {
                               month: "short", day: "numeric", year: "numeric",
                             })}
                           </p>
