@@ -94,6 +94,8 @@ class AgencyOut(BaseModel):
     name: str
     license_no: str | None
     address: str | None
+    city: str | None = None
+    website: str | None = None
     avg_rating: float
     review_count: int
     is_active: bool
@@ -117,6 +119,11 @@ class ConsultantStatusUpdate(BaseModel):
 class ReassignBody(BaseModel):
     consultant_id: str
     agency_id: str
+    note: str | None = None
+
+
+class ForwardBody(BaseModel):
+    consultant_id: str
     note: str | None = None
 
 

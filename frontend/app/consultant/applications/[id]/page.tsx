@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MessageCircle, Clock, FileText } from "lucide-react";
+import { MessageCircle, Clock, FileText, UserRoundCog } from "lucide-react";
 import api from "@/lib/api";
 import type { Application, AppStatus } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -12,6 +12,9 @@ import { GlassCard } from "@/components/layout/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
+} from "@/components/ui/dialog";
 
 const NEXT_STATUSES: Record<string, AppStatus[]> = {
   draft: ["submitted"],
@@ -27,6 +30,8 @@ export default function ConsultantApplicationDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
   const [note, setNote] = useState("");
+  const [forwardOpen, setForwardOpen] = useState(false);
+  const [selectedColleagueId, setSelectedColleagueId] = useState("");
 
   const { data: app, isLoading } = useQuery<Application>({
     queryKey: ["application-detail", id],
@@ -34,6 +39,28 @@ export default function ConsultantApplicationDetailPage() {
       const res = await api.get(`/applications/${id}`);
       return res.data;
     },
+  });
+
+  const { data: colleagues = [] } = useQuery<{ id: string; full_name: string; role: string }[]>({
+    queryKey: ["my-colleagues"],
+    queryFn: async () => {
+      const res = await api.get("/consultants/me/colleagues");
+      return res.data ?? [];
+    },
+    enabled: !!app,
+  });
+
+  const forwardMutation = useMutation({
+    mutationFn: async ({ consultant_id, note }: { consultant_id: string; note?: string }) => {
+      await api.patch(`/applications/${id}/forward`, { consultant_id, note });
+    },
+    onSuccess: () => {
+      toast.success("Application forwarded!");
+      setForwardOpen(false);
+      setSelectedColleagueId("");
+      qc.invalidateQueries({ queryKey: ["application-detail", id] });
+    },
+    onError: () => toast.error("Failed to forward application"),
   });
 
   const updateStatus = useMutation({
@@ -194,6 +221,49 @@ export default function ConsultantApplicationDetailPage() {
             <div className="text-slate-400 text-xs">{app.program?.name}</div>
             <div className="text-slate-500 text-xs">{app.university?.country}</div>
           </GlassCard>
+
+          {colleagues.length > 0 && (
+            <GlassCard>
+              <h3 className="text-white font-semibold mb-3">Team</h3>
+              <Dialog open={forwardOpen} onOpenChange={setForwardOpen}>
+                <DialogTrigger>
+                  <Button variant="outline" className="w-full border-white/10 text-slate-300 hover:bg-white/8">
+                    <UserRoundCog size={15} className="mr-2" /> Forward to Team
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-[#0F172A] border border-white/10 text-white">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Forward Application</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2 py-2">
+                    {colleagues.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => setSelectedColleagueId(c.id)}
+                        className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
+                          selectedColleagueId === c.id
+                            ? "border-blue-500 bg-blue-500/10 text-white"
+                            : "border-white/10 bg-white/4 text-slate-300 hover:border-white/20"
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{c.full_name}</div>
+                        <div className="text-xs text-slate-500 capitalize">{c.role}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <DialogFooter showCloseButton>
+                    <Button
+                      onClick={() => forwardMutation.mutate({ consultant_id: selectedColleagueId, note: undefined })}
+                      disabled={!selectedColleagueId || forwardMutation.isPending}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {forwardMutation.isPending ? "Forwarding..." : "Forward"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </GlassCard>
+          )}
         </div>
       </div>
     </PageWrapper>

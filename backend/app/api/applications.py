@@ -12,7 +12,7 @@ from app.core.security import get_current_user, get_active_consultant_dep
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id, get_application
 from app.models.application import (
-    ApplicationCreate, ApplicationOut, ApplicationStatusUpdate, STATUS_TRANSITIONS
+    ApplicationCreate, ApplicationOut, ApplicationStatusUpdate, STATUS_TRANSITIONS, ForwardBody
 )
 from app.services.notifications import notify_status_change, whatsapp_link, status_update_whatsapp_message
 
@@ -181,6 +181,71 @@ async def update_status(
         )
 
     return updated
+
+
+@router.patch("/{app_id}/forward", response_model=dict)
+async def forward_application(
+    app_id: str,
+    body: ForwardBody,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Forward (reassign) an application to a colleague in the same agency."""
+    # Resolve caller's consultant profile
+    c_res = await (
+        client.table("consultants")
+        .select("id, agency_id, status")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not c_res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    caller = c_res.data[0]
+    if caller["status"] != "active":
+        raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
+
+    # Resolve target consultant
+    target_res = await (
+        client.table("consultants")
+        .select("id, agency_id, status, full_name")
+        .eq("id", body.consultant_id)
+        .limit(1)
+        .execute()
+    )
+    if not target_res.data:
+        raise HTTPException(status_code=404, detail="Target consultant not found")
+    target = target_res.data[0]
+    if target["status"] != "active":
+        raise HTTPException(status_code=400, detail="Target consultant is not active")
+    if target["agency_id"] != caller["agency_id"]:
+        raise HTTPException(status_code=403, detail="Cannot forward to a consultant in a different agency")
+    if target["id"] == caller["id"]:
+        raise HTTPException(status_code=400, detail="Cannot forward an application to yourself")
+
+    # Verify application belongs to caller's agency
+    app = await get_application(client, app_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if app.get("agency_id") != caller["agency_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Append forward event to status_history
+    history: list = app.get("status_history") or []
+    history.append({
+        "status":     app["status"],
+        "changed_by": user["sub"],
+        "changed_at": datetime.now(timezone.utc).isoformat(),
+        "note":       f"Forwarded to {target['full_name']}. {body.note or ''}".strip().rstrip(".") + ".",
+    })
+
+    res = await (
+        client.table("applications")
+        .update({"consultant_id": body.consultant_id, "status_history": history})
+        .eq("id", app_id)
+        .execute()
+    )
+    return res.data[0]
 
 
 @router.get("/{app_id}/whatsapp")

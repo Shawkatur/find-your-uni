@@ -17,6 +17,101 @@ from app.models.application import ReviewCreate, ReviewOut, AgencyOut, Consultan
 router = APIRouter(tags=["consultants"])
 
 
+# ─── Consultants /me — must be registered before /{consultant_id} ─────────────
+
+@router.get("/consultants/me", response_model=dict)
+async def get_my_profile(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    res = await (
+        client.table("consultants")
+        .select("*, agencies(name, avg_rating, review_count)")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    return res.data[0]
+
+
+@router.patch("/consultants/me", response_model=dict)
+async def update_my_profile(
+    body: dict,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    allowed = {"full_name"}
+    update = {k: v for k, v in body.items() if k in allowed}
+    if not update:
+        raise HTTPException(status_code=422, detail="No valid fields to update")
+    res = await (
+        client.table("consultants")
+        .update(update)
+        .eq("user_id", user["sub"])
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    return res.data[0]
+
+
+@router.get("/consultants/me/agency", response_model=AgencyOut)
+async def get_my_agency(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    c_res = await (
+        client.table("consultants")
+        .select("agency_id")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not c_res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    agency_id = c_res.data[0]["agency_id"]
+    a_res = await (
+        client.table("agencies")
+        .select("*")
+        .eq("id", agency_id)
+        .limit(1)
+        .execute()
+    )
+    if not a_res.data:
+        raise HTTPException(status_code=404, detail="Agency not found")
+    return a_res.data[0]
+
+
+@router.get("/consultants/me/colleagues", response_model=list[dict])
+async def get_my_colleagues(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    c_res = await (
+        client.table("consultants")
+        .select("id, agency_id")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not c_res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    my_id = c_res.data[0]["id"]
+    agency_id = c_res.data[0]["agency_id"]
+    res = await (
+        client.table("consultants")
+        .select("*")
+        .eq("agency_id", agency_id)
+        .eq("status", "active")
+        .neq("id", my_id)
+        .order("full_name")
+        .execute()
+    )
+    return res.data or []
+
+
 # ─── Consultants ──────────────────────────────────────────────────────────────
 
 @router.get("/consultants", response_model=list[dict])
