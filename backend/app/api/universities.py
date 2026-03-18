@@ -16,7 +16,7 @@ from app.services.ai import semantic_search_query
 router = APIRouter(prefix="/universities", tags=["universities"])
 
 
-@router.get("", response_model=list[dict])
+@router.get("", response_model=dict)
 async def list_universities(
     country: str | None = None,
     degree_level: str | None = None,
@@ -30,7 +30,8 @@ async def list_universities(
 ):
     offset = (page - 1) * page_size
     query = client.table("universities").select(
-        "*, programs(id, name, degree_level, field, tuition_usd_per_year, is_active)"
+        "*, programs(id, name, degree_level, field, tuition_usd_per_year, is_active)",
+        count="exact",
     )
 
     if country:
@@ -42,14 +43,13 @@ async def list_universities(
     if search:
         query = query.ilike("name", f"%{search}%")
 
-    # degree_level / field filter handled via programs join
     if degree_level:
         query = query.eq("programs.degree_level", degree_level)
     if field:
         query = query.eq("programs.field", field)
 
     res = await query.order("ranking_qs", desc=False).range(offset, offset + page_size - 1).execute()
-    return res.data or []
+    return {"items": res.data or [], "total": res.count or 0}
 
 
 @router.get("/semantic", response_model=list[dict])

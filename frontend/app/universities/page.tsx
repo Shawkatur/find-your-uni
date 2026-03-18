@@ -103,9 +103,9 @@ function UniversitiesList() {
                     <div className="w-12 h-12 bg-blue-600/10 rounded-xl flex items-center justify-center">
                       <Building2 size={20} className="text-blue-400" />
                     </div>
-                    {uni.qs_rank && (
+                    {uni.ranking_qs && (
                       <Badge variant="outline" className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10">
-                        <Star size={10} className="mr-1" /> QS #{uni.qs_rank}
+                        <Star size={10} className="mr-1" /> QS #{uni.ranking_qs}
                       </Badge>
                     )}
                   </div>
@@ -114,14 +114,14 @@ function UniversitiesList() {
                   <p className="text-slate-400 text-sm mb-4">{uni.city ? `${uni.city}, ` : ""}{uni.country}</p>
 
                   <div className="flex items-center justify-between text-xs text-slate-500 border-t border-white/8 pt-3">
-                    {uni.annual_tuition_usd ? (
+                    {uni.tuition_usd_per_year ? (
                       <span className="flex items-center gap-1">
                         <DollarSign size={12} />
-                        ${uni.annual_tuition_usd.toLocaleString()}/yr
+                        ${uni.tuition_usd_per_year.toLocaleString()}/yr
                       </span>
                     ) : <span />}
-                    {uni.acceptance_rate && (
-                      <span className="text-green-400">{uni.acceptance_rate}% acceptance</span>
+                    {uni.acceptance_rate_overall && (
+                      <span className="text-green-400">{uni.acceptance_rate_overall}% acceptance</span>
                     )}
                   </div>
                 </GlassCard>
