@@ -27,9 +27,38 @@ async def get_match_settings(client: AsyncClient) -> dict:
     return res.data[0]
 
 
+# Common country name → ISO 3166-1 alpha-2 mapping (case-insensitive keys)
+_COUNTRY_ISO: dict[str, str] = {
+    "usa": "US", "united states": "US", "america": "US", "us": "US",
+    "uk": "GB", "united kingdom": "GB", "england": "GB", "britain": "GB", "gb": "GB",
+    "canada": "CA", "ca": "CA",
+    "germany": "DE", "de": "DE",
+    "australia": "AU", "au": "AU",
+    "singapore": "SG", "sg": "SG",
+    "netherlands": "NL", "nl": "NL", "holland": "NL",
+    "sweden": "SE", "se": "SE",
+    "new zealand": "NZ", "nz": "NZ",
+    "japan": "JP", "jp": "JP",
+    "france": "FR", "fr": "FR",
+    "italy": "IT", "it": "IT",
+    "ireland": "IE", "ie": "IE",
+    "malaysia": "MY", "my": "MY",
+    "south korea": "KR", "korea": "KR", "kr": "KR",
+}
+
+
+def _normalize_countries(countries: list[str]) -> list[str]:
+    """Convert country names or mixed-case codes to ISO alpha-2."""
+    result = []
+    for c in countries:
+        key = c.strip().lower()
+        result.append(_COUNTRY_ISO.get(key, c.strip().upper()))
+    return [c for c in result if c]
+
+
 async def filter_programs(
     client: AsyncClient,
-    budget_usd: int,
+    budget_usd: int | None,
     countries: list[str],
     degree_level: str,
     ielts: float | None,
@@ -41,7 +70,9 @@ async def filter_programs(
     Layer-1 deterministic filter.
     Returns matching programs with joined university data.
     """
+    budget_usd = budget_usd or 20000  # safe default if missing
     max_budget = int(budget_usd * (1 + budget_buffer))
+    countries = _normalize_countries(countries)
 
     query = (
         client.table("programs")

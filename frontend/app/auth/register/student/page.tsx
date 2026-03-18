@@ -26,6 +26,29 @@ const stepTitles = ["Account", "Personal Info", "Academics", "Test Scores", "Pre
 
 type FormValues = Record<string, string>;
 
+// Map common country names → ISO 3166-1 alpha-2 codes
+const COUNTRY_ISO: Record<string, string> = {
+  "usa": "US", "united states": "US", "america": "US", "us": "US",
+  "uk": "GB", "united kingdom": "GB", "england": "GB", "britain": "GB", "gb": "GB",
+  "canada": "CA", "ca": "CA",
+  "germany": "DE", "de": "DE",
+  "australia": "AU", "au": "AU",
+  "singapore": "SG", "sg": "SG",
+  "netherlands": "NL", "nl": "NL", "holland": "NL",
+  "sweden": "SE", "se": "SE",
+  "new zealand": "NZ", "nz": "NZ",
+  "japan": "JP", "jp": "JP",
+  "france": "FR", "fr": "FR",
+  "italy": "IT", "it": "IT",
+  "ireland": "IE", "ie": "IE",
+  "malaysia": "MY", "my": "MY",
+  "south korea": "KR", "korea": "KR", "kr": "KR",
+};
+
+function toISO(name: string): string {
+  return COUNTRY_ISO[name.trim().toLowerCase()] ?? name.trim().toUpperCase().slice(0, 2);
+}
+
 // Simple validation per step
 function validateStep(step: number, values: FormValues): Record<string, string> {
   const errs: Record<string, string> = {};
@@ -132,7 +155,7 @@ function StudentRegisterForm() {
         },
         budget_usd_per_year: values.budget_usd ? parseInt(values.budget_usd) : 20000,
         preferred_degree:    values.target_degree ?? "master",
-        preferred_countries: values.target_countries?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
+        preferred_countries: values.target_countries?.split(",").map((s) => toISO(s)).filter(Boolean) ?? [],
         preferred_fields:    values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
         ref_code:            refCode,
       });
@@ -242,7 +265,7 @@ function StudentRegisterForm() {
                 </div>
                 <div>
                   <Label className="text-slate-300 mb-1.5 block">Target Countries (comma-separated)</Label>
-                  <Input placeholder="USA, UK, Canada, Germany" value={values.target_countries ?? ""}
+                  <Input placeholder="Canada, Germany, UK, Australia" value={values.target_countries ?? ""}
                     onChange={(e) => setValue("target_countries", e.target.value)} className={inputClass} />
                 </div>
                 <div>

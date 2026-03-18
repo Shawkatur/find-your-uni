@@ -38,7 +38,6 @@ export default function MatchPage() {
 
   const runMatch = useMutation({
     mutationFn: async () => {
-      // Cycle through loading steps while waiting
       let step = 0;
       const interval = setInterval(() => {
         step = (step + 1) % LOADING_STEPS.length;
@@ -46,19 +45,29 @@ export default function MatchPage() {
       }, 3000);
       try {
         const res = await api.post("/match");
-        return res.data;
+        return res.data as MatchResultItem[];
       } finally {
         clearInterval(interval);
         setLoadingStep(0);
       }
     },
     onSuccess: (data) => {
-      toast.success(`Found ${data?.results?.length ?? 0} matched universities!`);
+      const count = Array.isArray(data) ? data.length : 0;
+      toast.success(count > 0 ? `Found ${count} matched universities!` : "No matches yet — try updating your profile.");
       qc.invalidateQueries({ queryKey: ["match-results"] });
       qc.invalidateQueries({ queryKey: ["match-results-preview"] });
       setHasRun(true);
     },
-    onError: () => toast.error("Matchmaking failed. Please try again."),
+    onError: (err: unknown) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detail = (err as any)?.response?.data?.detail as string | undefined;
+      if (detail?.toLowerCase().includes("student profile not found")) {
+        toast.error("Your student profile is incomplete. Please complete registration first.", { duration: 6000 });
+        setTimeout(() => { window.location.href = "/auth/register/student"; }, 3000);
+        return;
+      }
+      toast.error(detail ?? "Matchmaking failed. Please try again.");
+    },
   });
 
   const isEmpty = !resultsLoading && results.length === 0;

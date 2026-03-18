@@ -86,7 +86,7 @@ async def run_matchmaking(
     # Layer 1 — filter
     candidates = await filter_programs(
         client=client,
-        budget_usd=student["budget_usd_per_year"],
+        budget_usd=student.get("budget_usd_per_year") or 20000,
         countries=student.get("preferred_countries") or [],
         degree_level=student.get("preferred_degree") or "master",
         ielts=scores.get("ielts"),
