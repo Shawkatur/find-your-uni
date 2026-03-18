@@ -13,6 +13,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { GlassCard } from "@/components/layout/GlassCard";
 import Providers from "@/components/Providers";
 import { useAuth } from "@/hooks/useAuth";
+import { ShortlistButton } from "@/components/shortlist/ShortlistButton";
 
 function UniversitiesList() {
   const [search, setSearch] = useState("");
@@ -103,11 +104,14 @@ function UniversitiesList() {
                     <div className="w-12 h-12 bg-blue-600/10 rounded-xl flex items-center justify-center">
                       <Building2 size={20} className="text-blue-400" />
                     </div>
-                    {uni.ranking_qs && (
-                      <Badge variant="outline" className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10">
-                        <Star size={10} className="mr-1" /> QS #{uni.ranking_qs}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {uni.ranking_qs && (
+                        <Badge variant="outline" className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10">
+                          <Star size={10} className="mr-1" /> QS #{uni.ranking_qs}
+                        </Badge>
+                      )}
+                      <ShortlistButton universityId={uni.id} size="sm" />
+                    </div>
                   </div>
 
                   <h3 className="text-white font-semibold mb-1 line-clamp-2">{uni.name}</h3>

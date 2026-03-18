@@ -57,13 +57,14 @@ export interface University {
   country: string;
   city?: string;
   website?: string;
-  qs_rank?: number;
-  acceptance_rate?: number;
-  bd_acceptance_rate?: number;
-  annual_tuition_usd?: number;
-  ielts_min?: number;
-  toefl_min?: number;
-  gpa_min?: number;
+  ranking_qs?: number;
+  acceptance_rate_overall?: number;
+  acceptance_rate_bd?: number;
+  tuition_usd_per_year?: number;
+  min_ielts?: number;
+  min_toefl?: number;
+  min_gpa_percentage?: number;
+  max_scholarship_pct?: number;
   scholarships_available?: boolean;
   description?: string;
   logo_url?: string;
@@ -123,13 +124,10 @@ export interface Application {
 }
 
 export interface StatusHistoryEntry {
-  id: string;
-  application_id: string;
-  from_status?: AppStatus;
-  to_status: AppStatus;
+  status: AppStatus;
   note?: string;
   changed_by: string;
-  created_at: string;
+  changed_at: string;
 }
 
 // ─── Document ─────────────────────────────────────────────────────────────────

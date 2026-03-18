@@ -75,23 +75,6 @@ async def semantic_search(
     return res.data or []
 
 
-@router.get("/{university_id}", response_model=dict)
-async def get_university(
-    university_id: str,
-    client: AsyncClient = Depends(get_client),
-):
-    res = await (
-        client.table("universities")
-        .select("*, programs(*)")
-        .eq("id", university_id)
-        .single()
-        .execute()
-    )
-    if not res.data:
-        raise HTTPException(status_code=404, detail="University not found")
-    return res.data
-
-
 @router.get("/featured", response_model=list[dict])
 async def get_featured_universities(
     limit: int = Query(10, ge=1, le=50),
@@ -107,6 +90,23 @@ async def get_featured_universities(
         .execute()
     )
     return res.data or []
+
+
+@router.get("/{university_id}", response_model=dict)
+async def get_university(
+    university_id: str,
+    client: AsyncClient = Depends(get_client),
+):
+    res = await (
+        client.table("universities")
+        .select("*, programs(*)")
+        .eq("id", university_id)
+        .single()
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="University not found")
+    return res.data
 
 
 @router.get("/{university_id}/programs", response_model=list[dict])

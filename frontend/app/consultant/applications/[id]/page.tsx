@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MessageCircle, Clock, FileText, UserRoundCog } from "lucide-react";
+import { MessageCircle, Clock, FileText, UserRoundCog, Bookmark } from "lucide-react";
 import api from "@/lib/api";
 import type { Application, AppStatus } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -15,6 +15,36 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
 } from "@/components/ui/dialog";
+import Link from "next/link";
+
+function ShortlistSummaryCard({ studentId }: { studentId: string }) {
+  const { data: items = [] } = useQuery<{ id: string }[]>({
+    queryKey: ["student-shortlist", studentId],
+    queryFn: async () => {
+      const res = await api.get(`/students/${studentId}/shortlist`);
+      return res.data ?? [];
+    },
+  });
+
+  return (
+    <GlassCard>
+      <div className="flex items-center gap-2 mb-3">
+        <Bookmark size={15} className="text-blue-400" />
+        <h3 className="text-white font-semibold">Shortlist</h3>
+      </div>
+      <p className="text-slate-400 text-sm mb-3">
+        {items.length > 0
+          ? `${items.length} universit${items.length === 1 ? "y" : "ies"} saved`
+          : "No universities saved yet"}
+      </p>
+      <Link href={`/consultant/students/${studentId}/shortlist`}>
+        <Button variant="outline" size="sm" className="w-full border-white/10 text-slate-300 hover:bg-white/8">
+          {items.length > 0 ? "View Shortlist" : "Add Universities"}
+        </Button>
+      </Link>
+    </GlassCard>
+  );
+}
 
 const NEXT_STATUSES: Record<string, AppStatus[]> = {
   draft: ["submitted"],
@@ -154,15 +184,15 @@ export default function ConsultantApplicationDetailPage() {
               </div>
               <div className="space-y-4">
                 {app.status_history.map((entry, i) => (
-                  <div key={entry.id} className="flex gap-3">
+                  <div key={i} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div className={`w-3 h-3 rounded-full mt-1 ${i === 0 ? "bg-blue-500" : "bg-white/20"}`} />
                       {i < app.status_history!.length - 1 && <div className="w-px flex-1 bg-white/10 mt-1" />}
                     </div>
                     <div className="pb-4">
-                      <StatusBadge status={entry.to_status} />
+                      <StatusBadge status={entry.status} />
                       {entry.note && <p className="text-slate-400 text-xs mt-1">{entry.note}</p>}
-                      <p className="text-slate-500 text-xs mt-1">{new Date(entry.created_at).toLocaleString()}</p>
+                      <p className="text-slate-500 text-xs mt-1">{new Date(entry.changed_at).toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
@@ -221,6 +251,10 @@ export default function ConsultantApplicationDetailPage() {
             <div className="text-slate-400 text-xs">{app.program?.name}</div>
             <div className="text-slate-500 text-xs">{app.university?.country}</div>
           </GlassCard>
+
+          {app.student_id && (
+            <ShortlistSummaryCard studentId={app.student_id} />
+          )}
 
           {colleagues.length > 0 && (
             <GlassCard>

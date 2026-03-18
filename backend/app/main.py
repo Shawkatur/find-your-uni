@@ -13,7 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.config import get_settings
 from app.core.limiter import limiter
 from app.api import auth, match, universities, applications, consultants, documents
-from app.api import admin_routes, tracking, push_notifications, scholarships, deadlines, payments
+from app.api import admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist
 
 settings = get_settings()
 
@@ -90,6 +90,7 @@ app.include_router(push_notifications.router)
 app.include_router(scholarships.router)
 app.include_router(deadlines.router)
 app.include_router(payments.router)
+app.include_router(shortlist.router)
 
 
 # ─── Health ───────────────────────────────────────────────────────────────────

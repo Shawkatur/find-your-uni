@@ -9,6 +9,7 @@ import type { MatchResultItem } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { GlassCard } from "@/components/layout/GlassCard";
+import { ShortlistButton } from "@/components/shortlist/ShortlistButton";
 
 interface MatchResultCardProps {
   result: MatchResultItem;
@@ -130,15 +131,15 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
                   <Sparkles size={8} /> High Match
                 </span>
               )}
-              {result.university.qs_rank && (
+              {result.university.ranking_qs && (
                 <span className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
-                  <Star size={10} fill="currentColor" /> QS #{result.university.qs_rank}
+                  <Star size={10} fill="currentColor" /> QS #{result.university.ranking_qs}
                 </span>
               )}
-              {result.university.annual_tuition_usd && (
+              {result.university.tuition_usd_per_year && (
                 <span className="flex items-center gap-1 text-slate-400 text-xs font-medium">
                   <DollarSign size={10} />
-                  ${result.university.annual_tuition_usd.toLocaleString()}/yr
+                  ${result.university.tuition_usd_per_year.toLocaleString()}/yr
                 </span>
               )}
             </div>
@@ -199,6 +200,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
               <Zap size={13} className="mr-1" />
               {applyMutation.isPending ? "Creating..." : "Apply Now"}
             </Button>
+            <ShortlistButton universityId={result.university.id} size="sm" />
             <button
               onClick={() => setExpanded(!expanded)}
               className="flex items-center gap-1 text-slate-500 hover:text-indigo-400 text-xs transition-colors font-semibold"

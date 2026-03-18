@@ -12,6 +12,7 @@ import { GlassCard } from "@/components/layout/GlassCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import Providers from "@/components/Providers";
 import { useAuth } from "@/hooks/useAuth";
+import { ShortlistButton } from "@/components/shortlist/ShortlistButton";
 
 function UniversityDetailContent() {
   const { id } = useParams();
@@ -56,15 +57,18 @@ function UniversityDetailContent() {
           <div className="w-16 h-16 bg-blue-600/10 rounded-2xl flex items-center justify-center shrink-0">
             <Building2 size={28} className="text-blue-400" />
           </div>
-          <div>
-            <h1 className="text-xl sm:text-3xl font-bold text-white mb-2">{uni.name}</h1>
+          <div className="flex-1">
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <h1 className="text-xl sm:text-3xl font-bold text-white">{uni.name}</h1>
+              <ShortlistButton universityId={uni.id} />
+            </div>
             <div className="flex flex-wrap gap-2 items-center">
               <span className="flex items-center gap-1 text-slate-400 text-sm">
                 <MapPin size={14} /> {uni.city ? `${uni.city}, ` : ""}{uni.country}
               </span>
-              {uni.qs_rank && (
+              {uni.ranking_qs && (
                 <Badge variant="outline" className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10">
-                  <Star size={10} className="mr-1" /> QS Rank #{uni.qs_rank}
+                  <Star size={10} className="mr-1" /> QS Rank #{uni.ranking_qs}
                 </Badge>
               )}
               {uni.scholarships_available && (
@@ -77,50 +81,50 @@ function UniversityDetailContent() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-5 mb-8">
-          {uni.annual_tuition_usd && (
+          {uni.tuition_usd_per_year && (
             <GlassCard padding={false} className="p-5 text-center">
               <DollarSign size={20} className="text-blue-400 mx-auto mb-2" />
-              <div className="text-xl font-bold text-white">${uni.annual_tuition_usd.toLocaleString()}</div>
+              <div className="text-xl font-bold text-white">${uni.tuition_usd_per_year.toLocaleString()}</div>
               <div className="text-slate-400 text-xs mt-1">Annual Tuition (USD)</div>
             </GlassCard>
           )}
-          {uni.acceptance_rate && (
+          {uni.acceptance_rate_overall && (
             <GlassCard padding={false} className="p-5 text-center">
               <Star size={20} className="text-green-400 mx-auto mb-2" />
-              <div className="text-xl font-bold text-white">{uni.acceptance_rate}%</div>
+              <div className="text-xl font-bold text-white">{uni.acceptance_rate_overall}%</div>
               <div className="text-slate-400 text-xs mt-1">Acceptance Rate</div>
             </GlassCard>
           )}
-          {uni.bd_acceptance_rate && (
+          {uni.acceptance_rate_bd && (
             <GlassCard padding={false} className="p-5 text-center">
               <Globe size={20} className="text-purple-400 mx-auto mb-2" />
-              <div className="text-xl font-bold text-white">{uni.bd_acceptance_rate}%</div>
+              <div className="text-xl font-bold text-white">{uni.acceptance_rate_bd}%</div>
               <div className="text-slate-400 text-xs mt-1">BD Student Acceptance</div>
             </GlassCard>
           )}
         </div>
 
         {/* Requirements */}
-        {(uni.ielts_min || uni.toefl_min || uni.gpa_min) && (
+        {(uni.min_ielts || uni.min_toefl || uni.min_gpa_percentage) && (
           <GlassCard className="mb-8">
             <h2 className="text-lg font-semibold text-white mb-4">Minimum Requirements</h2>
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
-              {uni.ielts_min && (
+              {uni.min_ielts && (
                 <div>
                   <div className="text-slate-400 text-xs mb-1">IELTS</div>
-                  <div className="text-white font-semibold">{uni.ielts_min}+</div>
+                  <div className="text-white font-semibold">{uni.min_ielts}+</div>
                 </div>
               )}
-              {uni.toefl_min && (
+              {uni.min_toefl && (
                 <div>
                   <div className="text-slate-400 text-xs mb-1">TOEFL</div>
-                  <div className="text-white font-semibold">{uni.toefl_min}+</div>
+                  <div className="text-white font-semibold">{uni.min_toefl}+</div>
                 </div>
               )}
-              {uni.gpa_min && (
+              {uni.min_gpa_percentage && (
                 <div>
                   <div className="text-slate-400 text-xs mb-1">GPA</div>
-                  <div className="text-white font-semibold">{uni.gpa_min}+</div>
+                  <div className="text-white font-semibold">{uni.min_gpa_percentage}+</div>
                 </div>
               )}
             </div>

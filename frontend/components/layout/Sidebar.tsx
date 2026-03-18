@@ -17,6 +17,7 @@ import {
   GraduationCap,
   Inbox,
   Link2,
+  Bookmark,
 } from "lucide-react";
 
 interface NavItem {
@@ -31,6 +32,7 @@ const studentNav: NavItem[] = [
   { label: "Universities", href: "/universities", icon: Building2 },
   { label: "Applications", href: "/student/applications", icon: FileText },
   { label: "Documents", href: "/student/documents", icon: Upload },
+  { label: "Shortlist", href: "/student/shortlist", icon: Bookmark },
   { label: "Profile", href: "/student/profile", icon: User },
 ];
 
