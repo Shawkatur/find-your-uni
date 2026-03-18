@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Search, Building2, Star, DollarSign, Filter } from "lucide-react";
+import { Search, Building2, Star, DollarSign, Filter, LayoutDashboard } from "lucide-react";
 import api from "@/lib/api";
 import type { University } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { GlassCard } from "@/components/layout/GlassCard";
 import Providers from "@/components/Providers";
+import { useAuth } from "@/hooks/useAuth";
 
 function UniversitiesList() {
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("");
   const [page, setPage] = useState(1);
+  const { user, profile } = useAuth();
 
   const { data, isLoading } = useQuery({
     queryKey: ["universities", search, country, page],
@@ -37,12 +39,27 @@ function UniversitiesList() {
       {/* Header */}
       <div className="border-b border-white/8 bg-[#0F172A]/80 sticky top-0 z-30 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-slate-400 hover:text-white text-sm transition-colors">
-            ← Back to Home
-          </Link>
-          <Link href="/auth/login">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Sign In</Button>
-          </Link>
+          {user ? (
+            <Link
+              href={`/${profile?.role === "consultant" ? "consultant" : profile?.role === "admin" ? "admin" : "student"}/dashboard`}
+              className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-1.5"
+            >
+              <LayoutDashboard size={14} /> Back to Dashboard
+            </Link>
+          ) : (
+            <Link href="/" className="text-slate-400 hover:text-white text-sm transition-colors">
+              ← Back to Home
+            </Link>
+          )}
+          {user ? (
+            <span className="text-slate-400 text-sm font-medium">
+              {profile?.full_name ?? user.email?.split("@")[0]}
+            </span>
+          ) : (
+            <Link href="/auth/login">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Sign In</Button>
+            </Link>
+          )}
         </div>
       </div>
 

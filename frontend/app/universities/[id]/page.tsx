@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Building2, Star, DollarSign, Globe, MapPin, ArrowRight } from "lucide-react";
+import { Building2, Star, DollarSign, Globe, MapPin, ArrowRight, LayoutDashboard } from "lucide-react";
 import api from "@/lib/api";
 import type { University } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { GlassCard } from "@/components/layout/GlassCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import Providers from "@/components/Providers";
+import { useAuth } from "@/hooks/useAuth";
 
 function UniversityDetailContent() {
   const { id } = useParams();
+  const { user, profile } = useAuth();
 
   const { data: uni, isLoading } = useQuery<University>({
     queryKey: ["university", id],
@@ -28,14 +30,23 @@ function UniversityDetailContent() {
 
   return (
     <div className="min-h-screen bg-[#0F172A]">
-      <div className="border-b border-white/8">
+      <div className="border-b border-white/8 bg-[#0F172A]/80 sticky top-0 z-30 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/universities" className="text-slate-400 hover:text-white text-sm transition-colors">
             ← Back to Universities
           </Link>
-          <Link href="/auth/register/student">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Apply Now <ArrowRight size={14} className="ml-1" /></Button>
-          </Link>
+          {user ? (
+            <Link
+              href={`/${profile?.role === "consultant" ? "consultant" : profile?.role === "admin" ? "admin" : "student"}/dashboard`}
+              className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-1.5"
+            >
+              <LayoutDashboard size={14} /> Dashboard
+            </Link>
+          ) : (
+            <Link href="/auth/register/student">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Apply Now <ArrowRight size={14} className="ml-1" /></Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -155,11 +166,19 @@ function UniversityDetailContent() {
         {/* CTA */}
         <div className="text-center py-8">
           <p className="text-slate-400 mb-4">Ready to apply to {uni.name}?</p>
-          <Link href="/auth/register/student">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-              Create Account & Apply <ArrowRight size={16} className="ml-2" />
-            </Button>
-          </Link>
+          {user ? (
+            <Link href="/student/applications">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+                View My Applications <ArrowRight size={16} className="ml-2" />
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/auth/register/student">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+                Create Account & Apply <ArrowRight size={16} className="ml-2" />
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

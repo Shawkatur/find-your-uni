@@ -99,11 +99,21 @@ function StudentRegisterForm() {
       });
       if (authErr) throw authErr;
 
-      // Attach the new session token so the backend accepts the request
-      const session = authData.session;
-      const headers = session?.access_token
-        ? { Authorization: `Bearer ${session.access_token}` }
-        : {};
+      // If email confirmation is enabled Supabase returns session=null.
+      // Try signing in immediately to get a token for the backend call.
+      if (!authData.session) {
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+        if (signInErr || !signInData.session) {
+          // Email confirmation required — user must verify before backend profile is created.
+          toast.success("Account created! Check your email to confirm, then sign in to complete setup.");
+          router.push("/auth/login");
+          return;
+        }
+        // Session now persisted; the api interceptor will pick it up automatically.
+      }
 
       await api.post("/auth/student/register", {
         full_name: values.full_name,
@@ -125,7 +135,7 @@ function StudentRegisterForm() {
         preferred_countries: values.target_countries?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
         preferred_fields:    values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
         ref_code:            refCode,
-      }, { headers });
+      });
 
       toast.success("Account created! Welcome aboard.");
       router.push("/student/dashboard");
