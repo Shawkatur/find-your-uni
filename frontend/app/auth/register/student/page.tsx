@@ -148,6 +148,11 @@ function StudentRegisterForm() {
         return;
       }
       const msg = err instanceof Error ? err.message : "Registration failed";
+      // Supabase-specific: email provider disabled in dashboard
+      if (msg.toLowerCase().includes("email signups are disabled") || msg.toLowerCase().includes("signups not allowed")) {
+        toast.error("Email sign-up is currently disabled. Please contact support or try again later.");
+        return;
+      }
       toast.error(msg);
     } finally {
       setSubmitting(false);

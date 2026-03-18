@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload, CheckCircle2, Circle, Trash2, ExternalLink, Shield } from "lucide-react";
 import { toast } from "sonner";
-import axios from "axios";
 import api from "@/lib/api";
 import type { Document, DocType } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -44,18 +43,18 @@ export default function DocumentsPage() {
   const handleUpload = async (file: File) => {
     setUploading(true);
     try {
-      const { data } = await api.post("/documents/upload", {
-        doc_type: docType,
-        filename: file.name,
-        content_type: file.type,
-      });
-      await axios.put(data.upload_url, file, {
-        headers: { "Content-Type": file.type },
-      });
-      toast.success("Document uploaded!");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("doc_type", docType);
+
+      await api.post("/documents/upload", formData);
+      toast.success("Document uploaded successfully!");
       qc.invalidateQueries({ queryKey: ["student-documents"] });
-    } catch {
-      toast.error("Upload failed. Please try again.");
+    } catch (err: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detail = (err as any)?.response?.data?.detail;
+      const msg = typeof detail === "string" ? detail : "Upload failed. Please try again.";
+      toast.error(msg);
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";

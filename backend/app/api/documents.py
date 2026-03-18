@@ -1,14 +1,10 @@
 """
-POST /documents/upload     — generate pre-signed Cloudflare R2 upload URL
-GET  /documents            — list my documents
-DELETE /documents/{id}     — delete a document
+POST /documents/upload  — upload a document to Supabase Storage + record in DB
+GET  /documents         — list my documents (with signed download URLs)
+DELETE /documents/{id}  — delete a document
 """
 import uuid
-from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-import boto3
-from botocore.config import Config
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 
 from app.core.config import get_settings
 from app.core.security import get_current_user
@@ -18,69 +14,87 @@ from supabase import AsyncClient
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
+BUCKET = "documents"
+MAX_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
-class UploadRequest(BaseModel):
-    doc_type: str           # 'transcript' | 'passport' | 'ielts_cert' | etc.
-    filename: str
-    content_type: str       # e.g. 'application/pdf', 'image/jpeg'
-    application_id: str | None = None
-
-
-class UploadResponse(BaseModel):
-    upload_url: str         # pre-signed PUT URL (valid for 15 min)
-    document_id: str        # UUID for the document record
-    object_key: str         # R2 object key to store after upload confirms
+VALID_DOC_TYPES = {
+    "passport", "transcript", "sop", "lor", "cv",
+    "ielts_cert", "toefl_cert", "ielts", "toefl",
+    "gre", "gmat", "nid", "other",
+}
 
 
-def _get_r2_client():
-    s = get_settings()
-    return boto3.client(
-        "s3",
-        endpoint_url=f"https://{s.R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
-        aws_access_key_id=s.R2_ACCESS_KEY_ID,
-        aws_secret_access_key=s.R2_SECRET_ACCESS_KEY,
-        config=Config(signature_version="s3v4"),
-        region_name="auto",
-    )
+async def _ensure_bucket(client: AsyncClient) -> None:
+    """Create the Supabase Storage bucket if it doesn't exist (idempotent)."""
+    try:
+        await client.storage.create_bucket(
+            BUCKET,
+            options={"public": False, "fileSizeLimit": MAX_SIZE_BYTES},
+        )
+    except Exception:
+        pass  # bucket already exists
 
 
-@router.post("/upload", response_model=UploadResponse)
-async def generate_upload_url(
-    body: UploadRequest,
+async def _signed_url(client: AsyncClient, key: str, settings) -> str:
+    """Return a 1-hour signed download URL; fall back to public URL on error."""
+    try:
+        res = await client.storage.from_(BUCKET).create_signed_url(key, 3600)
+        return res["signedURL"]
+    except Exception:
+        return f"{settings.SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{key}"
+
+
+@router.post("/upload", status_code=201)
+async def upload_document(
+    file: UploadFile = File(...),
+    doc_type: str = Form(...),
+    application_id: str | None = Form(None),
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
     settings = get_settings()
+
     student = await get_student_by_user_id(client, user["sub"])
     if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
+        raise HTTPException(status_code=404, detail="Student profile not found. Please complete registration first.")
 
+    if doc_type not in VALID_DOC_TYPES:
+        raise HTTPException(status_code=422, detail=f"Invalid doc_type: {doc_type!r}")
+
+    content = await file.read()
+    if len(content) > MAX_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large (max 10 MB)")
+
+    original_name = file.filename or "document"
+    ext = original_name.rsplit(".", 1)[-1].lower() if "." in original_name else "bin"
     doc_id = str(uuid.uuid4())
-    ext    = body.filename.rsplit(".", 1)[-1].lower() if "." in body.filename else "bin"
-    key    = f"documents/{student['id']}/{doc_id}.{ext}"
+    key = f"{student['id']}/{doc_id}.{ext}"
+    content_type = file.content_type or "application/octet-stream"
 
-    r2 = _get_r2_client()
-    upload_url = r2.generate_presigned_url(
-        ClientMethod="put_object",
-        Params={
-            "Bucket":      settings.R2_BUCKET_NAME,
-            "Key":         key,
-            "ContentType": body.content_type,
-        },
-        ExpiresIn=900,  # 15 minutes
-    )
+    await _ensure_bucket(client)
+    try:
+        await client.storage.from_(BUCKET).upload(
+            key, content, {"contentType": content_type}
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Storage upload failed: {exc}")
 
-    # Create document record immediately (storage_url = object key)
-    doc_row = {
+    url = await _signed_url(client, key, settings)
+
+    await client.table("documents").insert({
         "id":             doc_id,
         "student_id":     student["id"],
-        "doc_type":       body.doc_type,
+        "doc_type":       doc_type,
         "storage_url":    key,
-        "application_id": body.application_id,
-    }
-    await client.table("documents").insert(doc_row).execute()
+        "application_id": application_id,
+    }).execute()
 
-    return UploadResponse(upload_url=upload_url, document_id=doc_id, object_key=key)
+    return {
+        "document_id":  doc_id,
+        "storage_url":  key,
+        "url":          url,
+        "filename":     original_name,
+    }
 
 
 @router.get("", response_model=list[dict])
@@ -89,6 +103,7 @@ async def list_documents(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
+    settings = get_settings()
     student = await get_student_by_user_id(client, user["sub"])
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
@@ -98,12 +113,11 @@ async def list_documents(
         query = query.eq("application_id", application_id)
 
     res = await query.order("uploaded_at", desc=True).execute()
-
-    # Append public URL for each document
-    settings = get_settings()
     docs = res.data or []
+
     for doc in docs:
-        doc["public_url"] = f"{settings.R2_PUBLIC_URL}/{doc['storage_url']}"
+        doc["url"]      = await _signed_url(client, doc["storage_url"], settings)
+        doc["filename"] = doc["storage_url"].split("/")[-1]
 
     return docs
 
@@ -118,20 +132,20 @@ async def delete_document(
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
 
-    # Verify ownership
-    res = await client.table("documents").select("id, storage_url").eq("id", doc_id).eq("student_id", student["id"]).single().execute()
+    res = (
+        await client.table("documents")
+        .select("id, storage_url")
+        .eq("id", doc_id)
+        .eq("student_id", student["id"])
+        .single()
+        .execute()
+    )
     if not res.data:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    doc = res.data
-    settings = get_settings()
-
-    # Delete from R2
     try:
-        r2 = _get_r2_client()
-        r2.delete_object(Bucket=settings.R2_BUCKET_NAME, Key=doc["storage_url"])
+        await client.storage.from_(BUCKET).remove([res.data["storage_url"]])
     except Exception as exc:
-        print(f"[documents.py] R2 delete failed: {exc}")  # non-fatal
+        print(f"[documents] Storage delete failed (non-fatal): {exc}")
 
-    # Delete DB record
     await client.table("documents").delete().eq("id", doc_id).execute()
