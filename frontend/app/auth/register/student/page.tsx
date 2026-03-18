@@ -300,7 +300,7 @@ function StudentRegisterForm() {
 
         <p className="text-center text-slate-500 text-sm mt-4">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-blue-400 hover:text-blue-300">Sign in</Link>
+          <Link href="/auth/login/student" className="text-blue-400 hover:text-blue-300">Sign in</Link>
         </p>
       </div>
     </div>

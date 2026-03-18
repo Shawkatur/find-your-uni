@@ -1,52 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { GraduationCap, Eye, EyeOff } from "lucide-react";
-import { createClient } from "@/lib/supabase";
+import { GraduationCap, Briefcase, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-const schema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type FormData = z.infer<typeof schema>;
-
-export default function LoginPage() {
-  const router = useRouter();
-  const supabase = createClient();
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
-
-  const onSubmit = async (data: FormData) => {
-    setLoading(true);
-    const { data: authData, error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-    setLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    const role = authData.user?.app_metadata?.role ?? authData.user?.user_metadata?.role ?? "student";
-    router.push(`/${role}/dashboard`);
-  };
-
+export default function LoginPickerPage() {
   return (
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
       {/* Background glow */}
@@ -54,9 +12,9 @@ export default function LoginPage() {
         <div className="w-96 h-96 bg-blue-600/8 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-lg">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-10">
           <div className="relative mb-5">
             <div className="glow-blue" />
             <div className="relative w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30">
@@ -64,69 +22,45 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-white">Welcome back</h1>
-          <p className="text-slate-400 mt-1 font-normal">Sign in to your account</p>
+          <p className="text-slate-400 mt-1">Choose how you&apos;d like to sign in</p>
         </div>
 
-        {/* Card */}
-        <div className="glass-card p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <Label className="text-slate-300 mb-2 block font-semibold text-sm">Email</Label>
-              <Input
-                {...register("email")}
-                type="email"
-                placeholder="you@example.com"
-              />
-              {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email.message}</p>}
+        {/* Role cards */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          {/* Student */}
+          <Link href="/auth/login/student" className="group glass-card p-6 flex flex-col gap-4 hover:border-blue-500/50 transition-all cursor-pointer">
+            <div className="w-12 h-12 bg-blue-600/15 border border-blue-500/25 rounded-xl flex items-center justify-center group-hover:bg-blue-600/25 transition-colors">
+              <GraduationCap size={24} className="text-blue-400" />
             </div>
-
-            <div>
-              <Label className="text-slate-300 mb-2 block font-semibold text-sm">Password</Label>
-              <div className="relative">
-                <Input
-                  {...register("password")}
-                  type={showPw ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1.5">{errors.password.message}</p>}
+            <div className="flex-1">
+              <h2 className="text-white font-bold text-lg">Student</h2>
+              <p className="text-slate-400 text-sm mt-1 leading-relaxed">
+                Access your university matches, applications, and documents.
+              </p>
             </div>
+            <div className="flex items-center text-blue-400 text-sm font-semibold group-hover:gap-2 transition-all gap-1">
+              Sign in as Student <ChevronRight size={16} />
+            </div>
+          </Link>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              size="lg"
-              className="w-full mt-2"
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-white/8 text-center space-y-2">
-            <p className="text-slate-400 text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/auth/register/student" className="text-blue-400 hover:text-blue-300 font-semibold">
-                Register as Student
-              </Link>
-            </p>
-            <p className="text-slate-400 text-sm">
-              Are you a consultant?{" "}
-              <Link href="/auth/register/consultant" className="text-blue-400 hover:text-blue-300 font-semibold">
-                Register here
-              </Link>
-            </p>
-          </div>
+          {/* Consultant */}
+          <Link href="/auth/login/consultant" className="group glass-card p-6 flex flex-col gap-4 hover:border-indigo-500/50 transition-all cursor-pointer">
+            <div className="w-12 h-12 bg-indigo-600/15 border border-indigo-500/25 rounded-xl flex items-center justify-center group-hover:bg-indigo-600/25 transition-colors">
+              <Briefcase size={24} className="text-indigo-400" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-white font-bold text-lg">Consultant</h2>
+              <p className="text-slate-400 text-sm mt-1 leading-relaxed">
+                Manage your agency, student pipeline, and application tracking.
+              </p>
+            </div>
+            <div className="flex items-center text-indigo-400 text-sm font-semibold group-hover:gap-2 transition-all gap-1">
+              Sign in as Consultant <ChevronRight size={16} />
+            </div>
+          </Link>
         </div>
 
-        <p className="text-center text-slate-500 text-sm mt-6">
+        <p className="text-center text-slate-500 text-sm mt-8">
           <Link href="/" className="hover:text-slate-300 transition-colors">← Back to home</Link>
         </p>
       </div>
