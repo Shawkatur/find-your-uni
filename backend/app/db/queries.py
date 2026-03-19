@@ -2,6 +2,7 @@
 Raw SQL helpers executed via the Supabase PostgREST client or direct psycopg2.
 For complex matchmaking queries we build raw SQL rather than chaining ORM calls.
 """
+from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 from supabase import AsyncClient

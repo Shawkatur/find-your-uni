@@ -3,6 +3,7 @@ POST /documents/upload  — upload a document to Supabase Storage + record in DB
 GET  /documents         — list my documents (with signed download URLs)
 DELETE /documents/{id}  — delete a document
 """
+from __future__ import annotations
 import asyncio
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form

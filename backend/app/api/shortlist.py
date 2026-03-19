@@ -12,6 +12,7 @@ Consultant endpoints (JWT required, agency-scoped):
   POST   /students/{student_id}/shortlist                    — add for student
   DELETE /students/{student_id}/shortlist/{university_id}    — remove for student
 """
+from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel

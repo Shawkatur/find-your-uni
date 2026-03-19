@@ -5,6 +5,7 @@ POST /universities          — create (service role / admin only)
 PATCH /universities/{id}    — update
 GET  /universities/semantic — semantic vector search via pgvector
 """
+from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient
 

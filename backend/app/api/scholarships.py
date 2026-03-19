@@ -4,6 +4,7 @@ GET  /scholarships/{id}         — scholarship detail
 POST /scholarships/{id}/save    — bookmark (student auth)
 DELETE /scholarships/{id}/save  — remove bookmark
 """
+from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient
 

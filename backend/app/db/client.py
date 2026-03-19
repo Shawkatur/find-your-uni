@@ -4,6 +4,7 @@ Always use the service-role key on the backend so RLS bypasses work for
 admin operations; individual RLS enforcement happens via Postgres policies
 checked against the JWT sub (user_id) in SQL filters.
 """
+from __future__ import annotations
 import asyncio
 from functools import lru_cache
 from supabase import AsyncClient, acreate_client

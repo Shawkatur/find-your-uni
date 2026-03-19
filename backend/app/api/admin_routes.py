@@ -3,6 +3,7 @@ Admin-only API routes. All endpoints require:
   1. JWT with role=admin  (via require_role("admin"))
   2. X-Admin-Secret header matching ADMIN_SECRET env var (via require_admin_secret)
 """
+from __future__ import annotations
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient

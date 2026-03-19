@@ -6,6 +6,7 @@ POST /agencies                 — create agency
 POST /reviews                  — student submits agency review
 GET  /agencies/{id}/reviews    — paginated reviews for an agency
 """
+from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient
 
