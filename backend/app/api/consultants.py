@@ -12,7 +12,7 @@ from supabase import AsyncClient
 from app.core.security import get_current_user, require_role
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
-from app.models.application import ReviewCreate, ReviewOut, AgencyOut, ConsultantOut
+from app.models.application import ReviewCreate, ReviewOut, AgencyOut, AgencyCreate, ConsultantOut
 
 router = APIRouter(tags=["consultants"])
 
@@ -173,11 +173,11 @@ async def list_agencies(
 
 @router.post("/agencies", response_model=AgencyOut, status_code=201)
 async def create_agency(
-    body: dict,
+    body: AgencyCreate,
     user: dict = Depends(require_role("admin")),
     client: AsyncClient = Depends(get_client),
 ):
-    res = await client.table("agencies").insert(body).execute()
+    res = await client.table("agencies").insert(body.model_dump(exclude_none=True)).execute()
     return res.data[0]
 
 
@@ -216,10 +216,19 @@ async def submit_review(
         "rating":        body.rating,
         "comment":       body.comment,
     }
-    try:
-        res = await client.table("reviews").insert(row).execute()
-    except Exception:
+    # Check for existing review before insert
+    existing = await (
+        client.table("reviews")
+        .select("id")
+        .eq("student_id", student["id"])
+        .eq("agency_id", body.agency_id)
+        .limit(1)
+        .execute()
+    )
+    if existing.data:
         raise HTTPException(status_code=409, detail="You have already reviewed this agency")
+
+    res = await client.table("reviews").insert(row).execute()
 
     return res.data[0]
 

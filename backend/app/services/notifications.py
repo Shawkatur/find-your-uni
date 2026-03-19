@@ -7,6 +7,7 @@ Notification helpers:
 from __future__ import annotations
 import urllib.parse
 from supabase import AsyncClient
+from app.core.logger import logger
 from app.services.push_service import send_push, get_student_tokens
 
 
@@ -36,7 +37,7 @@ async def notify_status_change(
             },
         )
     except Exception as exc:
-        print(f"[notifications] Realtime broadcast failed: {exc}")
+        logger.error("Realtime broadcast failed for application %s: %s", application_id, exc)
     finally:
         await client.remove_channel(channel)
 
@@ -73,7 +74,7 @@ async def notify_status_change(
                     data={"application_id": application_id, "status": new_status},
                 )
         except Exception as exc:
-            print(f"[notifications] Push notification failed: {exc}")
+            logger.error("Push notification failed for student %s: %s", student_id, exc)
 
 
 def whatsapp_link(phone: str, message: str) -> str:

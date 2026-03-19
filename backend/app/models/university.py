@@ -60,6 +60,25 @@ class UniversityCreate(BaseModel):
     data_source: str = "manual"
 
 
+class UniversityUpdate(BaseModel):
+    name: str | None = Field(None, min_length=2)
+    country: str | None = Field(None, min_length=2, max_length=2)
+    city: str | None = None
+    ranking_qs: int | None = None
+    ranking_the: int | None = None
+    tuition_usd_per_year: int | None = Field(None, ge=0)
+    acceptance_rate_overall: float | None = Field(None, ge=0, le=100)
+    acceptance_rate_bd: float | None = Field(None, ge=0, le=100)
+    min_ielts: float | None = Field(None, ge=0, le=9)
+    min_toefl: int | None = None
+    min_gpa_percentage: int | None = Field(None, ge=0, le=100)
+    scholarships_available: bool | None = None
+    max_scholarship_pct: int | None = Field(None, ge=0, le=100)
+    website: str | None = None
+    description: str | None = None
+    logo_url: str | None = None
+
+
 class UniversityFilter(BaseModel):
     country: str | None = None
     degree_level: DegreeLevel | None = None

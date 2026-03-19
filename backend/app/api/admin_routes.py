@@ -30,8 +30,9 @@ async def _audit(client: AsyncClient, admin_user_id: str, action: str, resource_
             "old_value": old_value,
             "new_value": new_value,
         }).execute()
-    except Exception:
-        pass  # Audit failure must not block the primary operation
+    except Exception as exc:
+        from app.core.logger import logger
+        logger.error("Audit log insert failed (action=%s, resource=%s/%s): %s", action, resource_type, resource_id, exc)
 
 
 # ─── Stats ────────────────────────────────────────────────────────────────────
@@ -277,7 +278,8 @@ async def list_students(
         count="exact",
     )
     if search:
-        q = q.or_(f"full_name.ilike.%{search}%,phone.ilike.%{search}%")
+        safe = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        q = q.or_(f"full_name.ilike.%{safe}%,phone.ilike.%{safe}%")
     if onboarding_completed is not None:
         q = q.eq("onboarding_completed", onboarding_completed)
     res = await q.order("created_at", desc=True).range(offset, offset + page_size - 1).execute()

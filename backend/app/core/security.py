@@ -3,6 +3,7 @@ JWT verification via Supabase-issued tokens.
 Set BYPASS_AUTH=true in env to skip verification during testing.
 """
 from typing import Annotated, Optional
+import hmac
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -79,8 +80,29 @@ async def require_admin_secret(request: Request) -> None:
     """
     settings = get_settings()
     secret = settings.ADMIN_SECRET
-    if secret and request.headers.get("X-Admin-Secret") != secret:
+    provided = request.headers.get("X-Admin-Secret", "")
+    if secret and not hmac.compare_digest(provided, secret):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+
+def get_current_student_dep():
+    """
+    Returns a FastAPI dependency that fetches the student profile for the current user.
+    Raises 404 if student profile not found.
+    """
+    from app.db.client import get_client
+
+    async def _dep(
+        user: Annotated[dict, Depends(get_current_user)],
+        client: AsyncClient = Depends(get_client),
+    ) -> dict:
+        from app.db.queries import get_student_by_user_id
+        student = await get_student_by_user_id(client, user["sub"])
+        if not student:
+            raise HTTPException(status_code=404, detail="Student profile not found")
+        return student
+
+    return _dep
 
 
 async def get_consultant_profile(

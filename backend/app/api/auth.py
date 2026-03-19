@@ -78,9 +78,9 @@ async def _create_lead_application(client: AsyncClient, student_id: str, ref_cod
 
     try:
         await client.table("applications").insert(lead).execute()
-    except Exception:
-        # Non-fatal — student profile already created
-        pass
+    except Exception as exc:
+        from app.core.logger import logger
+        logger.error("Failed to create lead application for student %s (ref_code=%s): %s", student_id, ref_code, exc)
 
 
 @router.post("/consultant/register", response_model=ConsultantOut, status_code=201)

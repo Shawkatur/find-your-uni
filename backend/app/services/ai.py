@@ -8,6 +8,7 @@ import json
 from openai import AsyncOpenAI
 
 from app.core.config import get_settings
+from app.core.logger import logger
 from app.models.university import MatchResultItem
 
 _client: AsyncOpenAI | None = None
@@ -82,7 +83,7 @@ async def generate_match_summaries(
             summaries.append("")
         return summaries[: len(matches)]
     except Exception as exc:
-        print(f"[ai.py] generate_match_summaries failed: {exc}")
+        logger.error("generate_match_summaries failed: %s", exc)
         return [""] * len(matches)
 
 

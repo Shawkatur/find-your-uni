@@ -5,6 +5,7 @@ No FCM/APNs credentials needed — Expo handles certificates on its servers.
 """
 from __future__ import annotations
 import httpx
+from app.core.logger import logger
 
 EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
 
@@ -47,7 +48,7 @@ async def send_push(
                 },
             )
     except Exception as exc:
-        print(f"[push_service] Failed to send push: {exc}")
+        logger.error("Failed to send push: %s", exc)
 
 
 async def get_student_tokens(client, student_id: str) -> list[str]:
@@ -61,5 +62,5 @@ async def get_student_tokens(client, student_id: str) -> list[str]:
         )
         return [row["token"] for row in (res.data or [])]
     except Exception as exc:
-        print(f"[push_service] Failed to fetch tokens: {exc}")
+        logger.error("Failed to fetch push tokens for student %s: %s", student_id, exc)
         return []

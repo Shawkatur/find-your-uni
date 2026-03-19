@@ -3,10 +3,12 @@ POST /documents/upload  — upload a document to Supabase Storage + record in DB
 GET  /documents         — list my documents (with signed download URLs)
 DELETE /documents/{id}  — delete a document
 """
+import asyncio
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 
 from app.core.config import get_settings
+from app.core.logger import logger
 from app.core.security import get_current_user
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
@@ -61,9 +63,18 @@ async def upload_document(
     if doc_type not in VALID_DOC_TYPES:
         raise HTTPException(status_code=422, detail=f"Invalid doc_type: {doc_type!r}")
 
-    content = await file.read()
-    if len(content) > MAX_SIZE_BYTES:
-        raise HTTPException(status_code=413, detail="File too large (max 10 MB)")
+    # Read in chunks to avoid buffering oversized files entirely into memory
+    chunks = []
+    total = 0
+    while True:
+        chunk = await file.read(1024 * 256)  # 256 KB chunks
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_SIZE_BYTES:
+            raise HTTPException(status_code=413, detail="File too large (max 10 MB)")
+        chunks.append(chunk)
+    content = b"".join(chunks)
 
     original_name = file.filename or "document"
     ext = original_name.rsplit(".", 1)[-1].lower() if "." in original_name else "bin"
@@ -115,8 +126,12 @@ async def list_documents(
     res = await query.order("uploaded_at", desc=True).execute()
     docs = res.data or []
 
-    for doc in docs:
-        doc["url"]      = await _signed_url(client, doc["storage_url"], settings)
+    # Generate signed URLs in parallel instead of sequentially (N+1 fix)
+    urls = await asyncio.gather(
+        *[_signed_url(client, doc["storage_url"], settings) for doc in docs]
+    )
+    for doc, url in zip(docs, urls):
+        doc["url"] = url
         doc["filename"] = doc["storage_url"].split("/")[-1]
 
     return docs
@@ -146,6 +161,6 @@ async def delete_document(
     try:
         await client.storage.from_(BUCKET).remove([res.data["storage_url"]])
     except Exception as exc:
-        print(f"[documents] Storage delete failed (non-fatal): {exc}")
+        logger.error("Storage delete failed (non-fatal) for doc %s: %s", doc_id, exc)
 
     await client.table("documents").delete().eq("id", doc_id).execute()

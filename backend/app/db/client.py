@@ -4,23 +4,27 @@ Always use the service-role key on the backend so RLS bypasses work for
 admin operations; individual RLS enforcement happens via Postgres policies
 checked against the JWT sub (user_id) in SQL filters.
 """
+import asyncio
 from functools import lru_cache
 from supabase import AsyncClient, acreate_client
 
 from app.core.config import get_settings
 
 _client: AsyncClient | None = None
+_client_lock = asyncio.Lock()
 
 
 async def get_client() -> AsyncClient:
     """Return (and lazily initialise) the global Supabase async client."""
     global _client
     if _client is None:
-        settings = get_settings()
-        _client = await acreate_client(
-            settings.SUPABASE_URL,
-            settings.SUPABASE_SERVICE_ROLE_KEY,
-        )
+        async with _client_lock:
+            if _client is None:
+                settings = get_settings()
+                _client = await acreate_client(
+                    settings.SUPABASE_URL,
+                    settings.SUPABASE_SERVICE_ROLE_KEY,
+                )
     return _client
 
 

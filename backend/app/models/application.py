@@ -135,6 +135,14 @@ class MatchSettingsUpdate(BaseModel):
     budget_buffer_pct: int | None = Field(None, ge=0, le=100)
 
 
+class AgencyCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=200)
+    license_no: str | None = None
+    address: str | None = None
+    city: str | None = None
+    website: str | None = None
+
+
 class AdminAuditLog(BaseModel):
     id: str
     admin_user_id: str

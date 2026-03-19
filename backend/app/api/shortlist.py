@@ -37,18 +37,18 @@ class ShortlistAdd(BaseModel):
 # ─── helpers ──────────────────────────────────────────────────────────────────
 
 async def _get_student_id(user: dict, client: AsyncClient) -> str:
-    res = await client.table("students").select("id").eq("user_id", user["sub"]).single().execute()
+    res = await client.table("students").select("id").eq("user_id", user["sub"]).limit(1).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Student profile not found")
-    return res.data["id"]
+    return res.data[0]["id"]
 
 
 async def _get_consultant_student_ids(user: dict, client: AsyncClient) -> list[str]:
     """Return student_ids that belong to the same agency as the caller consultant."""
-    c_res = await client.table("consultants").select("agency_id").eq("user_id", user["sub"]).single().execute()
+    c_res = await client.table("consultants").select("agency_id").eq("user_id", user["sub"]).limit(1).execute()
     if not c_res.data:
         raise HTTPException(status_code=404, detail="Consultant profile not found")
-    agency_id = c_res.data["agency_id"]
+    agency_id = c_res.data[0]["agency_id"]
 
     a_res = await (
         client.table("applications")
@@ -115,21 +115,27 @@ async def add_to_shortlist(
     client: AsyncClient = Depends(get_client),
 ):
     student_id = await _get_student_id(user, client)
-    try:
-        res = await (
-            client.table("student_university_shortlist")
-            .insert({
-                "student_id": student_id,
-                "university_id": body.university_id,
-                "added_by_role": "student",
-                "note": body.note,
-            })
-            .execute()
-        )
-    except Exception as exc:
-        if "duplicate" in str(exc).lower() or "unique" in str(exc).lower():
-            raise HTTPException(status_code=409, detail="Already in shortlist")
-        raise
+    # Check if already shortlisted
+    existing = await (
+        client.table("student_university_shortlist")
+        .select("id")
+        .eq("student_id", student_id)
+        .eq("university_id", body.university_id)
+        .limit(1)
+        .execute()
+    )
+    if existing.data:
+        raise HTTPException(status_code=409, detail="Already in shortlist")
+    res = await (
+        client.table("student_university_shortlist")
+        .insert({
+            "student_id": student_id,
+            "university_id": body.university_id,
+            "added_by_role": "student",
+            "note": body.note,
+        })
+        .execute()
+    )
     return res.data[0]
 
 
@@ -173,21 +179,27 @@ async def consultant_add_shortlist(
     allowed = await _get_consultant_student_ids(user, client)
     if student_id not in allowed:
         raise HTTPException(status_code=403, detail="Student not in your agency")
-    try:
-        res = await (
-            client.table("student_university_shortlist")
-            .insert({
-                "student_id": student_id,
-                "university_id": body.university_id,
-                "added_by_role": "consultant",
-                "note": body.note,
-            })
-            .execute()
-        )
-    except Exception as exc:
-        if "duplicate" in str(exc).lower() or "unique" in str(exc).lower():
-            raise HTTPException(status_code=409, detail="Already in shortlist")
-        raise
+    # Check if already shortlisted
+    existing = await (
+        client.table("student_university_shortlist")
+        .select("id")
+        .eq("student_id", student_id)
+        .eq("university_id", body.university_id)
+        .limit(1)
+        .execute()
+    )
+    if existing.data:
+        raise HTTPException(status_code=409, detail="Already in shortlist")
+    res = await (
+        client.table("student_university_shortlist")
+        .insert({
+            "student_id": student_id,
+            "university_id": body.university_id,
+            "added_by_role": "consultant",
+            "note": body.note,
+        })
+        .execute()
+    )
     return res.data[0]
 
 

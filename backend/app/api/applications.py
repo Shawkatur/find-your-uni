@@ -25,7 +25,37 @@ async def create_application(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
+    # Always use the authenticated student's ID (prevent IDOR)
+    student = await get_student_by_user_id(client, user["sub"])
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+    student_id = student["id"]
+
+    if body.program_id:
+        # Prevent duplicate applications for the same student + program
+        dup = await (
+            client.table("applications")
+            .select("id")
+            .eq("student_id", student_id)
+            .eq("program_id", body.program_id)
+            .limit(1)
+            .execute()
+        )
+        if dup.data:
+            raise HTTPException(status_code=409, detail="An application for this program already exists")
+    else:
+        # Prevent duplicate lead applications for the same student + agency
+        dup_filter = client.table("applications").select("id").eq("student_id", student_id).eq("status", "lead")
+        if body.agency_id:
+            dup_filter = dup_filter.eq("agency_id", body.agency_id)
+        else:
+            dup_filter = dup_filter.is_("agency_id", "null")
+        dup = await dup_filter.limit(1).execute()
+        if dup.data:
+            raise HTTPException(status_code=409, detail="A lead application already exists")
+
     row = body.model_dump()
+    row["student_id"] = student_id  # enforce authenticated student
     row["status_history"] = [{
         "status":     "lead",
         "changed_by": user["sub"],

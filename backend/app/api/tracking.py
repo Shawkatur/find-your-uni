@@ -100,14 +100,12 @@ async def intake_info(
 
     link = res.data[0]
 
-    # Increment clicks (fire-and-forget — ignore errors)
+    # Increment clicks atomically (fire-and-forget — ignore errors)
     try:
-        await (
-            client.table("tracking_links")
-            .update({"clicks": link["clicks"] + 1})
-            .eq("id", link["id"])
-            .execute()
-        )
+        await client.rpc(
+            "increment_tracking_clicks",
+            {"link_id": link["id"]},
+        ).execute()
     except Exception:
         pass
 

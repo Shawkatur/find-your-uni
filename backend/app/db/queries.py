@@ -74,6 +74,9 @@ async def filter_programs(
     max_budget = int(budget_usd * (1 + budget_buffer))
     countries = _normalize_countries(countries)
 
+    if not countries:
+        return []
+
     query = (
         client.table("programs")
         .select(
@@ -86,9 +89,6 @@ async def filter_programs(
         .eq("degree_level", degree_level)
         .in_("universities.country", countries)
     )
-
-    if not countries:
-        return []
 
     if fields:
         query = query.in_("field", fields)
@@ -137,4 +137,15 @@ async def upsert_match_cache(
 
 async def get_match_cache(client: AsyncClient, student_id: str) -> dict | None:
     res = await client.table("match_cache").select("*").eq("student_id", student_id).limit(1).execute()
-    return res.data[0] if res.data else None
+    if not res.data:
+        return None
+    cache = res.data[0]
+    # Check TTL — expire stale results
+    computed_at = cache.get("computed_at")
+    if computed_at:
+        from app.core.config import get_settings
+        ttl_hours = get_settings().MATCH_CACHE_TTL_HOURS
+        computed = datetime.fromisoformat(computed_at.replace("Z", "+00:00"))
+        if (datetime.now(timezone.utc) - computed).total_seconds() > ttl_hours * 3600:
+            return None
+    return cache

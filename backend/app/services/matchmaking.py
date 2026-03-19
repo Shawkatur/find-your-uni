@@ -52,7 +52,8 @@ def _score_program(row: dict, budget: int, weights: dict) -> tuple[float, dict]:
         uni.get("scholarships_available", False),
         uni.get("max_scholarship_pct"),
     )
-    bd_acc = (uni.get("acceptance_rate_bd") or 50.0) / 100.0  # default 50% if unknown
+    raw_bd = uni.get("acceptance_rate_bd")
+    bd_acc = (raw_bd if raw_bd is not None else 50.0) / 100.0  # default 50% if unknown
 
     total = (
         ranking_score * weights["weight_ranking"]
@@ -99,9 +100,10 @@ async def run_matchmaking(
         return []
 
     # Layer 2 — score + sort
+    budget = student.get("budget_usd_per_year") or 20000
     scored: list[tuple[float, dict, dict]] = []
     for row in candidates:
-        score, breakdown = _score_program(row, student["budget_usd_per_year"], settings)
+        score, breakdown = _score_program(row, budget, settings)
         scored.append((score, breakdown, row))
 
     scored.sort(key=lambda x: x[0], reverse=True)

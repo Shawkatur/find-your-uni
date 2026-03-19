@@ -12,6 +12,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from app.core.config import get_settings
 from app.core.limiter import limiter
+from app.core.logger import logger
 from app.api import auth, match, universities, applications, consultants, documents
 from app.api import admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist
 
@@ -27,9 +28,9 @@ async def _sync_scorecard():
         import importlib
         sync_mod = importlib.import_module("scripts.import_us_scorecard")
         await sync_mod.run_sync(limit=1000)
-        print("[scheduler] Scorecard sync completed")
+        logger.info("Scorecard sync completed")
     except Exception as exc:
-        print(f"[scheduler] Scorecard sync failed: {exc}")
+        logger.error("Scorecard sync failed: %s", exc)
 
 
 @asynccontextmanager
@@ -46,7 +47,7 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
     scheduler.start()
-    print(f"[startup] APScheduler started (scorecard sync: {settings.SCORECARD_SYNC_CRON})")
+    logger.info("APScheduler started (scorecard sync: %s)", settings.SCORECARD_SYNC_CRON)
     yield
     # Shutdown
     scheduler.shutdown(wait=False)
@@ -102,7 +103,8 @@ async def health():
 # ─── Global error handler ─────────────────────────────────────────────────────
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.error("Unhandled exception on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error", "type": type(exc).__name__},
+        content={"detail": "Internal server error"},
     )

@@ -10,7 +10,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
-from app.models.university import UniversityCreate
+from app.models.university import UniversityCreate, UniversityUpdate
 from app.services.ai import semantic_search_query
 
 router = APIRouter(prefix="/universities", tags=["universities"])
@@ -41,7 +41,8 @@ async def list_universities(
     if scholarships_only:
         query = query.eq("scholarships_available", True)
     if search:
-        query = query.ilike("name", f"%{search}%")
+        safe = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        query = query.ilike("name", f"%{safe}%")
 
     if degree_level:
         query = query.eq("programs.degree_level", degree_level)
@@ -153,7 +154,7 @@ async def create_university(
 @router.patch("/{university_id}", response_model=dict)
 async def update_university(
     university_id: str,
-    body: dict,
+    body: UniversityUpdate,
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
@@ -161,9 +162,13 @@ async def update_university(
     if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
+    update_data = body.model_dump(exclude_none=True)
+    if not update_data:
+        raise HTTPException(status_code=422, detail="No valid fields to update")
+
     res = await (
         client.table("universities")
-        .update(body)
+        .update(update_data)
         .eq("id", university_id)
         .execute()
     )

@@ -7,33 +7,29 @@ from __future__ import annotations
 import hashlib
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from supabase import AsyncClient
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_current_student_dep
 from app.core.config import get_settings
 from app.db.client import get_client
-from app.db.queries import get_student_by_user_id
 
 router = APIRouter(prefix="/payments", tags=["payments"])
-settings = get_settings()
+get_student = get_current_student_dep()
 
 
 class PaymentInitBody(BaseModel):
     product: str        # 'match_premium' | 'application_fee' | 'consultation'
-    amount_bdt: int
+    amount_bdt: int = Field(ge=100, le=500_000, description="Payment amount in BDT (100–500,000)")
     application_id: str | None = None
 
 
 @router.post("/initiate", response_model=dict)
 async def initiate_payment(
     body: PaymentInitBody,
-    user: dict = Depends(get_current_user),
+    student: dict = Depends(get_student),
     client: AsyncClient = Depends(get_client),
 ):
-    student = await get_student_by_user_id(client, user["sub"])
-    if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
 
     # Create a pending payment record first to get an ID
     pay_res = await (
@@ -51,6 +47,7 @@ async def initiate_payment(
     payment = pay_res.data[0]
     payment_id = payment["id"]
 
+    settings = get_settings()
     api_url = settings.SSLCOMMERZ_API_URL  # sandbox or live
     store_id = settings.SSLCOMMERZ_STORE_ID
     store_pass = settings.SSLCOMMERZ_STORE_PASS
@@ -108,17 +105,39 @@ async def verify_payment(
 ):
     """
     Called as redirect from SSLCommerz after payment attempt.
-    Updates payment record status.
+    Does NOT mark as paid — only the validated IPN webhook can do that.
+    On failure/cancel, marks as failed. On success, marks as pending_validation
+    until IPN confirms.
     """
-    new_status = "paid" if status == "success" else "failed"
-    res = await (
+    # Look up the payment to confirm it exists and is still pending
+    existing = await (
+        client.table("payments")
+        .select("id, status")
+        .eq("id", payment_id)
+        .limit(1)
+        .execute()
+    )
+    if not existing.data:
+        raise HTTPException(status_code=404, detail="Payment not found")
+
+    current = existing.data[0]["status"]
+    if current == "paid":
+        # Already confirmed via IPN — don't overwrite
+        return {"payment_id": payment_id, "status": "paid"}
+
+    if status == "success":
+        # Awaiting IPN validation — do NOT mark as paid from client redirect
+        new_status = "pending_validation"
+    else:
+        new_status = "failed"
+
+    await (
         client.table("payments")
         .update({"status": new_status})
         .eq("id", payment_id)
+        .eq("status", "pending")  # only update if still pending (prevent replay)
         .execute()
     )
-    if not res.data:
-        raise HTTPException(status_code=404, detail="Payment not found")
     return {"payment_id": payment_id, "status": new_status}
 
 
@@ -128,6 +147,7 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
     Instant Payment Notification from SSLCommerz.
     Validates the response and marks payment as paid.
     """
+    settings = get_settings()
     form = await request.form()
     tran_id  = form.get("tran_id")
     status   = form.get("status")
@@ -139,7 +159,7 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
         try:
             async with httpx.AsyncClient(timeout=10.0) as http:
                 vr = await http.get(
-                    f"https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
+                    f"{settings.SSLCOMMERZ_VALIDATION_URL}"
                     f"?val_id={val_id}&store_id={settings.SSLCOMMERZ_STORE_ID}"
                     f"&store_passwd={store_pass}&v=1&format=json"
                 )
@@ -148,9 +168,18 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
             return {"status": "ignored"}
 
         if vdata.get("status") == "VALID":
+            # Store only safe, known fields from the gateway response
+            safe_fields = {
+                "tran_id": form.get("tran_id"),
+                "val_id": form.get("val_id"),
+                "amount": form.get("amount"),
+                "currency": form.get("currency"),
+                "card_type": form.get("card_type"),
+                "tran_date": form.get("tran_date"),
+            }
             await (
                 client.table("payments")
-                .update({"status": "paid", "transaction_id": val_id, "gateway_response": dict(form)})
+                .update({"status": "paid", "transaction_id": val_id, "gateway_response": safe_fields})
                 .eq("id", tran_id)
                 .execute()
             )
@@ -160,12 +189,9 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
 
 @router.get("/history", response_model=list[dict])
 async def payment_history(
-    user: dict = Depends(get_current_user),
+    student: dict = Depends(get_student),
     client: AsyncClient = Depends(get_client),
 ):
-    student = await get_student_by_user_id(client, user["sub"])
-    if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
 
     res = await (
         client.table("payments")
