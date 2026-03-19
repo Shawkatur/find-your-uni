@@ -23,8 +23,8 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
   const applyMutation = useMutation({
     mutationFn: async () => {
       await api.post("/applications", {
-        university_id: result.university.id,
-        program_id: result.program.id,
+        university_id: result.university_id,
+        program_id: result.program_id,
       });
     },
     onSuccess: () => {
@@ -34,8 +34,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
     onError: () => toast.error("Failed to create application"),
   });
 
-  const score = result.score;
-  const pct = Math.round(score.total);
+  const pct = Math.round(result.score * 100);
 
   const isHighMatch = pct >= 80;
   const isMidMatch = pct >= 60;
@@ -117,12 +116,12 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="min-w-0">
               <h3 className="text-white font-black tracking-tight leading-snug truncate">
-                {result.university.name}
+                {result.university_name}
               </h3>
-              <p className="text-slate-300 text-sm font-semibold mt-0.5">{result.program.name}</p>
+              <p className="text-slate-300 text-sm font-semibold mt-0.5">{result.program_name}</p>
               <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1">
                 <Globe size={10} />
-                {result.university.country}
+                {result.country}
               </p>
             </div>
             <div className="flex flex-col gap-1.5 shrink-0 items-end">
@@ -131,15 +130,15 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
                   <Sparkles size={8} /> High Match
                 </span>
               )}
-              {result.university.ranking_qs && (
+              {result.ranking_qs && (
                 <span className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
-                  <Star size={10} fill="currentColor" /> QS #{result.university.ranking_qs}
+                  <Star size={10} fill="currentColor" /> QS #{result.ranking_qs}
                 </span>
               )}
-              {result.university.tuition_usd_per_year && (
+              {result.tuition_usd_per_year && (
                 <span className="flex items-center gap-1 text-slate-400 text-xs font-medium">
                   <DollarSign size={10} />
-                  ${result.university.tuition_usd_per_year.toLocaleString()}/yr
+                  ${result.tuition_usd_per_year.toLocaleString()}/yr
                 </span>
               )}
             </div>
@@ -163,9 +162,9 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
           {expanded && (
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 mb-3">
               {[
-                { label: "Ranking", value: Math.round(score.ranking * 100), icon: Star },
-                { label: "Cost Fit", value: Math.round(score.cost_efficiency * 100), icon: DollarSign },
-                { label: "BD Accept", value: Math.round(score.bd_acceptance * 100), icon: Globe },
+                { label: "Ranking", value: Math.round((result.breakdown?.ranking ?? 0) * 100), icon: Star },
+                { label: "Cost Fit", value: Math.round((result.breakdown?.cost_efficiency ?? 0) * 100), icon: DollarSign },
+                { label: "BD Accept", value: Math.round((result.breakdown?.bd_acceptance ?? 0) * 100), icon: Globe },
               ].map(({ label, value, icon: Icon }) => (
                 <div
                   key={label}
@@ -200,7 +199,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
               <Zap size={13} className="mr-1" />
               {applyMutation.isPending ? "Creating..." : "Apply Now"}
             </Button>
-            <ShortlistButton universityId={result.university.id} size="sm" />
+            <ShortlistButton universityId={result.university_id} size="sm" />
             <button
               onClick={() => setExpanded(!expanded)}
               className="flex items-center gap-1 text-slate-500 hover:text-indigo-400 text-xs transition-colors font-semibold"

@@ -47,13 +47,16 @@ function ShortlistSummaryCard({ studentId }: { studentId: string }) {
 }
 
 const NEXT_STATUSES: Record<string, AppStatus[]> = {
-  draft: ["submitted"],
-  submitted: ["under_review", "rejected", "withdrawn"],
-  under_review: ["offer_received", "rejected", "withdrawn"],
-  offer_received: ["enrolled", "withdrawn"],
-  enrolled: [],
-  rejected: [],
-  withdrawn: [],
+  lead:              ["pre_evaluation", "withdrawn"],
+  pre_evaluation:    ["docs_collection", "rejected", "withdrawn"],
+  docs_collection:   ["applied", "withdrawn"],
+  applied:           ["offer_received", "conditional_offer", "rejected", "withdrawn"],
+  offer_received:    ["visa_stage", "withdrawn"],
+  conditional_offer: ["docs_collection", "offer_received", "rejected", "withdrawn"],
+  visa_stage:        ["enrolled", "rejected", "withdrawn"],
+  enrolled:          [],
+  rejected:          [],
+  withdrawn:         [],
 };
 
 export default function ConsultantApplicationDetailPage() {
@@ -67,7 +70,14 @@ export default function ConsultantApplicationDetailPage() {
     queryKey: ["application-detail", id],
     queryFn: async () => {
       const res = await api.get(`/applications/${id}`);
-      return res.data;
+      const data = res.data;
+      return {
+        ...data,
+        student: data.students ?? data.student,
+        program: data.programs ?? data.program,
+        university: data.programs?.universities ?? data.university,
+        consultant: data.consultants ?? data.consultant,
+      };
     },
   });
 

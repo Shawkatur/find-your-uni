@@ -53,11 +53,6 @@ export default function ConsultantRegisterPage() {
       // 2. Create agency
       const agencyRes = await api.post("/agencies", {
         name: data.agency_name,
-        license_no: null,
-        address: null,
-        avg_rating: 0,
-        review_count: 0,
-        is_active: true,
       }, { headers });
       const agencyId: string = agencyRes.data.id;
 

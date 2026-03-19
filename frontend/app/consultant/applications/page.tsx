@@ -15,47 +15,62 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-// Status flow allowed transitions
+// Status flow allowed transitions (must match backend STATUS_TRANSITIONS)
 const NEXT_STATUSES: Record<string, AppStatus[]> = {
-  draft: ["submitted"],
-  submitted: ["under_review", "rejected", "withdrawn"],
-  under_review: ["offer_received", "rejected", "withdrawn"],
-  offer_received: ["enrolled", "withdrawn"],
-  enrolled: [],
-  rejected: [],
-  withdrawn: [],
+  lead:              ["pre_evaluation", "withdrawn"],
+  pre_evaluation:    ["docs_collection", "rejected", "withdrawn"],
+  docs_collection:   ["applied", "withdrawn"],
+  applied:           ["offer_received", "conditional_offer", "rejected", "withdrawn"],
+  offer_received:    ["visa_stage", "withdrawn"],
+  conditional_offer: ["docs_collection", "offer_received", "rejected", "withdrawn"],
+  visa_stage:        ["enrolled", "rejected", "withdrawn"],
+  enrolled:          [],
+  rejected:          [],
+  withdrawn:         [],
 };
 
 const KANBAN_COLUMNS: AppStatus[] = [
-  "submitted",
-  "under_review",
+  "lead",
+  "pre_evaluation",
+  "docs_collection",
+  "applied",
   "offer_received",
+  "visa_stage",
   "enrolled",
   "rejected",
 ];
 
 const COLUMN_LABELS: Record<string, string> = {
-  submitted: "Submitted",
-  under_review: "Under Review",
-  offer_received: "Offer Received",
-  enrolled: "Enrolled",
-  rejected: "Rejected / Withdrawn",
+  lead:              "Leads",
+  pre_evaluation:    "Pre-Evaluation",
+  docs_collection:   "Docs Collection",
+  applied:           "Applied",
+  offer_received:    "Offer Received",
+  visa_stage:        "Visa Stage",
+  enrolled:          "Enrolled",
+  rejected:          "Rejected / Withdrawn",
 };
 
 const COLUMN_HEADER_COLORS: Record<string, string> = {
-  submitted:     "text-blue-400 bg-blue-500/10 border-blue-500/20",
-  under_review:  "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
-  offer_received:"text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-  enrolled:      "text-green-400 bg-green-500/10 border-green-500/20",
-  rejected:      "text-red-400 bg-red-500/10 border-red-500/20",
+  lead:              "text-slate-400 bg-slate-500/10 border-slate-500/20",
+  pre_evaluation:    "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  docs_collection:   "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  applied:           "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+  offer_received:    "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  visa_stage:        "text-purple-400 bg-purple-500/10 border-purple-500/20",
+  enrolled:          "text-green-400 bg-green-500/10 border-green-500/20",
+  rejected:          "text-red-400 bg-red-500/10 border-red-500/20",
 };
 
 const COLUMN_BG: Record<string, string> = {
-  submitted:     "bg-slate-800/30 border-blue-500/15",
-  under_review:  "bg-slate-800/30 border-yellow-500/15",
-  offer_received:"bg-slate-800/30 border-emerald-500/15",
-  enrolled:      "bg-slate-800/30 border-green-500/15",
-  rejected:      "bg-slate-800/30 border-red-500/15",
+  lead:              "bg-slate-800/30 border-slate-500/15",
+  pre_evaluation:    "bg-slate-800/30 border-blue-500/15",
+  docs_collection:   "bg-slate-800/30 border-yellow-500/15",
+  applied:           "bg-slate-800/30 border-indigo-500/15",
+  offer_received:    "bg-slate-800/30 border-emerald-500/15",
+  visa_stage:        "bg-slate-800/30 border-purple-500/15",
+  enrolled:          "bg-slate-800/30 border-green-500/15",
+  rejected:          "bg-slate-800/30 border-red-500/15",
 };
 
 function ApplicationCard({ app, onStatusChange }: {
@@ -118,15 +133,19 @@ export default function ConsultantApplicationsPage() {
   const qc = useQueryClient();
   const [view, setView] = useState<"list" | "kanban">("list");
 
-  const { data, isLoading } = useQuery<{ items: Application[] }>({
+  const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["consultant-applications-all"],
     queryFn: async () => {
       const res = await api.get("/applications?page_size=100");
-      return res.data;
+      // Backend returns flat array; map Supabase join names to frontend field names
+      return (res.data || []).map((app: Record<string, unknown>) => ({
+        ...app,
+        student: app.students ?? app.student,
+        program: app.programs ?? app.program,
+        university: (app.programs as Record<string, unknown>)?.universities ?? app.university,
+      }));
     },
   });
-
-  const applications = data?.items ?? [];
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AppStatus }) => {
@@ -219,7 +238,11 @@ export default function ConsultantApplicationsPage() {
         <div className="flex gap-4 overflow-x-auto pb-4">
           {KANBAN_COLUMNS.map((status) => {
             const col = applications.filter((a) =>
-              status === "rejected" ? ["rejected", "withdrawn"].includes(a.status) : a.status === status
+              status === "rejected"
+                ? ["rejected", "withdrawn"].includes(a.status)
+                : status === "offer_received"
+                ? ["offer_received", "conditional_offer"].includes(a.status)
+                : a.status === status
             );
             return (
               <div

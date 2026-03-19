@@ -43,7 +43,7 @@ async def update_my_profile(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
-    allowed = {"full_name"}
+    allowed = {"full_name", "phone", "role_title", "whatsapp"}
     update = {k: v for k, v in body.items() if k in allowed}
     if not update:
         raise HTTPException(status_code=422, detail="No valid fields to update")

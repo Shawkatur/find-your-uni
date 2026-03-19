@@ -29,7 +29,7 @@ export default function MatchPage() {
     queryFn: async () => {
       try {
         const res = await api.get("/match/results");
-        return res.data?.results ?? [];
+        return res.data ?? [];
       } catch {
         return [];
       }
@@ -71,7 +71,7 @@ export default function MatchPage() {
   });
 
   const isEmpty = !resultsLoading && results.length === 0;
-  const highMatches = results.filter((r) => Math.round(r.score.total) >= 80).length;
+  const highMatches = results.filter((r) => Math.round(r.score * 100) >= 80).length;
 
   return (
     <PageWrapper

@@ -1,22 +1,28 @@
 import { cn } from "@/lib/utils";
 
 type AppStatus =
-  | "draft"
-  | "submitted"
-  | "under_review"
+  | "lead"
+  | "pre_evaluation"
+  | "docs_collection"
+  | "applied"
   | "offer_received"
+  | "conditional_offer"
+  | "visa_stage"
   | "enrolled"
   | "rejected"
   | "withdrawn";
 
 const statusConfig: Record<AppStatus, { label: string; pillClass: string }> = {
-  draft:         { label: "Draft",          pillClass: "tag-pill tag-pill-slate" },
-  submitted:     { label: "Submitted",      pillClass: "tag-pill tag-pill-blue" },
-  under_review:  { label: "Under Review",   pillClass: "tag-pill tag-pill-yellow" },
-  offer_received:{ label: "Offer Received", pillClass: "tag-pill tag-pill-green" },
-  enrolled:      { label: "Enrolled",       pillClass: "tag-pill tag-pill-green" },
-  rejected:      { label: "Rejected",       pillClass: "tag-pill tag-pill-red" },
-  withdrawn:     { label: "Withdrawn",      pillClass: "tag-pill tag-pill-slate" },
+  lead:              { label: "Lead",              pillClass: "tag-pill tag-pill-slate" },
+  pre_evaluation:    { label: "Pre-Evaluation",   pillClass: "tag-pill tag-pill-blue" },
+  docs_collection:   { label: "Docs Collection",  pillClass: "tag-pill tag-pill-yellow" },
+  applied:           { label: "Applied",           pillClass: "tag-pill tag-pill-indigo" },
+  offer_received:    { label: "Offer Received",    pillClass: "tag-pill tag-pill-green" },
+  conditional_offer: { label: "Conditional Offer", pillClass: "tag-pill tag-pill-yellow" },
+  visa_stage:        { label: "Visa Stage",        pillClass: "tag-pill tag-pill-purple" },
+  enrolled:          { label: "Enrolled",          pillClass: "tag-pill tag-pill-green" },
+  rejected:          { label: "Rejected",          pillClass: "tag-pill tag-pill-red" },
+  withdrawn:         { label: "Withdrawn",         pillClass: "tag-pill tag-pill-slate" },
 };
 
 interface StatusBadgeProps {

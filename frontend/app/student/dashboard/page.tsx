@@ -23,15 +23,24 @@ export default function StudentDashboard() {
     queryKey: ["student-applications"],
     queryFn: async () => {
       const res = await api.get("/applications?page_size=20");
-      return res.data?.items ?? [];
+      return (res.data || []).map((app: Record<string, unknown>) => ({
+        ...app,
+        student: app.students ?? app.student,
+        program: app.programs ?? app.program,
+        university: (app.programs as Record<string, unknown>)?.universities ?? app.university,
+      }));
     },
   });
 
   const { data: matchResults = [] } = useQuery<MatchResultItem[]>({
     queryKey: ["match-results-preview"],
     queryFn: async () => {
-      const res = await api.get("/match/results");
-      return res.data?.results ?? [];
+      try {
+        const res = await api.get("/match/results");
+        return res.data ?? [];
+      } catch {
+        return [];
+      }
     },
   });
 
@@ -43,10 +52,11 @@ export default function StudentDashboard() {
   const topMatches = matchResults.slice(0, 3);
   const firstName = profile?.full_name?.split(" ")[0] ?? "Student";
 
-  const offerCount = statusCounts["offer_received"] ?? 0;
+  const offerCount = (statusCounts["offer_received"] ?? 0) + (statusCounts["conditional_offer"] ?? 0);
   const activeCount =
-    (statusCounts["submitted"] ?? 0) + (statusCounts["under_review"] ?? 0);
-  const topMatchPct = matchResults[0] ? Math.round(matchResults[0].score.total) : null;
+    (statusCounts["lead"] ?? 0) + (statusCounts["pre_evaluation"] ?? 0) +
+    (statusCounts["docs_collection"] ?? 0) + (statusCounts["applied"] ?? 0);
+  const topMatchPct = matchResults[0] ? Math.round(matchResults[0].score * 100) : null;
 
   return (
     <PageWrapper>
@@ -203,7 +213,7 @@ export default function StudentDashboard() {
           ) : (
             <div className="space-y-3">
               {topMatches.map((result, i) => {
-                const pct = Math.round(result.score.total);
+                const pct = Math.round(result.score * 100);
                 const isHigh = pct >= 80;
                 return (
                   <div
@@ -236,10 +246,10 @@ export default function StudentDashboard() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white font-black tracking-tight text-sm truncate">
-                        {result.university.name}
+                        {result.university_name}
                       </div>
                       <div className="text-slate-400 text-xs font-medium mt-0.5">
-                        {result.program.name} · {result.university.country}
+                        {result.program_name} · {result.country}
                       </div>
                     </div>
                     {/* Mini bar */}

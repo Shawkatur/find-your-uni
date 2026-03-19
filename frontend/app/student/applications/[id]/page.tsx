@@ -12,19 +12,21 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-// Full linear application journey
+// Full linear application journey (matches backend status flow)
 const JOURNEY_STEPS: { status: AppStatus; label: string; desc: string }[] = [
-  { status: "draft",          label: "Application Created",  desc: "Your application has been started." },
-  { status: "submitted",      label: "Submitted",            desc: "Application sent to the university." },
-  { status: "under_review",   label: "Under Review",         desc: "Admissions team is reviewing your documents." },
-  { status: "offer_received", label: "Offer Received",       desc: "Congratulations — you have received an offer!" },
-  { status: "enrolled",       label: "Enrolled",             desc: "You are now enrolled at this university." },
+  { status: "lead",            label: "Lead Created",          desc: "Your application has been started." },
+  { status: "pre_evaluation",  label: "Pre-Evaluation",       desc: "Your profile is being evaluated." },
+  { status: "docs_collection", label: "Document Collection",   desc: "Gathering required documents." },
+  { status: "applied",         label: "Applied",              desc: "Application sent to the university." },
+  { status: "offer_received",  label: "Offer Received",       desc: "Congratulations — you have received an offer!" },
+  { status: "visa_stage",      label: "Visa Stage",           desc: "Processing visa application." },
+  { status: "enrolled",        label: "Enrolled",             desc: "You are now enrolled at this university." },
 ];
 
 // Terminal negative statuses shown separately
 const TERMINAL_NEGATIVE: AppStatus[] = ["rejected", "withdrawn"];
 
-const STATUS_ORDER: AppStatus[] = ["draft", "submitted", "under_review", "offer_received", "enrolled"];
+const STATUS_ORDER: AppStatus[] = ["lead", "pre_evaluation", "docs_collection", "applied", "offer_received", "visa_stage", "enrolled"];
 
 function getStepState(stepStatus: AppStatus, currentStatus: AppStatus): "done" | "current" | "future" {
   if (TERMINAL_NEGATIVE.includes(currentStatus)) {
@@ -45,7 +47,15 @@ export default function ApplicationDetailPage() {
     queryKey: ["application", id],
     queryFn: async () => {
       const res = await api.get(`/applications/${id}`);
-      return res.data;
+      const data = res.data;
+      // Map Supabase join names (plural) to frontend field names (singular)
+      return {
+        ...data,
+        student: data.students ?? data.student,
+        program: data.programs ?? data.program,
+        university: data.programs?.universities ?? data.university,
+        consultant: data.consultants ?? data.consultant,
+      };
     },
   });
 

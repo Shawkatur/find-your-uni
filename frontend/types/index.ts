@@ -1,9 +1,12 @@
 // ─── Application Status ──────────────────────────────────────────────────────
 export type AppStatus =
-  | "draft"
-  | "submitted"
-  | "under_review"
+  | "lead"
+  | "pre_evaluation"
+  | "docs_collection"
+  | "applied"
   | "offer_received"
+  | "conditional_offer"
+  | "visa_stage"
   | "enrolled"
   | "rejected"
   | "withdrawn";
@@ -88,20 +91,23 @@ export interface Program {
 }
 
 // ─── Match ────────────────────────────────────────────────────────────────────
-export interface MatchScore {
-  total: number;
+export interface MatchBreakdown {
   ranking: number;
   cost_efficiency: number;
   bd_acceptance: number;
-  eligibility: number;
 }
 
 export interface MatchResultItem {
-  university: University;
-  program: Program;
-  score: MatchScore;
-  ai_summary: string;
-  cached_at: string;
+  university_id: string;
+  program_id: string;
+  university_name: string;
+  program_name: string;
+  country: string;
+  tuition_usd_per_year: number | null;
+  ranking_qs: number | null;
+  score: number;               // 0–1 float from backend
+  breakdown: MatchBreakdown;
+  ai_summary: string | null;
 }
 
 // ─── Application ─────────────────────────────────────────────────────────────

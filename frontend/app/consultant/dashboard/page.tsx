@@ -11,20 +11,23 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export default function ConsultantDashboard() {
-  const { data, isLoading } = useQuery<{ items: Application[]; total: number }>({
+  const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["consultant-applications"],
     queryFn: async () => {
       const res = await api.get("/applications?page_size=50");
-      return res.data;
+      return (res.data || []).map((app: Record<string, unknown>) => ({
+        ...app,
+        student: app.students ?? app.student,
+        program: app.programs ?? app.program,
+        university: (app.programs as Record<string, unknown>)?.universities ?? app.university,
+      }));
     },
   });
 
-  const applications = data?.items ?? [];
-
   const stats = {
     total: applications.length,
-    active: applications.filter((a) => ["submitted", "under_review"].includes(a.status)).length,
-    offers: applications.filter((a) => a.status === "offer_received").length,
+    active: applications.filter((a) => ["lead", "pre_evaluation", "docs_collection", "applied"].includes(a.status)).length,
+    offers: applications.filter((a) => ["offer_received", "conditional_offer"].includes(a.status)).length,
     enrolled: applications.filter((a) => a.status === "enrolled").length,
   };
 
@@ -35,7 +38,7 @@ export default function ConsultantDashboard() {
     { label: "Enrolled", value: stats.enrolled, icon: Users, color: "text-purple-400 bg-purple-600/10" },
   ];
 
-  const statusOrder = ["submitted", "under_review", "offer_received", "enrolled", "rejected"];
+  const statusOrder = ["lead", "pre_evaluation", "docs_collection", "applied", "offer_received", "conditional_offer", "visa_stage", "enrolled", "rejected"];
   const statusCounts = statusOrder.reduce<Record<string, number>>((acc, s) => {
     acc[s] = applications.filter((a) => a.status === s).length;
     return acc;

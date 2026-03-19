@@ -18,17 +18,22 @@ const tabs = [
   { value: "completed", label: "Completed" },
 ];
 
-const activeStatuses: AppStatus[] = ["submitted", "under_review", "offer_received"];
+const activeStatuses: AppStatus[] = ["lead", "pre_evaluation", "docs_collection", "applied", "offer_received", "conditional_offer", "visa_stage"];
 const completedStatuses: AppStatus[] = ["enrolled", "rejected", "withdrawn"];
 
 // Left-border accent color by status
 function statusAccent(status: AppStatus): string {
   switch (status) {
     case "offer_received":
+    case "conditional_offer":
     case "enrolled":
       return "border-l-emerald-500";
-    case "submitted":
-    case "under_review":
+    case "visa_stage":
+      return "border-l-purple-500";
+    case "lead":
+    case "pre_evaluation":
+    case "docs_collection":
+    case "applied":
       return "border-l-indigo-500";
     case "rejected":
     case "withdrawn":
@@ -41,10 +46,15 @@ function statusAccent(status: AppStatus): string {
 function statusDot(status: AppStatus): string {
   switch (status) {
     case "offer_received":
+    case "conditional_offer":
     case "enrolled":
       return "bg-emerald-400";
-    case "submitted":
-    case "under_review":
+    case "visa_stage":
+      return "bg-purple-400";
+    case "lead":
+    case "pre_evaluation":
+    case "docs_collection":
+    case "applied":
       return "bg-indigo-400";
     case "rejected":
     case "withdrawn":
@@ -57,15 +67,18 @@ function statusDot(status: AppStatus): string {
 export default function ApplicationsPage() {
   const [tab, setTab] = useState("all");
 
-  const { data, isLoading } = useQuery<{ items: Application[] }>({
+  const { data: all = [], isLoading } = useQuery<Application[]>({
     queryKey: ["student-applications-list"],
     queryFn: async () => {
       const res = await api.get("/applications?page_size=50");
-      return res.data;
+      return (res.data || []).map((app: Record<string, unknown>) => ({
+        ...app,
+        student: app.students ?? app.student,
+        program: app.programs ?? app.program,
+        university: (app.programs as Record<string, unknown>)?.universities ?? app.university,
+      }));
     },
   });
-
-  const all = data?.items ?? [];
   const filtered =
     tab === "all"
       ? all

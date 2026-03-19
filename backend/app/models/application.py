@@ -33,7 +33,7 @@ STATUS_TRANSITIONS: dict[str, list[str]] = {
 
 
 class ApplicationCreate(BaseModel):
-    student_id: str
+    student_id: str | None = None   # overridden from JWT in endpoint
     program_id: str | None = None   # nullable for lead-stage applications
     consultant_id: str | None = None
     agency_id: str | None = None
