@@ -29,16 +29,31 @@ def verify_token(token: str) -> dict:
     """Decode and verify a Supabase JWT. Returns the payload dict."""
     settings = get_settings()
     try:
+        # Peek at header to log the algorithm for debugging
+        try:
+            header = jwt.get_unverified_header(token)
+            from app.core.logger import logger
+            logger.info("JWT header alg=%s, typ=%s", header.get("alg"), header.get("typ"))
+        except Exception:
+            pass
+
         payload = jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
+            algorithms=["HS256", "HS384", "HS512"],
             audience="authenticated",
         )
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
     except jwt.InvalidTokenError as exc:
+        # Log token header for debugging
+        try:
+            header = jwt.get_unverified_header(token)
+            from app.core.logger import logger
+            logger.error("JWT verification failed. Token alg=%s, error=%s", header.get("alg"), exc)
+        except Exception:
+            pass
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
 
 
