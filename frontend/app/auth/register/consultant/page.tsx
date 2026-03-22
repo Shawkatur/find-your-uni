@@ -8,8 +8,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { GraduationCap } from "lucide-react";
+import axios from "axios";
 import { createClient } from "@/lib/supabase";
-import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +64,8 @@ export default function ConsultantRegisterPage() {
       const headers = { Authorization: `Bearer ${accessToken}` };
 
       // 3. Register consultant profile (backend creates agency from agency_name)
-      await api.post("/auth/consultant/register", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      await axios.post(`${apiUrl}/auth/consultant/register`, {
         agency_name: data.agency_name,
         full_name: data.full_name,
         phone: data.phone,
@@ -76,12 +77,14 @@ export default function ConsultantRegisterPage() {
       router.push("/consultant/dashboard");
     } catch (err: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((err as any)?.response?.status === 409) {
+      const axiosErr = err as any;
+      if (axiosErr?.response?.status === 409) {
         toast.success("Welcome back!");
         router.push("/consultant/dashboard");
         return;
       }
-      const msg = err instanceof Error ? err.message : "Registration failed";
+      const detail = axiosErr?.response?.data?.detail;
+      const msg = detail ?? (err instanceof Error ? err.message : "Registration failed");
       toast.error(msg);
     } finally {
       setLoading(false);
