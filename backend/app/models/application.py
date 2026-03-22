@@ -84,9 +84,12 @@ class ReviewOut(BaseModel):
 
 
 class ConsultantCreate(BaseModel):
-    agency_id: str
+    agency_id: str | None = None
+    agency_name: str | None = Field(None, min_length=2, max_length=200)
     role: Literal["admin", "staff"] = "staff"
     full_name: str = Field(min_length=2, max_length=120)
+    phone: str | None = None
+    role_title: str | None = None
 
 
 class AgencyOut(BaseModel):

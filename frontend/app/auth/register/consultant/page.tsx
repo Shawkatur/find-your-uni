@@ -37,8 +37,7 @@ export default function ConsultantRegisterPage() {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      // 1. Supabase signup (ignore "already registered" errors in testing)
-      let accessToken: string | undefined;
+      // 1. Supabase signup
       const { data: authData, error: authErr } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -47,19 +46,29 @@ export default function ConsultantRegisterPage() {
       if (authErr && !authErr.message.includes("already") && !authErr.message.includes("rate")) {
         throw authErr;
       }
-      accessToken = authData?.session?.access_token;
-      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 
-      // 2. Create agency
-      const agencyRes = await api.post("/agencies", {
-        name: data.agency_name,
-      }, { headers });
-      const agencyId: string = agencyRes.data.id;
+      // 2. Get session — signUp may not return one (email confirmation), so try signIn
+      let accessToken = authData?.session?.access_token;
+      if (!accessToken) {
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+        if (signInErr) throw signInErr;
+        accessToken = signInData.session?.access_token;
+      }
+      if (!accessToken) {
+        toast.error("Please confirm your email and try signing in.");
+        return;
+      }
+      const headers = { Authorization: `Bearer ${accessToken}` };
 
-      // 3. Register consultant profile
+      // 3. Register consultant profile (backend creates agency from agency_name)
       await api.post("/auth/consultant/register", {
-        agency_id: agencyId,
+        agency_name: data.agency_name,
         full_name: data.full_name,
+        phone: data.phone,
+        role_title: data.role_title,
         role: "staff",
       }, { headers });
 

@@ -91,23 +91,34 @@ async def register_consultant(
 ):
     user_id: str = user["sub"]
 
-    # Verify agency exists
-    agency_res = await client.table("agencies").select("id").eq("id", body.agency_id).limit(1).execute()
-    if not agency_res.data:
-        raise HTTPException(status_code=404, detail="Agency not found")
-
     # Prevent duplicate
     existing = await client.table("consultants").select("id").eq("user_id", user_id).execute()
     if existing.data:
         raise HTTPException(status_code=409, detail="Consultant profile already exists")
 
+    # Resolve agency: create new one from agency_name, or use existing agency_id
+    agency_id = body.agency_id
+    if not agency_id and body.agency_name:
+        agency_res = await client.table("agencies").insert({"name": body.agency_name}).execute()
+        agency_id = agency_res.data[0]["id"]
+    elif agency_id:
+        agency_res = await client.table("agencies").select("id").eq("id", agency_id).limit(1).execute()
+        if not agency_res.data:
+            raise HTTPException(status_code=404, detail="Agency not found")
+    else:
+        raise HTTPException(status_code=422, detail="Provide agency_id or agency_name")
+
     row = {
         "user_id":   user_id,
-        "agency_id": body.agency_id,
+        "agency_id": agency_id,
         "role":      body.role,
         "full_name": body.full_name,
         "status":    "pending",
     }
+    if body.phone:
+        row["phone"] = body.phone
+    if body.role_title:
+        row["role_title"] = body.role_title
     res = await client.table("consultants").insert(row).execute()
 
     # Set role in Supabase auth metadata (skip in BYPASS_AUTH mode)
@@ -115,7 +126,7 @@ async def register_consultant(
     if not _gs().BYPASS_AUTH:
         await client.auth.admin.update_user_by_id(
             user_id,
-            {"app_metadata": {"role": "consultant", "agency_id": body.agency_id}},
+            {"app_metadata": {"role": "consultant", "agency_id": agency_id}},
         )
     return res.data[0]
 
