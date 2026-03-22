@@ -29,8 +29,8 @@ pandas==2.2.3
 # File uploads
 python-multipart==0.0.20
 
-# JWT decode
-PyJWT==2.10.1
+# JWT decode (with crypto extras for EdDSA/RS256 support)
+PyJWT[crypto]==2.10.1
 
 # Dev / testing
 pytest==8.3.4

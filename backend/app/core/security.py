@@ -1,5 +1,6 @@
 """
 JWT verification via Supabase-issued tokens.
+Supports both legacy HS256 and newer EdDSA (Ed25519) Supabase projects.
 Set BYPASS_AUTH=true in env to skip verification during testing.
 """
 from __future__ import annotations
@@ -7,11 +8,13 @@ from dataclasses import dataclass
 from typing import Annotated, Optional
 import hmac
 import jwt
+from jwt import PyJWKClient
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from supabase import AsyncClient
 
 from app.core.config import get_settings
+from app.core.logger import logger
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -24,37 +27,72 @@ TEST_USER = {
     "role": "authenticated",
 }
 
+# Cache the JWKS client (it has internal caching of keys)
+_jwks_client: Optional[PyJWKClient] = None
+
+
+def _get_jwks_client() -> PyJWKClient:
+    """Lazily create a JWKS client pointing at the Supabase JWKS endpoint."""
+    global _jwks_client
+    if _jwks_client is None:
+        settings = get_settings()
+        jwks_url = f"{settings.SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+        _jwks_client = PyJWKClient(jwks_url, cache_keys=True)
+        logger.info("JWKS client initialized: %s", jwks_url)
+    return _jwks_client
+
 
 def verify_token(token: str) -> dict:
-    """Decode and verify a Supabase JWT. Returns the payload dict."""
-    settings = get_settings()
-    try:
-        # Peek at header to log the algorithm for debugging
-        try:
-            header = jwt.get_unverified_header(token)
-            from app.core.logger import logger
-            logger.info("JWT header alg=%s, typ=%s", header.get("alg"), header.get("typ"))
-        except Exception:
-            pass
+    """Decode and verify a Supabase JWT. Returns the payload dict.
 
+    Tries HMAC (HS256) first using SUPABASE_JWT_SECRET, then falls back
+    to JWKS-based verification for EdDSA / RS256 tokens (newer Supabase projects).
+    """
+    settings = get_settings()
+
+    # Peek at the token header to decide verification strategy
+    try:
+        header = jwt.get_unverified_header(token)
+        alg = header.get("alg", "unknown")
+        logger.info("JWT header alg=%s", alg)
+    except Exception:
+        alg = "unknown"
+
+    # --- Strategy 1: HMAC (legacy Supabase projects) ---
+    if alg.startswith("HS"):
+        try:
+            payload = jwt.decode(
+                token,
+                settings.SUPABASE_JWT_SECRET,
+                algorithms=["HS256", "HS384", "HS512"],
+                audience="authenticated",
+            )
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+        except jwt.InvalidTokenError as exc:
+            logger.error("HMAC JWT verification failed: %s", exc)
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
+
+    # --- Strategy 2: JWKS (EdDSA / RS256 — newer Supabase projects) ---
+    try:
+        jwks_client = _get_jwks_client()
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
         payload = jwt.decode(
             token,
-            settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256", "HS384", "HS512"],
+            signing_key.key,
+            algorithms=["EdDSA", "ES256", "RS256"],
             audience="authenticated",
         )
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
     except jwt.InvalidTokenError as exc:
-        # Log token header for debugging
-        try:
-            header = jwt.get_unverified_header(token)
-            from app.core.logger import logger
-            logger.error("JWT verification failed. Token alg=%s, error=%s", header.get("alg"), exc)
-        except Exception:
-            pass
+        logger.error("JWKS JWT verification failed (alg=%s): %s", alg, exc)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
+    except Exception as exc:
+        logger.error("JWKS fetch/verify error: %s", exc)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Token verification failed: {exc}")
 
 
 def get_current_user(
