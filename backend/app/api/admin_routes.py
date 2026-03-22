@@ -274,7 +274,7 @@ async def list_students(
     """Paginated list of all students with optional search."""
     offset = (page - 1) * page_size
     q = client.table("students").select(
-        "id, user_id, full_name, phone, preferred_countries, degree_level, onboarding_completed, created_at",
+        "id, user_id, full_name, phone, preferred_countries, preferred_degree, onboarding_completed, created_at",
         count="exact",
     )
     if search:
