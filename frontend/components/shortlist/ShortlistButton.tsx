@@ -78,8 +78,8 @@ export function ShortlistButton({
     onError: () => toast.error("Failed to update shortlist"),
   });
 
-  // Don't render for unauthenticated users or admins
-  if (!user || profile?.role === "admin") return null;
+  // Don't render for unauthenticated users
+  if (!user) return null;
 
   const isPending = addMutation.isPending || removeMutation.isPending;
   const iconSize = size === "sm" ? 14 : 16;

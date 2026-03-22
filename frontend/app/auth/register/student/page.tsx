@@ -120,16 +120,23 @@ function StudentRegisterForm() {
         password: values.password,
         options: { data: { full_name: values.full_name, role: "student" } },
       });
-      if (authErr) throw authErr;
+      // Ignore "already registered" / rate-limit errors (user may have created
+      // a Supabase auth account but never finished creating the student profile)
+      if (authErr && !authErr.message.includes("already") && !authErr.message.includes("rate")) {
+        throw authErr;
+      }
 
-      // If email confirmation is enabled Supabase returns session=null.
-      // Try signing in immediately to get a token for the backend call.
-      if (!authData.session) {
+      // Get a session — either from signup or by signing in (for existing auth users)
+      if (!authData?.session) {
         const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
         if (signInErr || !signInData.session) {
+          if (authErr?.message.includes("already")) {
+            toast.error("An account with this email already exists. Please sign in instead.");
+            return;
+          }
           // Email confirmation required — user must verify before backend profile is created.
           toast.success("Account created! Check your email to confirm, then sign in to complete setup.");
           router.push("/auth/login");

@@ -2,6 +2,8 @@
 JWT verification via Supabase-issued tokens.
 Set BYPASS_AUTH=true in env to skip verification during testing.
 """
+from __future__ import annotations
+from dataclasses import dataclass
 from typing import Annotated, Optional
 import hmac
 import jwt
@@ -56,6 +58,7 @@ def get_current_user(
 def require_role(role: str):
     """
     Dependency factory: require the JWT to carry a specific app_metadata.role.
+    super_admin implicitly satisfies any 'admin' role requirement.
     When BYPASS_AUTH=true, always passes.
     """
     def _check(user: Annotated[dict, Depends(get_current_user)]) -> dict:
@@ -63,13 +66,70 @@ def require_role(role: str):
         if settings.BYPASS_AUTH:
             return user
         user_role = (user.get("app_metadata") or {}).get("role", "student")
-        if user_role != role:
+        allowed = {role}
+        if role == "admin":
+            allowed.add("super_admin")
+        if user_role not in allowed:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Requires role '{role}', got '{user_role}'",
             )
         return user
     return _check
+
+
+def require_super_admin():
+    """Dependency factory: only super_admin role is allowed."""
+    def _check(user: Annotated[dict, Depends(get_current_user)]) -> dict:
+        settings = get_settings()
+        if settings.BYPASS_AUTH:
+            return user
+        user_role = (user.get("app_metadata") or {}).get("role", "student")
+        if user_role != "super_admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Super admin access required",
+            )
+        return user
+    return _check
+
+
+# ─── Ghost Mode Context ──────────────────────────────────────────────────────
+
+@dataclass
+class GhostContext:
+    """Captures ghost-mode state from request headers."""
+    is_ghost: bool
+    admin_user_id: str
+    source_label: str
+
+
+def get_ghost_context(
+    request: Request,
+    user: Annotated[dict, Depends(get_current_user)],
+) -> GhostContext:
+    """
+    FastAPI dependency that reads X-Ghost-Mode and X-Source-Label headers.
+    Ghost mode is only available to super_admin users.
+    """
+    settings = get_settings()
+    is_ghost = request.headers.get("X-Ghost-Mode", "").lower() == "true"
+    user_role = (user.get("app_metadata") or {}).get("role", "student")
+
+    if is_ghost and user_role != "super_admin" and not settings.BYPASS_AUTH:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Ghost mode requires super_admin role",
+        )
+
+    source_label = request.headers.get("X-Source-Label", "system") if is_ghost else "admin"
+    admin_id = user["sub"] if not settings.BYPASS_AUTH else "00000000-0000-0000-0000-000000000001"
+
+    return GhostContext(
+        is_ghost=is_ghost,
+        admin_user_id=admin_id,
+        source_label=source_label,
+    )
 
 
 async def require_admin_secret(request: Request) -> None:

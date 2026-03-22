@@ -11,11 +11,7 @@ import {
   Upload,
   User,
   Users,
-  Users2,
-  Settings,
-  Database,
   GraduationCap,
-  Inbox,
   Link2,
   Bookmark,
 } from "lucide-react";
@@ -44,22 +40,13 @@ const consultantNav: NavItem[] = [
   { label: "Profile", href: "/consultant/profile", icon: User },
 ];
 
-const adminNav: NavItem[] = [
-  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Leads", href: "/admin/leads", icon: Inbox },
-  { label: "Consultants", href: "/admin/consultants", icon: Users2 },
-  { label: "Universities", href: "/admin/universities", icon: Building2 },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
-  { label: "Import", href: "/admin/import", icon: Database },
-];
-
 interface SidebarProps {
-  role: "student" | "consultant" | "admin";
+  role: "student" | "consultant";
 }
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
-  const nav = role === "student" ? studentNav : role === "consultant" ? consultantNav : adminNav;
+  const nav = role === "student" ? studentNav : consultantNav;
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 sidebar-gradient z-40 hidden md:flex flex-col">

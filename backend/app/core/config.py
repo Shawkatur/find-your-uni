@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     APP_SECRET: str = "change-me-in-prod"
     BYPASS_AUTH: bool = False       # set to true to skip JWT checks during testing
     ADMIN_SECRET: str = ""          # if set, all /admin/* routes require X-Admin-Secret header
+    ADMIN_FRONTEND_URL: str = ""   # e.g. https://admin.ourdomain.com (auto-added to CORS)
     # Accept comma-separated string OR JSON array from env
     # Default * allows all origins during testing
     CORS_ORIGINS: str = "*"
@@ -52,15 +53,20 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> list[str]:
-        """Parse CORS_ORIGINS as comma-separated string or JSON array."""
+        """Parse CORS_ORIGINS as comma-separated string or JSON array.
+        Auto-includes ADMIN_FRONTEND_URL if set."""
         val = self.CORS_ORIGINS.strip()
         if val.startswith("["):
             import json
             try:
-                return json.loads(val)
+                origins = json.loads(val)
             except Exception:
-                pass
-        return [o.strip() for o in val.split(",") if o.strip()]
+                origins = [o.strip() for o in val.split(",") if o.strip()]
+        else:
+            origins = [o.strip() for o in val.split(",") if o.strip()]
+        if self.ADMIN_FRONTEND_URL and self.ADMIN_FRONTEND_URL not in origins:
+            origins.append(self.ADMIN_FRONTEND_URL)
+        return origins
 
 
 @lru_cache

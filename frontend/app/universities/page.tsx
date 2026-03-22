@@ -42,7 +42,7 @@ function UniversitiesList() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {user ? (
             <Link
-              href={`/${profile?.role === "consultant" ? "consultant" : profile?.role === "admin" ? "admin" : "student"}/dashboard`}
+              href={`/${profile?.role === "consultant" ? "consultant" : "student"}/dashboard`}
               className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-1.5"
             >
               <LayoutDashboard size={14} /> Back to Dashboard

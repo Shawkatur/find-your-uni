@@ -14,7 +14,7 @@ from app.core.config import get_settings
 from app.core.limiter import limiter
 from app.core.logger import logger
 from app.api import auth, match, universities, applications, consultants, documents
-from app.api import admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist
+from app.api import admin_routes, super_admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist
 
 settings = get_settings()
 
@@ -86,6 +86,7 @@ app.include_router(applications.router)
 app.include_router(consultants.router)
 app.include_router(documents.router)
 app.include_router(admin_routes.router)
+app.include_router(super_admin_routes.router)
 app.include_router(tracking.router)
 app.include_router(push_notifications.router)
 app.include_router(scholarships.router)

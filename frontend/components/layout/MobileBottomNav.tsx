@@ -9,10 +9,6 @@ import {
   FileText,
   Upload,
   User,
-  Users2,
-  Building2,
-  Settings,
-  Inbox,
   Link2,
 } from "lucide-react";
 
@@ -38,21 +34,14 @@ const consultantTabs: NavItem[] = [
   { label: "Me", href: "/consultant/profile", icon: User },
 ];
 
-const adminTabs: NavItem[] = [
-  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Leads", href: "/admin/leads", icon: Inbox },
-  { label: "Consultants", href: "/admin/consultants", icon: Users2 },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
-];
-
 interface MobileBottomNavProps {
-  role: "student" | "consultant" | "admin";
+  role: "student" | "consultant";
 }
 
 export function MobileBottomNav({ role }: MobileBottomNavProps) {
   const pathname = usePathname();
   const tabs =
-    role === "student" ? studentTabs : role === "consultant" ? consultantTabs : adminTabs;
+    role === "student" ? studentTabs : consultantTabs;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bottom-nav-glass flex items-center safe-area-bottom">

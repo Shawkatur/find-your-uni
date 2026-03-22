@@ -64,3 +64,18 @@ async def get_student_tokens(client, student_id: str) -> list[str]:
     except Exception as exc:
         logger.error("Failed to fetch push tokens for student %s: %s", student_id, exc)
         return []
+
+
+async def get_tokens_by_user_id(client, user_id: str) -> list[str]:
+    """Fetch all active push tokens by auth user_id (works for any role)."""
+    try:
+        res = await (
+            client.table("push_tokens")
+            .select("token")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        return [row["token"] for row in (res.data or [])]
+    except Exception as exc:
+        logger.error("Failed to fetch push tokens for user %s: %s", user_id, exc)
+        return []

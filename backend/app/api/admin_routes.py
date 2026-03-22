@@ -1,7 +1,9 @@
 """
 Admin-only API routes. All endpoints require:
-  1. JWT with role=admin  (via require_role("admin"))
+  1. JWT with role=admin or super_admin (via require_role("admin"))
   2. X-Admin-Secret header matching ADMIN_SECRET env var (via require_admin_secret)
+
+Ghost mode (X-Ghost-Mode: true) is available to super_admin users only.
 """
 from __future__ import annotations
 from datetime import datetime, timezone
@@ -9,7 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient
 
 from app.core.config import get_settings
-from app.core.security import require_role, require_admin_secret, get_current_user
+from app.core.security import require_role, require_admin_secret, get_current_user, get_ghost_context, GhostContext
+from app.core.ghost import ghost_audit, ghost_notify_lead_assignment
 from app.db.client import get_client
 from app.models.application import ConsultantStatusUpdate, ReassignBody, MatchSettingsUpdate
 
@@ -18,22 +21,6 @@ router = APIRouter(
     tags=["admin"],
     dependencies=[Depends(require_role("admin")), Depends(require_admin_secret)],
 )
-
-
-async def _audit(client: AsyncClient, admin_user_id: str, action: str, resource_type: str, resource_id: str | None, old_value: dict | None, new_value: dict | None):
-    """Insert a row into admin_audit_log (best-effort, does not raise on failure)."""
-    try:
-        await client.table("admin_audit_log").insert({
-            "admin_user_id": admin_user_id,
-            "action": action,
-            "resource_type": resource_type,
-            "resource_id": resource_id,
-            "old_value": old_value,
-            "new_value": new_value,
-        }).execute()
-    except Exception as exc:
-        from app.core.logger import logger
-        logger.error("Audit log insert failed (action=%s, resource=%s/%s): %s", action, resource_type, resource_id, exc)
 
 
 # ─── Stats ────────────────────────────────────────────────────────────────────
@@ -88,7 +75,7 @@ async def list_consultants(
 async def update_consultant_status(
     consultant_id: str,
     body: ConsultantStatusUpdate,
-    user: dict = Depends(get_current_user),
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
     client: AsyncClient = Depends(get_client),
 ):
     """Approve or ban a consultant."""
@@ -106,10 +93,8 @@ async def update_consultant_status(
     if not res.data:
         raise HTTPException(status_code=404, detail="Consultant not found")
 
-    settings = get_settings()
-    admin_id = user["sub"] if not settings.BYPASS_AUTH else "00000000-0000-0000-0000-000000000001"
     action = "approve_consultant" if body.status == "active" else "ban_consultant" if body.status == "banned" else "update_consultant_status"
-    await _audit(client, admin_id, action, "consultant", consultant_id, {"status": old_status}, {"status": body.status})
+    await ghost_audit(client, ghost_ctx, action, "consultant", consultant_id, {"status": old_status}, {"status": body.status})
 
     return res.data[0]
 
@@ -140,14 +125,15 @@ async def list_unassigned_leads(
 async def assign_lead(
     application_id: str,
     body: ReassignBody,
-    user: dict = Depends(get_current_user),
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
     client: AsyncClient = Depends(get_client),
 ):
-    """Assign an unassigned lead to a consultant."""
+    """Assign an unassigned lead to a consultant.
+    In ghost mode, the assignment appears as a system/algorithm match."""
     # Verify consultant exists and is active
     c_res = await (
         client.table("consultants")
-        .select("id, status")
+        .select("id, user_id, status")
         .eq("id", body.consultant_id)
         .limit(1)
         .execute()
@@ -157,9 +143,13 @@ async def assign_lead(
     if c_res.data[0]["status"] != "active":
         raise HTTPException(status_code=400, detail="Consultant is not active")
 
+    consultant = c_res.data[0]
+
     update: dict = {
         "consultant_id": body.consultant_id,
         "agency_id":     body.agency_id,
+        "assigned_by":   None if ghost_ctx.is_ghost else ghost_ctx.admin_user_id,
+        "assigned_source": ghost_ctx.source_label if ghost_ctx.is_ghost else "admin",
     }
     if body.note:
         update["notes"] = body.note
@@ -173,9 +163,12 @@ async def assign_lead(
     if not res.data:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    settings = get_settings()
-    admin_id = user["sub"] if not settings.BYPASS_AUTH else "00000000-0000-0000-0000-000000000001"
-    await _audit(client, admin_id, "assign_lead", "application", application_id, None, {"consultant_id": body.consultant_id, "agency_id": body.agency_id})
+    await ghost_audit(client, ghost_ctx, "assign_lead", "application", application_id, None, {"consultant_id": body.consultant_id, "agency_id": body.agency_id})
+
+    # Notify the consultant (masked in ghost mode)
+    await ghost_notify_lead_assignment(
+        client, application_id, consultant["user_id"], consultant["id"], ghost_ctx,
+    )
 
     return res.data[0]
 
@@ -186,13 +179,14 @@ async def assign_lead(
 async def reassign_application(
     application_id: str,
     body: ReassignBody,
-    user: dict = Depends(get_current_user),
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
     client: AsyncClient = Depends(get_client),
 ):
-    """Reassign any application to a different consultant."""
+    """Reassign any application to a different consultant.
+    In ghost mode, the reassignment appears as a system/algorithm action."""
     c_res = await (
         client.table("consultants")
-        .select("id, status")
+        .select("id, user_id, status")
         .eq("id", body.consultant_id)
         .limit(1)
         .execute()
@@ -202,12 +196,16 @@ async def reassign_application(
     if c_res.data[0]["status"] != "active":
         raise HTTPException(status_code=400, detail="Target consultant is not active")
 
+    consultant = c_res.data[0]
+
     old_res = await client.table("applications").select("consultant_id, agency_id").eq("id", application_id).limit(1).execute()
     old_assignment = old_res.data[0] if old_res.data else None
 
     update: dict = {
         "consultant_id": body.consultant_id,
         "agency_id":     body.agency_id,
+        "assigned_by":   None if ghost_ctx.is_ghost else ghost_ctx.admin_user_id,
+        "assigned_source": ghost_ctx.source_label if ghost_ctx.is_ghost else "admin",
     }
     if body.note:
         update["notes"] = body.note
@@ -221,9 +219,12 @@ async def reassign_application(
     if not res.data:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    settings = get_settings()
-    admin_id = user["sub"] if not settings.BYPASS_AUTH else "00000000-0000-0000-0000-000000000001"
-    await _audit(client, admin_id, "reassign_application", "application", application_id, old_assignment, {"consultant_id": body.consultant_id, "agency_id": body.agency_id})
+    await ghost_audit(client, ghost_ctx, "reassign_application", "application", application_id, old_assignment, {"consultant_id": body.consultant_id, "agency_id": body.agency_id})
+
+    # Notify the new consultant (masked in ghost mode)
+    await ghost_notify_lead_assignment(
+        client, application_id, consultant["user_id"], consultant["id"], ghost_ctx,
+    )
 
     return res.data[0]
 
@@ -242,7 +243,7 @@ async def get_match_settings(client: AsyncClient = Depends(get_client)):
 @router.patch("/match-settings")
 async def update_match_settings(
     body: MatchSettingsUpdate,
-    user: dict = Depends(get_current_user),
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
     client: AsyncClient = Depends(get_client),
 ):
     """Update match scoring weights and AI settings."""
@@ -252,13 +253,11 @@ async def update_match_settings(
     current = current_res.data[0]
 
     update_data = {k: v for k, v in body.model_dump().items() if v is not None}
-    settings = get_settings()
-    admin_id = user["sub"] if not settings.BYPASS_AUTH else "00000000-0000-0000-0000-000000000001"
-    update_data["updated_by"] = admin_id
+    update_data["updated_by"] = ghost_ctx.admin_user_id
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     res = await client.table("match_settings").update(update_data).eq("id", current["id"]).execute()
-    await _audit(client, admin_id, "update_match_settings", "match_settings", current["id"], current, update_data)
+    await ghost_audit(client, ghost_ctx, "update_match_settings", "match_settings", current["id"], current, update_data)
     return res.data[0]
 
 

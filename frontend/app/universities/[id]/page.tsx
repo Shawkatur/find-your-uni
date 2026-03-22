@@ -38,7 +38,7 @@ function UniversityDetailContent() {
           </Link>
           {user ? (
             <Link
-              href={`/${profile?.role === "consultant" ? "consultant" : profile?.role === "admin" ? "admin" : "student"}/dashboard`}
+              href={`/${profile?.role === "consultant" ? "consultant" : "student"}/dashboard`}
               className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-1.5"
             >
               <LayoutDashboard size={14} /> Dashboard
