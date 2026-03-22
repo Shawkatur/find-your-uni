@@ -175,7 +175,7 @@ async def list_agencies(
 @router.post("/agencies", response_model=AgencyOut, status_code=201)
 async def create_agency(
     body: AgencyCreate,
-    user: dict = Depends(require_role("admin")),
+    user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
     res = await client.table("agencies").insert(body.model_dump(exclude_none=True)).execute()
