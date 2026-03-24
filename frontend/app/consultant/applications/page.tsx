@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { List, Columns, MessageCircle, ChevronDown, Plus } from "lucide-react";
+import { List, Columns, MessageCircle, ChevronDown, Plus, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
@@ -132,6 +132,8 @@ export default function ConsultantApplicationsPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const [view, setView] = useState<"list" | "kanban">("list");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState(false);
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["consultant-applications-all"],
@@ -162,6 +164,51 @@ export default function ConsultantApplicationsPage() {
     updateStatus.mutate({ id, status });
   };
 
+  function toggleStudentSelection(studentId: string, checked: boolean) {
+    const next = new Set(selectedStudentIds);
+    if (checked) next.add(studentId);
+    else next.delete(studentId);
+    setSelectedStudentIds(next);
+  }
+
+  // Deduplicate student IDs from visible applications
+  const uniqueStudentIds = [...new Set(applications.map((a) => a.student_id))];
+
+  function toggleAllStudents(checked: boolean) {
+    if (checked) {
+      const next = new Set(selectedStudentIds);
+      for (const sid of uniqueStudentIds) next.add(sid);
+      setSelectedStudentIds(next);
+    } else {
+      const pageIds = new Set(uniqueStudentIds);
+      const next = new Set([...selectedStudentIds].filter((id) => !pageIds.has(id)));
+      setSelectedStudentIds(next);
+    }
+  }
+
+  const allStudentsSelected = uniqueStudentIds.length > 0 && uniqueStudentIds.every((sid) => selectedStudentIds.has(sid));
+
+  async function handleDownloadDossiers() {
+    setDownloading(true);
+    try {
+      const res = await api.post("/dossier/consultant", { student_ids: Array.from(selectedStudentIds) }, { responseType: "blob" });
+      const blob = new Blob([res.data], { type: "application/zip" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "student_dossiers.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setSelectedStudentIds(new Set());
+      toast.success("Dossier downloaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to download dossiers");
+    }
+    setDownloading(false);
+  }
+
   return (
     <PageWrapper
       title="Applications"
@@ -185,6 +232,29 @@ export default function ConsultantApplicationsPage() {
         </div>
       }
     >
+      {/* Selection Bar */}
+      {selectedStudentIds.size > 0 && (
+        <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+          <span className="text-sm text-blue-300 font-medium">
+            {selectedStudentIds.size} student{selectedStudentIds.size !== 1 ? "s" : ""} selected
+          </span>
+          {selectedStudentIds.size > 10 && (
+            <span className="text-xs text-red-400 font-medium">Maximum 10 students per download</span>
+          )}
+          <Button
+            size="sm"
+            disabled={downloading || selectedStudentIds.size > 10 || selectedStudentIds.size === 0}
+            onClick={handleDownloadDossiers}
+          >
+            <Download size={14} className="mr-1.5" />
+            {downloading ? "Compiling ZIP..." : "Download Dossiers"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedStudentIds(new Set())}>
+            Clear
+          </Button>
+        </div>
+      )}
+
       {isLoading ? (
         <LoadingSpinner size="lg" className="py-20" />
       ) : applications.length === 0 ? (
@@ -200,14 +270,33 @@ export default function ConsultantApplicationsPage() {
         />
       ) : view === "list" ? (
         <div className="space-y-2">
+          {applications.length > 0 && (
+            <div className="flex items-center gap-2 mb-1">
+              <input
+                type="checkbox"
+                checked={allStudentsSelected}
+                onChange={(e) => toggleAllStudents(e.target.checked)}
+                className="w-4 h-4 rounded border-white/20 accent-blue-500"
+              />
+              <span className="text-xs text-slate-400">Select all students</span>
+            </div>
+          )}
           {applications.map((app) => (
             <GlassCard key={app.id} hover padding={false} className="p-4">
               <div className="flex items-center justify-between">
-                <Link href={`/consultant/applications/${app.id}`} className="flex-1 min-w-0">
-                  <div className="text-white font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
-                  <div className="text-slate-400 text-xs font-medium">{app.university?.name} · {app.program?.name}</div>
-                  <div className="text-slate-600 text-xs">{new Date(app.updated_at).toLocaleDateString()}</div>
-                </Link>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={selectedStudentIds.has(app.student_id)}
+                    onChange={(e) => toggleStudentSelection(app.student_id, e.target.checked)}
+                    className="w-4 h-4 shrink-0 rounded border-white/20 accent-blue-500"
+                  />
+                  <Link href={`/consultant/applications/${app.id}`} className="flex-1 min-w-0">
+                    <div className="text-white font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
+                    <div className="text-slate-400 text-xs font-medium">{app.university?.name} · {app.program?.name}</div>
+                    <div className="text-slate-600 text-xs">{new Date(app.updated_at).toLocaleDateString()}</div>
+                  </Link>
+                </div>
                 <div className="flex items-center gap-3 ml-4 shrink-0">
                   <StatusBadge status={app.status} />
                   {NEXT_STATUSES[app.status]?.length > 0 && (

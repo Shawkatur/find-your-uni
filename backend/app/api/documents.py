@@ -26,6 +26,13 @@ VALID_DOC_TYPES = {
     "gre", "gmat", "nid", "other",
 }
 
+ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png", "doc", "docx"}
+ALLOWED_CONTENT_TYPES = {
+    "application/pdf", "image/jpeg", "image/png",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+}
+
 
 async def _ensure_bucket(client: AsyncClient) -> None:
     """Create the Supabase Storage bucket if it doesn't exist (idempotent)."""
@@ -79,9 +86,13 @@ async def upload_document(
 
     original_name = file.filename or "document"
     ext = original_name.rsplit(".", 1)[-1].lower() if "." in original_name else "bin"
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=422, detail=f"File type '.{ext}' not allowed. Accepted: {', '.join(sorted(ALLOWED_EXTENSIONS))}")
+    content_type = file.content_type or "application/octet-stream"
+    if content_type not in ALLOWED_CONTENT_TYPES and content_type != "application/octet-stream":
+        raise HTTPException(status_code=422, detail=f"Content type '{content_type}' not allowed")
     doc_id = str(uuid.uuid4())
     key = f"{student['id']}/{doc_id}.{ext}"
-    content_type = file.content_type or "application/octet-stream"
 
     await _ensure_bucket(client)
     try:

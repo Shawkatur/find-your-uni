@@ -145,6 +145,11 @@ async def assign_lead(
 
     consultant = c_res.data[0]
 
+    # Verify the consultant's agency_id matches the provided agency_id
+    consultant_agency = await client.table("consultants").select("agency_id").eq("id", body.consultant_id).limit(1).execute()
+    if consultant_agency.data and consultant_agency.data[0].get("agency_id") != body.agency_id:
+        raise HTTPException(status_code=422, detail="agency_id does not match the consultant's agency")
+
     update: dict = {
         "consultant_id": body.consultant_id,
         "agency_id":     body.agency_id,
@@ -158,10 +163,11 @@ async def assign_lead(
         client.table("applications")
         .update(update)
         .eq("id", application_id)
+        .is_("consultant_id", "null")  # only assign if currently unassigned
         .execute()
     )
     if not res.data:
-        raise HTTPException(status_code=404, detail="Application not found")
+        raise HTTPException(status_code=404, detail="Application not found or already assigned")
 
     await ghost_audit(client, ghost_ctx, "assign_lead", "application", application_id, None, {"consultant_id": body.consultant_id, "agency_id": body.agency_id})
 

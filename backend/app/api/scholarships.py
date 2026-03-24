@@ -1,5 +1,6 @@
 """
 GET  /scholarships              — paginated list with filters
+GET  /scholarships/saved/me     — student's bookmarked scholarships
 GET  /scholarships/{id}         — scholarship detail
 POST /scholarships/{id}/save    — bookmark (student auth)
 DELETE /scholarships/{id}/save  — remove bookmark
@@ -48,6 +49,27 @@ async def list_scholarships(
         .execute()
     )
     return res.data or []
+
+
+# NOTE: /saved/me MUST be registered before /{scholarship_id} to avoid
+# FastAPI matching "saved" as a scholarship_id path parameter.
+@router.get("/saved/me", response_model=list[dict])
+async def get_saved_scholarships(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Return all scholarships bookmarked by the authenticated student."""
+    student = await get_student_by_user_id(client, user["sub"])
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    res = await (
+        client.table("student_scholarship_saves")
+        .select("scholarships(*)")
+        .eq("student_id", student["id"])
+        .execute()
+    )
+    return [row["scholarships"] for row in (res.data or []) if row.get("scholarships")]
 
 
 @router.get("/{scholarship_id}", response_model=dict)
@@ -104,22 +126,3 @@ async def unsave_scholarship(
         .eq("scholarship_id", scholarship_id)
         .execute()
     )
-
-
-@router.get("/saved/me", response_model=list[dict])
-async def get_saved_scholarships(
-    user: dict = Depends(get_current_user),
-    client: AsyncClient = Depends(get_client),
-):
-    """Return all scholarships bookmarked by the authenticated student."""
-    student = await get_student_by_user_id(client, user["sub"])
-    if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
-
-    res = await (
-        client.table("student_scholarship_saves")
-        .select("scholarships(*)")
-        .eq("student_id", student["id"])
-        .execute()
-    )
-    return [row["scholarships"] for row in (res.data or []) if row.get("scholarships")]

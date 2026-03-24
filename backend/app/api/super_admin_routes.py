@@ -8,7 +8,7 @@ All endpoints require:
   2. X-Admin-Secret header (via require_admin_secret)
 """
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -53,12 +53,15 @@ async def analytics_overview(client: AsyncClient = Depends(get_client)):
     agencies_res = await client.table("agencies").select("id", count="exact").execute()
     apps_res = await client.table("applications").select("id", count="exact").execute()
 
-    # Application status breakdown (conversion funnel)
-    status_res = await client.table("applications").select("status").execute()
+    # Application status breakdown (conversion funnel) — count per status
     funnel: dict[str, int] = {}
-    for row in (status_res.data or []):
-        s = row["status"]
-        funnel[s] = funnel.get(s, 0) + 1
+    for st in ["lead", "pre_evaluation", "docs_collection", "applied",
+               "offer_received", "conditional_offer", "visa_stage",
+               "enrolled", "rejected", "withdrawn"]:
+        st_res = await client.table("applications").select("id", count="exact").eq("status", st).execute()
+        count = st_res.count or 0
+        if count > 0:
+            funnel[st] = count
 
     # Unassigned leads
     leads_res = await (
@@ -96,10 +99,11 @@ async def analytics_revenue(
     client: AsyncClient = Depends(get_client),
 ):
     """SSLCommerz BDT revenue aggregates."""
-    # All payments
+    # Filter payments by time window
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=months * 30)).isoformat()
     payments_res = await client.table("payments").select(
         "id, amount_bdt, product, status, created_at"
-    ).execute()
+    ).gte("created_at", cutoff).execute()
     rows = payments_res.data or []
 
     total_paid = 0

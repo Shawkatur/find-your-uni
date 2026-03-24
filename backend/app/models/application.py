@@ -86,7 +86,7 @@ class ReviewOut(BaseModel):
 class ConsultantCreate(BaseModel):
     agency_id: str | None = None
     agency_name: str | None = Field(None, min_length=2, max_length=200)
-    role: Literal["admin", "staff"] = "staff"
+    role: Literal["staff"] = "staff"  # agency-level admin role set by platform admins only
     full_name: str = Field(min_length=2, max_length=120)
     phone: str | None = None
     role_title: str | None = None
@@ -132,10 +132,10 @@ class ForwardBody(BaseModel):
 
 class MatchSettingsUpdate(BaseModel):
     weight_ranking: float | None = Field(None, ge=0, le=1)
-    weight_cost: float | None = Field(None, ge=0, le=1)
+    weight_cost_efficiency: float | None = Field(None, ge=0, le=1)
     weight_bd_acceptance: float | None = Field(None, ge=0, le=1)
     ai_top_n: int | None = Field(None, ge=1, le=20)
-    budget_buffer_pct: int | None = Field(None, ge=0, le=100)
+    filter_budget_buffer: float | None = Field(None, ge=0, le=1)
 
 
 class AgencyCreate(BaseModel):

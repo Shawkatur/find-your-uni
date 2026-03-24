@@ -107,7 +107,8 @@ async def run_matchmaking(
         scored.append((score, breakdown, row))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    top_n = scored[:15]
+    result_limit = int(settings.get("ai_top_n", 10)) + 5  # return slightly more than AI processes
+    top_n = scored[:result_limit]
 
     results: list[MatchResultItem] = []
     for score, breakdown, row in top_n:

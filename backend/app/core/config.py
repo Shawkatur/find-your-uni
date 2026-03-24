@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 from functools import lru_cache
 from typing import Optional
 
@@ -29,6 +30,22 @@ class Settings(BaseSettings):
     APP_SECRET: str = "change-me-in-prod"
     BYPASS_AUTH: bool = False       # set to true to skip JWT checks during testing
     ADMIN_SECRET: str = ""          # if set, all /admin/* routes require X-Admin-Secret header
+
+    @field_validator("APP_SECRET")
+    @classmethod
+    def _check_app_secret(cls, v: str, info) -> str:
+        env = info.data.get("APP_ENV", "development")
+        if env == "production" and v in ("change-me-in-prod", ""):
+            raise ValueError("APP_SECRET must be set to a strong value in production")
+        return v
+
+    @field_validator("CORS_ORIGINS")
+    @classmethod
+    def _check_cors_origins(cls, v: str, info) -> str:
+        env = info.data.get("APP_ENV", "development")
+        if env == "production" and v.strip() == "*":
+            raise ValueError("CORS_ORIGINS must not be '*' in production")
+        return v
     ADMIN_FRONTEND_URL: str = ""   # e.g. https://admin.ourdomain.com (auto-added to CORS)
     # Accept comma-separated string OR JSON array from env
     # Default * allows all origins during testing

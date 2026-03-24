@@ -10,10 +10,18 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import AsyncClient
 
+from pydantic import BaseModel, Field
 from app.core.security import get_current_user, require_role
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
 from app.models.application import ReviewCreate, ReviewOut, AgencyOut, AgencyCreate, ConsultantOut
+
+
+class ConsultantProfileUpdate(BaseModel):
+    full_name: str | None = Field(None, min_length=2, max_length=120)
+    phone: str | None = Field(None, max_length=20)
+    role_title: str | None = Field(None, max_length=100)
+    whatsapp: str | None = Field(None, max_length=20)
 
 router = APIRouter(tags=["consultants"])
 
@@ -39,12 +47,11 @@ async def get_my_profile(
 
 @router.patch("/consultants/me", response_model=dict)
 async def update_my_profile(
-    body: dict,
+    body: ConsultantProfileUpdate,
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
-    allowed = {"full_name", "phone", "role_title", "whatsapp"}
-    update = {k: v for k, v in body.items() if k in allowed}
+    update = body.model_dump(exclude_none=True)
     if not update:
         raise HTTPException(status_code=422, detail="No valid fields to update")
     res = await (
@@ -125,7 +132,8 @@ async def list_consultants(
     offset = (page - 1) * page_size
     query = (
         client.table("consultants")
-        .select("*, agencies(name, avg_rating, review_count)")
+        .select("id, full_name, role_title, agency_id, agencies(name, avg_rating, review_count)")
+        .eq("status", "active")
         .order("created_at", desc=True)
     )
     if agency_id:
@@ -142,8 +150,9 @@ async def get_consultant(
 ):
     res = await (
         client.table("consultants")
-        .select("*, agencies(*)")
+        .select("id, full_name, role_title, agency_id, status, agencies(name, avg_rating, review_count)")
         .eq("id", consultant_id)
+        .eq("status", "active")
         .single()
         .execute()
     )
@@ -178,6 +187,9 @@ async def create_agency(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
+    role = (user.get("app_metadata") or {}).get("role", "student")
+    if role not in ("consultant", "admin", "super_admin"):
+        raise HTTPException(status_code=403, detail="Only consultants or admins can create agencies")
     res = await client.table("agencies").insert(body.model_dump(exclude_none=True)).execute()
     return res.data[0]
 

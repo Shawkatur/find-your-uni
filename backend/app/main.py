@@ -14,7 +14,7 @@ from app.core.config import get_settings
 from app.core.limiter import limiter
 from app.core.logger import logger
 from app.api import auth, match, universities, applications, consultants, documents
-from app.api import admin_routes, super_admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist
+from app.api import admin_routes, super_admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist, dossier
 
 settings = get_settings()
 
@@ -37,15 +37,18 @@ async def _sync_scorecard():
 async def lifespan(app: FastAPI):
     # Startup
     parts = settings.SCORECARD_SYNC_CRON.split()
-    scheduler.add_job(
-        _sync_scorecard,
-        CronTrigger(
-            minute=parts[0], hour=parts[1], day=parts[2],
-            month=parts[3], day_of_week=parts[4]
-        ),
-        id="scorecard_sync",
-        replace_existing=True,
-    )
+    if len(parts) != 5:
+        logger.error("Invalid SCORECARD_SYNC_CRON format (expected 5 fields): %s", settings.SCORECARD_SYNC_CRON)
+    else:
+        scheduler.add_job(
+            _sync_scorecard,
+            CronTrigger(
+                minute=parts[0], hour=parts[1], day=parts[2],
+                month=parts[3], day_of_week=parts[4]
+            ),
+            id="scorecard_sync",
+            replace_existing=True,
+        )
     scheduler.start()
     logger.info("APScheduler started (scorecard sync: %s)", settings.SCORECARD_SYNC_CRON)
     yield
@@ -54,13 +57,14 @@ async def lifespan(app: FastAPI):
 
 
 # ─── App ──────────────────────────────────────────────────────────────────────
+_is_prod = settings.APP_ENV == "production"
 app = FastAPI(
     title="Find Your University API",
     description="Education matchmaking platform for Bangladeshi students",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if _is_prod else "/docs",
+    redoc_url=None if _is_prod else "/redoc",
 )
 
 # Rate limiter middleware
@@ -93,12 +97,13 @@ app.include_router(scholarships.router)
 app.include_router(deadlines.router)
 app.include_router(payments.router)
 app.include_router(shortlist.router)
+app.include_router(dossier.router)
 
 
 # ─── Health ───────────────────────────────────────────────────────────────────
 @app.get("/health", tags=["meta"])
 async def health():
-    return {"status": "ok", "version": "1.0.0", "env": settings.APP_ENV}
+    return {"status": "ok", "version": "1.0.0"}
 
 
 # ─── Global error handler ─────────────────────────────────────────────────────

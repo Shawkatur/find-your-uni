@@ -101,6 +101,7 @@ async def initiate_payment(
 async def verify_payment(
     payment_id: str,
     status: str = "success",
+    user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
     """
@@ -109,10 +110,10 @@ async def verify_payment(
     On failure/cancel, marks as failed. On success, marks as pending_validation
     until IPN confirms.
     """
-    # Look up the payment to confirm it exists and is still pending
+    # Look up the payment to confirm it exists and belongs to the user
     existing = await (
         client.table("payments")
-        .select("id, status")
+        .select("id, status, student_id")
         .eq("id", payment_id)
         .limit(1)
         .execute()
@@ -168,6 +169,34 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
             return {"status": "ignored"}
 
         if vdata.get("status") == "VALID":
+            # Verify the paid amount matches the original payment record
+            pay_res = await (
+                client.table("payments")
+                .select("id, amount_bdt, status")
+                .eq("id", tran_id)
+                .limit(1)
+                .execute()
+            )
+            if not pay_res.data:
+                return {"status": "ignored", "reason": "payment not found"}
+
+            original_amount = pay_res.data[0].get("amount_bdt", 0)
+            paid_amount = float(form.get("amount", 0))
+            if abs(paid_amount - original_amount) > 1:
+                # Amount mismatch — possible tampering
+                from app.core.logger import logger
+                logger.warning(
+                    "IPN amount mismatch for %s: expected %s, got %s",
+                    tran_id, original_amount, paid_amount,
+                )
+                await (
+                    client.table("payments")
+                    .update({"status": "failed", "gateway_response": {"error": "amount_mismatch", "paid": paid_amount, "expected": original_amount}})
+                    .eq("id", tran_id)
+                    .execute()
+                )
+                return {"status": "rejected", "reason": "amount mismatch"}
+
             # Store only safe, known fields from the gateway response
             safe_fields = {
                 "tran_id": form.get("tran_id"),

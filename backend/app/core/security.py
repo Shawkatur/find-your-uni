@@ -72,7 +72,7 @@ def verify_token(token: str) -> dict:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
         except jwt.InvalidTokenError as exc:
             logger.error("HMAC JWT verification failed: %s", exc)
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     # --- Strategy 2: JWKS (EdDSA / RS256 — newer Supabase projects) ---
     try:
@@ -89,10 +89,10 @@ def verify_token(token: str) -> dict:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
     except jwt.InvalidTokenError as exc:
         logger.error("JWKS JWT verification failed (alg=%s): %s", alg, exc)
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     except Exception as exc:
         logger.error("JWKS fetch/verify error: %s", exc)
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Token verification failed: {exc}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token verification failed")
 
 
 def get_current_user(
@@ -102,7 +102,10 @@ def get_current_user(
     When BYPASS_AUTH=true, returns a test user without checking any token."""
     settings = get_settings()
     if settings.BYPASS_AUTH:
-        return TEST_USER
+        if settings.APP_ENV == "production":
+            logger.critical("BYPASS_AUTH is enabled in production! Ignoring.")
+        else:
+            return TEST_USER
     if not credentials:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return verify_token(credentials.credentials)
@@ -116,7 +119,7 @@ def require_role(role: str):
     """
     def _check(user: Annotated[dict, Depends(get_current_user)]) -> dict:
         settings = get_settings()
-        if settings.BYPASS_AUTH:
+        if settings.BYPASS_AUTH and settings.APP_ENV != "production":
             return user
         user_role = (user.get("app_metadata") or {}).get("role", "student")
         allowed = {role}
@@ -135,7 +138,7 @@ def require_super_admin():
     """Dependency factory: only super_admin role is allowed."""
     def _check(user: Annotated[dict, Depends(get_current_user)]) -> dict:
         settings = get_settings()
-        if settings.BYPASS_AUTH:
+        if settings.BYPASS_AUTH and settings.APP_ENV != "production":
             return user
         user_role = (user.get("app_metadata") or {}).get("role", "student")
         if user_role != "super_admin":
@@ -216,19 +219,6 @@ def get_current_student_dep():
         return student
 
     return _dep
-
-
-async def get_consultant_profile(
-    user: Annotated[dict, Depends(get_current_user)],
-    client: "AsyncClient" = None,
-) -> dict:
-    """
-    Dependency that resolves the consultant row for the current user
-    and enforces status='active'.
-    Import get_client separately and use both as Depends in route signatures.
-    Use _get_consultant_profile_factory below for proper DI.
-    """
-    raise NotImplementedError("Use get_active_consultant_dep instead")
 
 
 def get_active_consultant_dep():

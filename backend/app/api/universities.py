@@ -58,6 +58,7 @@ async def list_universities(
 async def semantic_search(
     q: str = Query(..., min_length=3, description="Natural language search query"),
     limit: int = Query(10, ge=1, le=50),
+    user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
     """
@@ -144,7 +145,7 @@ async def create_university(
     client: AsyncClient = Depends(get_client),
 ):
     role = (user.get("app_metadata") or {}).get("role", "student")
-    if role != "admin":
+    if role not in ("admin", "super_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     row = body.model_dump()
@@ -160,7 +161,7 @@ async def update_university(
     client: AsyncClient = Depends(get_client),
 ):
     role = (user.get("app_metadata") or {}).get("role", "student")
-    if role != "admin":
+    if role not in ("admin", "super_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     update_data = body.model_dump(exclude_none=True)

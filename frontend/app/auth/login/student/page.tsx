@@ -43,7 +43,9 @@ export default function StudentLoginPage() {
       return;
     }
 
-    const role = authData.user?.app_metadata?.role ?? authData.user?.user_metadata?.role ?? "student";
+    const rawRole = authData.user?.app_metadata?.role ?? authData.user?.user_metadata?.role ?? "student";
+    const allowedRoles = ["student", "consultant", "admin", "super_admin"];
+    const role = allowedRoles.includes(rawRole) ? rawRole : "student";
     router.push(`/${role}/dashboard`);
   };
 

@@ -54,7 +54,7 @@ async def create_application(
         if dup.data:
             raise HTTPException(status_code=409, detail="A lead application already exists")
 
-    row = body.model_dump()
+    row = body.model_dump(exclude={"student_id"})
     row["student_id"] = student_id  # enforce authenticated student
     row["status_history"] = [{
         "status":     "lead",
@@ -137,7 +137,8 @@ async def get_application_detail(
             raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
         if app.get("agency_id") != consultant["agency_id"]:
             raise HTTPException(status_code=403, detail="Access denied")
-    # role == "admin": allow through
+    elif role not in ("admin", "super_admin"):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     return app
 
@@ -156,12 +157,18 @@ async def update_status(
             raise HTTPException(status_code=403, detail="Consultant profile not found")
         if c_res.data[0].get("status") != "active":
             raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
-    elif role == "student":
-        raise HTTPException(status_code=403, detail="Students cannot update application status")
+    elif role in ("admin", "super_admin"):
+        pass  # admins can update any application
+    else:
+        raise HTTPException(status_code=403, detail="Not authorized to update application status")
 
     app = await get_application(client, app_id)
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
+
+    # Consultant can only update applications in their agency
+    if role == "consultant" and app.get("agency_id") != c_res.data[0]["agency_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
 
     current_status = app["status"]
     new_status     = body.status

@@ -13,9 +13,13 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   useEffect(() => {
-    // Listen for auth state changes and invalidate queries on session change
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      queryClient.invalidateQueries();
+    // Listen for auth state changes — clear cache on sign-out to prevent data leaks
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        queryClient.clear();
+      } else {
+        queryClient.invalidateQueries();
+      }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
