@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Star, Users, ExternalLink } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import api from "@/lib/api";
 import type { Agency, Consultant } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -36,22 +36,17 @@ export default function ConsultantAgenciesPage() {
             {agencyData ? (
               <>
                 <h2 className="text-white font-bold text-lg mb-1">{agencyData.name}</h2>
-                <p className="text-slate-400 text-sm mb-4">{agencyData.city ? `${agencyData.city}, ` : ""}{agencyData.country}</p>
-
-                {agencyData.rating && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <Star size={14} className="text-yellow-400" fill="currentColor" />
-                    <span className="text-white font-semibold">{agencyData.rating.toFixed(1)}</span>
-                    {agencyData.review_count && (
-                      <span className="text-slate-400 text-sm">({agencyData.review_count} reviews)</span>
-                    )}
-                  </div>
+                {agencyData.city && (
+                  <p className="text-slate-400 text-sm mb-4">{agencyData.city}</p>
                 )}
 
-                {agencyData.consultant_count && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <Users size={14} className="text-slate-400" />
-                    <span className="text-slate-300 text-sm">{agencyData.consultant_count} consultants</span>
+                {(agencyData.avg_rating ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star size={14} className="text-yellow-400" fill="currentColor" />
+                    <span className="text-white font-semibold">{agencyData.avg_rating!.toFixed(1)}</span>
+                    {(agencyData.review_count ?? 0) > 0 && (
+                      <span className="text-slate-400 text-sm">({agencyData.review_count} reviews)</span>
+                    )}
                   </div>
                 )}
 

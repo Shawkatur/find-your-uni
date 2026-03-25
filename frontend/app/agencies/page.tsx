@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Star, Users, Building2, ExternalLink } from "lucide-react";
+import { Star, Building2, ExternalLink } from "lucide-react";
 import api from "@/lib/api";
 import type { Agency } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -51,21 +51,16 @@ function AgencyList() {
                   </div>
                   <div>
                     <h3 className="text-white font-semibold">{agency.name}</h3>
-                    <p className="text-slate-400 text-xs">{agency.city ? `${agency.city}, ` : ""}{agency.country}</p>
+                    {agency.city && <p className="text-slate-400 text-xs">{agency.city}</p>}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-slate-400 mb-4">
-                  {agency.rating && (
+                  {(agency.avg_rating ?? 0) > 0 && (
                     <span className="flex items-center gap-1 text-yellow-400">
                       <Star size={13} fill="currentColor" />
-                      {agency.rating.toFixed(1)}
-                      {agency.review_count && <span className="text-slate-500">({agency.review_count})</span>}
-                    </span>
-                  )}
-                  {agency.consultant_count && (
-                    <span className="flex items-center gap-1">
-                      <Users size={13} /> {agency.consultant_count} consultants
+                      {agency.avg_rating!.toFixed(1)}
+                      {(agency.review_count ?? 0) > 0 && <span className="text-slate-500">({agency.review_count})</span>}
                     </span>
                   )}
                 </div>

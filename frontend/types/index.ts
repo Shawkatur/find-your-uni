@@ -179,12 +179,12 @@ export interface Agency {
   id: string;
   name: string;
   license_no?: string;
-  country: string;
+  address?: string;
   city?: string;
   website?: string;
-  rating?: number;
+  avg_rating?: number;
   review_count?: number;
-  consultant_count?: number;
+  is_active?: boolean;
   created_at: string;
 }
 
