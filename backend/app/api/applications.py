@@ -66,7 +66,7 @@ async def create_application(
     return res.data[0]
 
 
-@router.get("", response_model=list[ApplicationOut])
+@router.get("")
 async def list_applications(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
