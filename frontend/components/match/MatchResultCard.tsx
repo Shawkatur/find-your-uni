@@ -59,7 +59,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
       ? "bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]"
       : rank === 3
       ? "bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]"
-      : "bg-[#F8F9FA] text-[#94A3B8] border-[#E2E8F0]";
+      : "bg-[#F8F9FA] text-[#64748B] border-[#E2E8F0]";
 
   return (
     <GlassCard hover className="transition-all duration-300 overflow-hidden">
@@ -88,7 +88,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
               <span className={`text-2xl font-black tracking-tight leading-none ${scoreColor}`}>
                 {pct}
               </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] mt-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#64748B] mt-0.5">
                 match
               </span>
             </div>
@@ -107,7 +107,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
                 {result.university_name}
               </h3>
               <p className="text-[#475569] text-sm font-semibold mt-0.5">{result.program_name}</p>
-              <p className="text-[#94A3B8] text-xs mt-0.5 flex items-center gap-1">
+              <p className="text-[#64748B] text-xs mt-0.5 flex items-center gap-1">
                 <Globe size={10} />
                 {result.country}
               </p>
@@ -135,7 +135,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
           {/* Match bar */}
           <div className="mb-3">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] text-[#94A3B8] font-semibold uppercase tracking-wide">Fit Score</span>
+              <span className="text-[10px] text-[#64748B] font-semibold uppercase tracking-wide">Fit Score</span>
               <span className={`text-[11px] font-black ${scoreColor}`}>{pct}%</span>
             </div>
             <div className="h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
@@ -158,9 +158,9 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
                   key={label}
                   className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 text-center"
                 >
-                  <Icon size={13} className="text-[#94A3B8] mx-auto mb-1.5" />
+                  <Icon size={13} className="text-[#64748B] mx-auto mb-1.5" />
                   <div className="text-[#333] font-black text-sm tracking-tight">{value}%</div>
-                  <div className="text-[#94A3B8] text-[9px] uppercase tracking-widest font-bold mt-0.5">
+                  <div className="text-[#64748B] text-[9px] uppercase tracking-widest font-bold mt-0.5">
                     {label}
                   </div>
                   <Progress value={value} className="h-1 mt-2 bg-[#F1F5F9]" />

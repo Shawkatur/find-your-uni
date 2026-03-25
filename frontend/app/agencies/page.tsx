@@ -60,13 +60,13 @@ function AgencyList() {
                     <span className="flex items-center gap-1 text-[#D97706]">
                       <Star size={13} fill="currentColor" />
                       {agency.avg_rating!.toFixed(1)}
-                      {(agency.review_count ?? 0) > 0 && <span className="text-[#94A3B8]">({agency.review_count})</span>}
+                      {(agency.review_count ?? 0) > 0 && <span className="text-[#64748B]">({agency.review_count})</span>}
                     </span>
                   )}
                 </div>
 
                 {agency.license_no && (
-                  <p className="text-[#94A3B8] text-xs mb-4">License: {agency.license_no}</p>
+                  <p className="text-[#64748B] text-xs mb-4">License: {agency.license_no}</p>
                 )}
 
                 {agency.website && (

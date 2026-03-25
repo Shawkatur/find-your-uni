@@ -88,7 +88,7 @@ export default function StudentLoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#64748B] transition-colors"
                 >
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -116,7 +116,7 @@ export default function StudentLoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-[#94A3B8] text-sm mt-6">
+        <p className="text-center text-[#64748B] text-sm mt-6">
           <Link href="/auth/login" className="hover:text-[#64748B] transition-colors">← Choose account type</Link>
         </p>
       </div>

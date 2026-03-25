@@ -87,7 +87,7 @@ export default function ApplicationDetailPage() {
               <div className="flex-1">
                 <h2 className="text-[#333] font-black tracking-tight text-lg">{app.university?.name}</h2>
                 <p className="text-[#64748B] text-sm font-medium">{app.program?.name}</p>
-                <p className="text-[#94A3B8] text-xs mt-0.5">{app.university?.country}</p>
+                <p className="text-[#64748B] text-xs mt-0.5">{app.university?.country}</p>
               </div>
               <StatusBadge status={app.status} />
             </div>
@@ -109,7 +109,7 @@ export default function ApplicationDetailPage() {
                     style={{ width: `${(completedCount / journeySteps.length) * 100}%` }}
                   />
                 </div>
-                <span className="text-xs text-[#94A3B8] font-bold">
+                <span className="text-xs text-[#64748B] font-bold">
                   {completedCount}/{journeySteps.length}
                 </span>
               </div>
@@ -176,7 +176,7 @@ export default function ApplicationDetailPage() {
                             ? "text-[#059669]"
                             : state === "current"
                             ? "text-[#333]"
-                            : "text-[#CBD5E1]"
+                            : "text-[#94A3B8]"
                         }`}
                       >
                         {step.label}
@@ -188,7 +188,7 @@ export default function ApplicationDetailPage() {
                       </div>
                       <p
                         className={`text-xs mt-0.5 font-normal ${
-                          state === "future" ? "text-[#E2E8F0]" : "text-[#94A3B8]"
+                          state === "future" ? "text-[#E2E8F0]" : "text-[#64748B]"
                         }`}
                       >
                         {step.desc}
@@ -196,7 +196,7 @@ export default function ApplicationDetailPage() {
                       {state !== "future" && app.status_history && (() => {
                         const entry = app.status_history.find((h) => h.status === step.status);
                         return entry ? (
-                          <p className="text-[10px] text-[#CBD5E1] mt-1 flex items-center gap-1">
+                          <p className="text-[10px] text-[#94A3B8] mt-1 flex items-center gap-1">
                             <Clock size={9} />
                             {new Date(entry.changed_at).toLocaleDateString("en-US", {
                               month: "short", day: "numeric", year: "numeric",
@@ -239,7 +239,7 @@ export default function ApplicationDetailPage() {
                         <div className="text-[#333] text-sm font-semibold capitalize">
                           {doc.doc_type.replace(/_/g, " ")}
                         </div>
-                        <div className="text-[#94A3B8] text-xs">{doc.filename}</div>
+                        <div className="text-[#64748B] text-xs">{doc.filename}</div>
                       </div>
                     </div>
                     {doc.url && (
@@ -252,7 +252,7 @@ export default function ApplicationDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-[#94A3B8] text-sm">No documents uploaded for this application yet.</p>
+              <p className="text-[#64748B] text-sm">No documents uploaded for this application yet.</p>
             )}
           </GlassCard>
         </div>
@@ -289,17 +289,17 @@ export default function ApplicationDetailPage() {
             <h3 className="text-[#333] font-black tracking-tight mb-4">App Info</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-[#94A3B8] font-medium">Status</span>
+                <span className="text-[#64748B] font-medium">Status</span>
                 <StatusBadge status={app.status} />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#94A3B8] font-medium">Created</span>
+                <span className="text-[#64748B] font-medium">Created</span>
                 <span className="text-[#333] font-semibold">
                   {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#94A3B8] font-medium">Last Updated</span>
+                <span className="text-[#64748B] font-medium">Last Updated</span>
                 <span className="text-[#333] font-semibold">
                   {new Date(app.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>

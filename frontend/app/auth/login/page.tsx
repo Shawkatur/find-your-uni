@@ -53,7 +53,7 @@ export default function LoginPickerPage() {
           </Link>
         </div>
 
-        <p className="text-center text-[#94A3B8] text-sm mt-8">
+        <p className="text-center text-[#64748B] text-sm mt-8">
           <Link href="/" className="hover:text-[#64748B] transition-colors">← Back to home</Link>
         </p>
       </div>

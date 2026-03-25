@@ -66,7 +66,7 @@ export default function StudentDashboard() {
       <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[#94A3B8] text-sm font-semibold uppercase tracking-widest mb-1">
+            <p className="text-[#64748B] text-sm font-semibold uppercase tracking-widest mb-1">
               Student Portal
             </p>
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-none">
@@ -96,10 +96,10 @@ export default function StudentDashboard() {
             <div className="w-7 h-7 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
               <Send size={13} className="text-[#10B981]" />
             </div>
-            <span className="text-[#94A3B8] text-xs font-semibold uppercase tracking-wide">Applied</span>
+            <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wide">Applied</span>
           </div>
           <div className="text-3xl font-black text-[#333] tracking-tight">{applications.length}</div>
-          <div className="text-[#94A3B8] text-xs mt-0.5">unis total</div>
+          <div className="text-[#64748B] text-xs mt-0.5">unis total</div>
         </div>
 
         <div className="glass-card p-4">
@@ -107,10 +107,10 @@ export default function StudentDashboard() {
             <div className="w-7 h-7 rounded-lg bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)] flex items-center justify-center">
               <Clock size={13} className="text-[#3B82F6]" />
             </div>
-            <span className="text-[#94A3B8] text-xs font-semibold uppercase tracking-wide">In Review</span>
+            <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wide">In Review</span>
           </div>
           <div className="text-3xl font-black text-[#333] tracking-tight">{activeCount}</div>
-          <div className="text-[#94A3B8] text-xs mt-0.5">active apps</div>
+          <div className="text-[#64748B] text-xs mt-0.5">active apps</div>
         </div>
 
         <div className="glass-card p-4">
@@ -118,12 +118,12 @@ export default function StudentDashboard() {
             <div className="w-7 h-7 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
               <Trophy size={13} className="text-[#10B981]" />
             </div>
-            <span className="text-[#94A3B8] text-xs font-semibold uppercase tracking-wide">Offers</span>
+            <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wide">Offers</span>
           </div>
           <div className={`text-3xl font-black tracking-tight ${offerCount > 0 ? "text-[#10B981]" : "text-[#333]"}`}>
             {offerCount}
           </div>
-          <div className="text-[#94A3B8] text-xs mt-0.5">offer letters</div>
+          <div className="text-[#64748B] text-xs mt-0.5">offer letters</div>
         </div>
       </div>
 
@@ -235,7 +235,7 @@ export default function StudentDashboard() {
                         >
                           {pct}%
                         </span>
-                        <span className="text-[8px] text-[#94A3B8] uppercase tracking-widest font-bold">fit</span>
+                        <span className="text-[8px] text-[#64748B] uppercase tracking-widest font-bold">fit</span>
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -290,11 +290,11 @@ export default function StudentDashboard() {
                     <div className="text-[#333] text-sm font-bold group-hover:text-[#10B981] transition-colors">
                       {app.university?.name ?? "University"}
                     </div>
-                    <div className="text-[#94A3B8] text-xs font-medium">{app.program?.name}</div>
+                    <div className="text-[#64748B] text-xs font-medium">{app.program?.name}</div>
                   </div>
                   <div className="flex items-center gap-3">
                     <StatusBadge status={app.status} />
-                    <ArrowRight size={13} className="text-[#CBD5E1] group-hover:text-[#10B981] transition-colors" />
+                    <ArrowRight size={13} className="text-[#94A3B8] group-hover:text-[#10B981] transition-colors" />
                   </div>
                 </div>
               </Link>

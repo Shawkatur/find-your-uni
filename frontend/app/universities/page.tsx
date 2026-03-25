@@ -71,7 +71,7 @@ function UniversitiesList() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
             <Input
               placeholder="Search universities..."
               value={search}
@@ -80,7 +80,7 @@ function UniversitiesList() {
             />
           </div>
           <div className="relative">
-            <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
             <Input
               placeholder="Filter by country..."
               value={country}
@@ -117,7 +117,7 @@ function UniversitiesList() {
                   <h3 className="text-[#333] font-semibold mb-1 line-clamp-2">{uni.name}</h3>
                   <p className="text-[#64748B] text-sm mb-4">{uni.city ? `${uni.city}, ` : ""}{uni.country}</p>
 
-                  <div className="flex items-center justify-between text-xs text-[#94A3B8] border-t border-[#E2E8F0] pt-3">
+                  <div className="flex items-center justify-between text-xs text-[#64748B] border-t border-[#E2E8F0] pt-3">
                     {uni.tuition_usd_per_year ? (
                       <span className="flex items-center gap-1">
                         <DollarSign size={12} />

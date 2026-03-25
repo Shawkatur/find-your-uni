@@ -201,11 +201,11 @@ function StudentRegisterForm() {
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
                 i < step ? "bg-[#10B981] text-white" :
                 i === step ? "bg-[#10B981] text-white ring-2 ring-[#10B981]/30" :
-                "bg-[#E2E8F0] text-[#94A3B8]"
+                "bg-[#E2E8F0] text-[#64748B]"
               )}>
                 {i < step ? <Check size={14} /> : i + 1}
               </div>
-              <span className={cn("text-xs hidden sm:block", i === step ? "text-[#333]" : "text-[#94A3B8]")}>
+              <span className={cn("text-xs hidden sm:block", i === step ? "text-[#333]" : "text-[#64748B]")}>
                 {title}
               </span>
             </div>
@@ -231,7 +231,7 @@ function StudentRegisterForm() {
                   </div>
                 ))}
                 {step === 3 && (
-                  <p className="text-[#94A3B8] text-xs">Leave blank if not taken. You can update later.</p>
+                  <p className="text-[#64748B] text-xs">Leave blank if not taken. You can update later.</p>
                 )}
               </div>
             )}
@@ -290,7 +290,7 @@ function StudentRegisterForm() {
           </div>
         </div>
 
-        <p className="text-center text-[#94A3B8] text-sm mt-4">
+        <p className="text-center text-[#64748B] text-sm mt-4">
           Already have an account?{" "}
           <Link href="/auth/login/student" className="text-[#10B981] hover:text-[#059669]">Sign in</Link>
         </p>

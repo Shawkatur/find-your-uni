@@ -102,7 +102,7 @@ export function ShortlistButton({
         size === "sm" ? "w-7 h-7" : "w-9 h-9",
         saved
           ? "bg-[rgba(16,185,129,0.1)] text-[#10B981] border border-[rgba(16,185,129,0.3)] hover:bg-red-50 hover:text-red-500 hover:border-red-200"
-          : "bg-[#F1F5F9] text-[#94A3B8] border border-[#E2E8F0] hover:bg-[rgba(16,185,129,0.08)] hover:text-[#10B981] hover:border-[rgba(16,185,129,0.2)]",
+          : "bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0] hover:bg-[rgba(16,185,129,0.08)] hover:text-[#10B981] hover:border-[rgba(16,185,129,0.2)]",
         isPending && "opacity-50 cursor-not-allowed",
         className
       )}

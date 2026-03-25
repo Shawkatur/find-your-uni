@@ -96,14 +96,14 @@ export default function DocumentsPage() {
             </div>
             <div>
               <h2 className="text-[#333] font-black tracking-tight">Doc Readiness</h2>
-              <p className="text-[#94A3B8] text-xs font-medium mt-0.5">
+              <p className="text-[#64748B] text-xs font-medium mt-0.5">
                 {requiredUploaded}/{requiredCount} required docs uploaded
               </p>
             </div>
           </div>
           <div className="text-right">
             <div className="text-3xl font-black text-[#333] tracking-tight">{uploadedCount}</div>
-            <div className="text-[#94A3B8] text-xs">/ {DOC_TYPES.length} docs</div>
+            <div className="text-[#64748B] text-xs">/ {DOC_TYPES.length} docs</div>
           </div>
         </div>
 
@@ -120,7 +120,7 @@ export default function DocumentsPage() {
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <div className="flex justify-between text-xs text-[#CBD5E1] font-medium">
+        <div className="flex justify-between text-xs text-[#94A3B8] font-medium">
           <span>0%</span>
           <span className={progressPct >= 100 ? "text-[#10B981] font-bold" : "text-[#64748B]"}>
             {progressPct}% complete
@@ -149,13 +149,13 @@ export default function DocumentsPage() {
                   {isDone ? (
                     <CheckCircle2 size={18} className="text-[#10B981]" />
                   ) : (
-                    <Circle size={18} className="text-[#CBD5E1]" />
+                    <Circle size={18} className="text-[#94A3B8]" />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm font-bold tracking-tight ${isDone ? "text-[#333]" : "text-[#94A3B8]"}`}>
+                    <span className={`text-sm font-bold tracking-tight ${isDone ? "text-[#333]" : "text-[#64748B]"}`}>
                       {docTypeItem.label}
                     </span>
                     {docTypeItem.required && !isDone && (
@@ -180,7 +180,7 @@ export default function DocumentsPage() {
                             )}
                             <button
                               onClick={() => setDeleteId(doc.id)}
-                              className="text-[#CBD5E1] hover:text-red-500 transition-colors"
+                              className="text-[#94A3B8] hover:text-red-500 transition-colors"
                             >
                               <Trash2 size={11} />
                             </button>
@@ -196,7 +196,7 @@ export default function DocumentsPage() {
                         setDocType(docTypeItem.value);
                         setTimeout(() => fileRef.current?.click(), 50);
                       }}
-                      className="mt-1.5 text-xs text-[#94A3B8] hover:text-[#10B981] transition-colors font-medium flex items-center gap-1"
+                      className="mt-1.5 text-xs text-[#64748B] hover:text-[#10B981] transition-colors font-medium flex items-center gap-1"
                     >
                       <Upload size={10} /> Add file
                     </button>
@@ -248,7 +248,7 @@ export default function DocumentsPage() {
             )}
           </Button>
         </div>
-        <p className="text-[#CBD5E1] text-xs mt-2">PDF, DOC, DOCX, JPG, PNG · max 10MB</p>
+        <p className="text-[#94A3B8] text-xs mt-2">PDF, DOC, DOCX, JPG, PNG · max 10MB</p>
       </GlassCard>
 
       {isLoading && <LoadingSpinner size="lg" className="py-10" />}

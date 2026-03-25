@@ -192,7 +192,7 @@ export default function StudentProfilePage() {
               {renderField("GRE Score (260–340)", "gre_score", "number", "320")}
               {renderField("GMAT Score (200–800)", "gmat_score", "number", "680")}
             </div>
-            <p className="text-[#94A3B8] text-xs mt-4">Leave blank if not applicable.</p>
+            <p className="text-[#64748B] text-xs mt-4">Leave blank if not applicable.</p>
           </GlassCard>
         </TabsContent>
 

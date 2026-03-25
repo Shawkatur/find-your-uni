@@ -146,7 +146,7 @@ export default function MatchPage() {
             <p className="text-[#333] font-bold text-lg mb-1 transition-all duration-500">
               {LOADING_STEPS[loadingStep]}
             </p>
-            <p className="text-[#94A3B8] text-sm">Usually takes 10–20 seconds.</p>
+            <p className="text-[#64748B] text-sm">Usually takes 10–20 seconds.</p>
           </div>
 
           {/* Progress dots */}
@@ -172,7 +172,7 @@ export default function MatchPage() {
               <p className="text-[#333] font-black text-lg">
                 {results.length} unis matched
               </p>
-              <p className="text-[#94A3B8] text-sm mt-0.5">
+              <p className="text-[#64748B] text-sm mt-0.5">
                 Ranked by fit score based on your profile
               </p>
             </div>

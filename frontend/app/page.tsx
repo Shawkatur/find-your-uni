@@ -207,11 +207,11 @@ export default function LandingPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-[#333] font-black tracking-tight text-sm">University of Toronto</div>
-                    <div className="text-[#94A3B8] text-xs font-medium">Canada · QS #21</div>
+                    <div className="text-[#64748B] text-xs font-medium">Canada · QS #21</div>
                   </div>
                   <div className="text-right">
                     <div className="text-[#059669] font-black text-xl tracking-tight">92%</div>
-                    <div className="text-[#94A3B8] text-xs">Fit Score</div>
+                    <div className="text-[#64748B] text-xs">Fit Score</div>
                   </div>
                 </div>
                 <div className="h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
@@ -231,11 +231,11 @@ export default function LandingPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-[#333] font-black tracking-tight text-sm">TU Munich</div>
-                    <div className="text-[#94A3B8] text-xs font-medium">Germany · QS #37</div>
+                    <div className="text-[#64748B] text-xs font-medium">Germany · QS #37</div>
                   </div>
                   <div className="text-right">
                     <div className="text-[#2563EB] font-black text-xl tracking-tight">85%</div>
-                    <div className="text-[#94A3B8] text-xs">Fit Score</div>
+                    <div className="text-[#64748B] text-xs">Fit Score</div>
                   </div>
                 </div>
                 <div className="h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
@@ -283,7 +283,7 @@ export default function LandingPage() {
             </div>
             <span className="text-[#64748B] text-sm font-medium">Find Your Uni © 2026</span>
           </div>
-          <div className="flex gap-6 text-sm text-[#94A3B8]">
+          <div className="flex gap-6 text-sm text-[#64748B]">
             <Link href="/universities" className="hover:text-[#333] transition-colors font-medium">Universities</Link>
             <Link href="/agencies" className="hover:text-[#333] transition-colors font-medium">Agencies</Link>
             <Link href="/auth/login" className="hover:text-[#333] transition-colors font-medium">Sign In</Link>

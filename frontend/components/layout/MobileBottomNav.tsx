@@ -66,13 +66,13 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
             >
               <Icon
                 size={17}
-                className={active ? "text-[#10B981]" : "text-[#94A3B8]"}
+                className={active ? "text-[#10B981]" : "text-[#64748B]"}
               />
             </div>
             <span
               className={cn(
                 "text-[10px] font-bold uppercase tracking-wide leading-none",
-                active ? "text-[#10B981]" : "text-[#94A3B8]"
+                active ? "text-[#10B981]" : "text-[#64748B]"
               )}
             >
               {tab.label}

@@ -150,7 +150,7 @@ function UniversityDetailContent() {
                       <div className="text-[#475569] text-sm">${prog.annual_tuition_usd.toLocaleString()}/yr</div>
                     )}
                     {prog.application_deadline && (
-                      <div className="text-[#94A3B8] text-xs">Deadline: {new Date(prog.application_deadline).toLocaleDateString()}</div>
+                      <div className="text-[#64748B] text-xs">Deadline: {new Date(prog.application_deadline).toLocaleDateString()}</div>
                     )}
                   </div>
                 </div>

@@ -138,17 +138,17 @@ export default function ApplicationsPage() {
 
                     {/* University icon */}
                     <div className="w-9 h-9 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center justify-center shrink-0">
-                      <Building2 size={15} className="text-[#94A3B8]" />
+                      <Building2 size={15} className="text-[#64748B]" />
                     </div>
 
                     <div className="min-w-0">
                       <h3 className="text-[#333] font-black text-sm tracking-tight truncate">
                         {app.university?.name ?? "University"}
                       </h3>
-                      <p className="text-[#94A3B8] text-xs font-medium mt-0.5">
+                      <p className="text-[#64748B] text-xs font-medium mt-0.5">
                         {app.program?.name ?? "Program"}
                       </p>
-                      <p className="text-[#CBD5E1] text-xs mt-0.5">
+                      <p className="text-[#94A3B8] text-xs mt-0.5">
                         Updated{" "}
                         {new Date(app.updated_at).toLocaleDateString("en-US", {
                           month: "short",
@@ -160,7 +160,7 @@ export default function ApplicationsPage() {
                   </div>
                   <div className="flex items-center gap-3 ml-4 shrink-0">
                     <StatusBadge status={app.status} />
-                    <ArrowRight size={14} className="text-[#CBD5E1] group-hover:text-[#10B981] transition-colors" />
+                    <ArrowRight size={14} className="text-[#94A3B8] group-hover:text-[#10B981] transition-colors" />
                   </div>
                 </div>
               </div>

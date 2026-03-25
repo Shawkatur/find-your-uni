@@ -86,7 +86,7 @@ function StudentShortlistContent() {
           </div>
         ) : items.length === 0 ? (
           <GlassCard className="text-center py-16">
-            <Bookmark size={40} className="text-[#CBD5E1] mx-auto mb-4" />
+            <Bookmark size={40} className="text-[#94A3B8] mx-auto mb-4" />
             <p className="text-[#64748B] text-sm mb-4">No unis saved yet</p>
             <Link
               href="/universities"
@@ -106,7 +106,7 @@ function StudentShortlistContent() {
                   <button
                     onClick={() => removeMutation.mutate(item.university_id)}
                     disabled={removeMutation.isPending}
-                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-[#F1F5F9] text-[#94A3B8] hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-[#F1F5F9] text-[#64748B] hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
                     title="Remove from shortlist"
                   >
                     <X size={14} />
@@ -160,7 +160,7 @@ function StudentShortlistContent() {
                     <div className="grid grid-cols-2 gap-2 text-xs border-t border-[#E2E8F0] pt-3">
                       {uni.tuition_usd_per_year ? (
                         <div className="flex items-center gap-1 text-[#64748B]">
-                          <DollarSign size={11} className="text-[#94A3B8]" />
+                          <DollarSign size={11} className="text-[#64748B]" />
                           ${uni.tuition_usd_per_year.toLocaleString()}/yr
                         </div>
                       ) : (
@@ -184,7 +184,7 @@ function StudentShortlistContent() {
                     </div>
 
                     {item.note && (
-                      <p className="text-[#94A3B8] text-xs mt-2 italic border-l-2 border-[#E2E8F0] pl-2">
+                      <p className="text-[#64748B] text-xs mt-2 italic border-l-2 border-[#E2E8F0] pl-2">
                         {item.note}
                       </p>
                     )}
