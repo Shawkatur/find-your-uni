@@ -84,7 +84,7 @@ async def list_applications(
         agency_id = consultant_res.data["agency_id"]
         res = await (
             client.table("applications")
-            .select("*, programs(name, university_id), students(full_name, phone)")
+            .select("*, programs(name, universities(name, country)), students(full_name, phone)")
             .eq("agency_id", agency_id)
             .order("updated_at", desc=True)
             .execute()

@@ -343,6 +343,16 @@ PROGRAM_TEMPLATES = [
 
 ALL_STATUSES = list(STATUS_TRANSITIONS.keys())
 
+# Minimal valid PDF for demo document uploads
+MINIMAL_PDF = (
+    b"%PDF-1.0\n1 0 obj<</Pages 2 0 R>>endobj\n"
+    b"2 0 obj<</Kids[3 0 R]/Count 1>>endobj\n"
+    b"3 0 obj<</MediaBox[0 0 612 792]>>endobj\n"
+    b"trailer<</Root 1 0 R>>"
+)
+
+_DOC_TYPES = ["transcript", "passport", "ielts_cert", "cv", "sop"]
+
 _BACHELOR_SUBJECTS = ["CSE", "EEE", "BBA", "Civil Engineering", "Physics", "Chemistry",
                       "Pharmacy", "Textile Engineering", "Architecture", "Economics",
                       "Mechanical Engineering", "Statistics"]
@@ -395,6 +405,13 @@ def _preferred_fields_for(degree: str) -> list:
 async def seed():
     client = await get_client()
 
+    # Ensure storage bucket exists
+    try:
+        await client.storage.create_bucket("documents", {"public": False})
+        print("Created 'documents' storage bucket")
+    except Exception:
+        print("Storage bucket 'documents' already exists")
+
     print("Seeding agencies...")
     agency_ids = []
     for ag in AGENCIES:
@@ -418,6 +435,7 @@ async def seed():
             "agency_id": agency_ids[c["agency_idx"]],
             "role":      c["role"],
             "full_name": c["full_name"],
+            "status":    "active",
         }
         res = await client.table("consultants").insert(row).execute()
         consultant_ids.append(res.data[0]["id"])
@@ -468,6 +486,29 @@ async def seed():
         student_ids.append(res.data[0]["id"])
         print(f"  Student: {name} → {student_ids[-1]}")
 
+    print("\nSeeding demo documents...")
+    total_docs = 0
+    for sid in student_ids:
+        doc_types = random.sample(_DOC_TYPES, k=random.randint(2, 3))
+        for doc_type in doc_types:
+            file_id = str(uuid.uuid4())
+            storage_path = f"{sid}/{file_id}.pdf"
+            try:
+                await client.storage.from_("documents").upload(
+                    storage_path, MINIMAL_PDF,
+                    {"content-type": "application/pdf"},
+                )
+            except Exception as exc:
+                print(f"  ⚠ Storage upload failed for {storage_path}: {exc}")
+                continue
+            await client.table("documents").insert({
+                "student_id":  sid,
+                "doc_type":    doc_type,
+                "storage_url": storage_path,
+            }).execute()
+            total_docs += 1
+    print(f"  Uploaded {total_docs} documents across {len(student_ids)} students")
+
     print("\nSeeding 100 applications...")
     for i in range(100):
         student_id    = random.choice(student_ids)
@@ -497,11 +538,13 @@ async def seed():
 
     print(f"\n✓ Done! Seeded:"
           f"\n  {len(agency_ids)} agencies"
-          f"\n  {len(consultant_ids)} consultants"
+          f"\n  {len(consultant_ids)} consultants (status=active)"
           f"\n  {len(uni_ids)} universities"
           f"\n  {len(program_ids)} programs"
           f"\n  {len(student_ids)} students"
-          f"\n  100 applications")
+          f"\n  {total_docs} documents"
+          f"\n  100 applications"
+          f"\n\n  Consultant login: rahim.chowdhury@seed.test / Seed@12345")
 
 
 if __name__ == "__main__":
