@@ -10,21 +10,21 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Electric Indigo → Blue gradient — the flagship CTA
+        // Emerald primary — the flagship CTA
         default:
-          "bg-gradient-to-br from-indigo-600 to-blue-500 text-white shadow-[0_4px_0_#312e81] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#312e81,0_14px_28px_-8px_rgba(79,70,229,0.55)] active:translate-y-[3px] active:shadow-none",
-        // Magic Purple — for AI/premium features
+          "bg-gradient-to-br from-[#10B981] to-[#059669] text-white shadow-[0_4px_0_#065F46] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#065F46,0_14px_28px_-8px_rgba(16,185,129,0.4)] active:translate-y-[3px] active:shadow-none",
+        // Warm yellow accent — for highlights
         magic:
-          "bg-gradient-to-br from-violet-700 to-violet-500 text-white shadow-[0_4px_0_#4c1d95] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#4c1d95,0_14px_28px_-8px_rgba(139,92,246,0.6)] active:translate-y-[3px] active:shadow-none",
+          "bg-gradient-to-br from-[#FBBF24] to-[#F59E0B] text-[#92400E] shadow-[0_4px_0_#B45309] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#B45309,0_14px_28px_-8px_rgba(251,191,36,0.5)] active:translate-y-[3px] active:shadow-none",
         outline:
-          "border border-white/10 bg-transparent text-slate-300 hover:bg-white/8 hover:text-white hover:border-white/20",
+          "border border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F8FAFC] hover:text-[#333] hover:border-[#CBD5E1]",
         secondary:
-          "bg-slate-700/60 text-slate-200 hover:bg-slate-700 border border-white/10",
+          "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0] border border-[#E2E8F0]",
         ghost:
-          "text-slate-400 hover:text-white hover:bg-white/8",
+          "text-[#64748B] hover:text-[#333] hover:bg-[#F1F5F9]",
         destructive:
-          "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20",
-        link: "text-blue-400 underline-offset-4 hover:underline",
+          "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100",
+        link: "text-[#10B981] underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 gap-1.5 px-4",

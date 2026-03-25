@@ -65,18 +65,18 @@ function StudentShortlistContent() {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#0F172A]">
+    <div className="flex min-h-screen bg-[#F8F9FA]">
       <Sidebar role="student" />
       <main className="flex-1 md:ml-64 p-6 max-w-5xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Bookmark size={20} className="text-blue-400" />
-            <h1 className="text-2xl font-bold text-white">My Shortlist</h1>
+            <Bookmark size={20} className="text-[#10B981]" />
+            <h1 className="text-2xl font-bold text-[#333]">My Shortlist</h1>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-[#64748B] text-sm">
             {items.length > 0
-              ? `${items.length} saved universit${items.length === 1 ? "y" : "ies"}`
-              : "Save universities from Browse or Match to compare them here"}
+              ? `${items.length} saved uni${items.length === 1 ? "" : "s"}`
+              : "Save unis from Browse or Match to compare them here"}
           </p>
         </div>
 
@@ -86,13 +86,13 @@ function StudentShortlistContent() {
           </div>
         ) : items.length === 0 ? (
           <GlassCard className="text-center py-16">
-            <Bookmark size={40} className="text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-sm mb-4">No universities saved yet</p>
+            <Bookmark size={40} className="text-[#CBD5E1] mx-auto mb-4" />
+            <p className="text-[#64748B] text-sm mb-4">No unis saved yet</p>
             <Link
               href="/universities"
-              className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+              className="text-[#10B981] hover:text-[#059669] text-sm font-medium"
             >
-              Browse Universities →
+              Browse Unis →
             </Link>
           </GlassCard>
         ) : (
@@ -106,35 +106,33 @@ function StudentShortlistContent() {
                   <button
                     onClick={() => removeMutation.mutate(item.university_id)}
                     disabled={removeMutation.isPending}
-                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-slate-500 hover:bg-red-600/20 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-[#F1F5F9] text-[#94A3B8] hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
                     title="Remove from shortlist"
                   >
                     <X size={14} />
                   </button>
 
                   <Link href={`/universities/${uni.id}`} className="block">
-                    {/* Header */}
                     <div className="flex items-start gap-3 mb-3 pr-8">
-                      <div className="w-10 h-10 bg-blue-600/10 rounded-xl flex items-center justify-center shrink-0">
-                        <Building2 size={18} className="text-blue-400" />
+                      <div className="w-10 h-10 bg-[rgba(16,185,129,0.06)] rounded-xl flex items-center justify-center shrink-0">
+                        <Building2 size={18} className="text-[#10B981]" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">
+                        <h3 className="text-[#333] font-semibold text-sm leading-snug line-clamp-2">
                           {uni.name}
                         </h3>
-                        <p className="text-slate-400 text-xs mt-0.5">
+                        <p className="text-[#64748B] text-xs mt-0.5">
                           {uni.city ? `${uni.city}, ` : ""}
                           {uni.country}
                         </p>
                       </div>
                     </div>
 
-                    {/* Badges row */}
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {uni.ranking_qs && (
                         <Badge
                           variant="outline"
-                          className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10 text-[10px]"
+                          className="border-[#FDE68A] text-[#D97706] bg-[#FFFBEB] text-[10px]"
                         >
                           <Star size={9} className="mr-1" /> QS #{uni.ranking_qs}
                         </Badge>
@@ -142,7 +140,7 @@ function StudentShortlistContent() {
                       {uni.scholarships_available && (
                         <Badge
                           variant="outline"
-                          className="border-green-500/30 text-green-400 bg-green-500/10 text-[10px]"
+                          className="border-[rgba(16,185,129,0.2)] text-[#059669] bg-[rgba(16,185,129,0.05)] text-[10px]"
                         >
                           <BadgeCheck size={9} className="mr-1" />
                           Scholarships
@@ -152,43 +150,41 @@ function StudentShortlistContent() {
                       {item.added_by_role === "consultant" && (
                         <Badge
                           variant="outline"
-                          className="border-indigo-500/30 text-indigo-400 bg-indigo-500/10 text-[10px]"
+                          className="border-[rgba(59,130,246,0.2)] text-[#2563EB] bg-[rgba(59,130,246,0.05)] text-[10px]"
                         >
                           <UserCheck size={9} className="mr-1" /> By Consultant
                         </Badge>
                       )}
                     </div>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-2 text-xs border-t border-white/8 pt-3">
+                    <div className="grid grid-cols-2 gap-2 text-xs border-t border-[#E2E8F0] pt-3">
                       {uni.tuition_usd_per_year ? (
-                        <div className="flex items-center gap-1 text-slate-400">
-                          <DollarSign size={11} className="text-slate-500" />
+                        <div className="flex items-center gap-1 text-[#64748B]">
+                          <DollarSign size={11} className="text-[#94A3B8]" />
                           ${uni.tuition_usd_per_year.toLocaleString()}/yr
                         </div>
                       ) : (
                         <span />
                       )}
                       {uni.min_ielts && (
-                        <div className="text-slate-400">
-                          IELTS: <span className="text-white font-medium">{uni.min_ielts}+</span>
+                        <div className="text-[#64748B]">
+                          IELTS: <span className="text-[#333] font-medium">{uni.min_ielts}+</span>
                         </div>
                       )}
                       {uni.min_gpa_percentage && (
-                        <div className="text-slate-400">
-                          GPA: <span className="text-white font-medium">{uni.min_gpa_percentage}%+</span>
+                        <div className="text-[#64748B]">
+                          GPA: <span className="text-[#333] font-medium">{uni.min_gpa_percentage}%+</span>
                         </div>
                       )}
                       {uni.acceptance_rate_bd && (
-                        <div className="text-green-400">
+                        <div className="text-[#059669]">
                           {uni.acceptance_rate_bd}% BD accept
                         </div>
                       )}
                     </div>
 
-                    {/* Note */}
                     {item.note && (
-                      <p className="text-slate-500 text-xs mt-2 italic border-l-2 border-white/10 pl-2">
+                      <p className="text-[#94A3B8] text-xs mt-2 italic border-l-2 border-[#E2E8F0] pl-2">
                         {item.note}
                       </p>
                     )}

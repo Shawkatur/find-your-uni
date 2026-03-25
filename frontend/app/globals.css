@@ -44,40 +44,40 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
-/* ─── Electric Aspiration — Deep Midnight ──────────────── */
+/* ─── Light Sand Theme ────────────────────────────────── */
 :root {
-  --background: #0B0F19;            /* Deep Midnight — premium elite portal */
-  --foreground: #F1F5F9;
-  --card: rgba(17, 24, 39, 0.6);    /* Frosted #111827 glass */
-  --card-foreground: #F1F5F9;
-  --popover: #111827;
-  --popover-foreground: #F1F5F9;
-  --primary: #4F46E5;               /* Electric Indigo */
+  --background: #F8F9FA;
+  --foreground: #333333;
+  --card: #FFFFFF;
+  --card-foreground: #333333;
+  --popover: #FFFFFF;
+  --popover-foreground: #333333;
+  --primary: #10B981;
   --primary-foreground: #ffffff;
-  --secondary: rgba(255, 255, 255, 0.07);
-  --secondary-foreground: #CBD5E1;
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #9CA3AF;      /* Cool Gray for subtext */
-  --accent: rgba(79, 70, 229, 0.15);
-  --accent-foreground: #A5B4FC;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #475569;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #FBBF24;
+  --accent-foreground: #92400E;
   --destructive: #EF4444;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.07);
-  --ring: #4F46E5;
-  --chart-1: #4F46E5;               /* Electric Indigo */
-  --chart-2: #10B981;               /* Mint Green */
-  --chart-3: #F59E0B;
-  --chart-4: #8B5CF6;               /* Vibrant Purple */
+  --border: #E2E8F0;
+  --input: #FFFFFF;
+  --ring: #10B981;
+  --chart-1: #10B981;
+  --chart-2: #3B82F6;
+  --chart-3: #FBBF24;
+  --chart-4: #8B5CF6;
   --chart-5: #EF4444;
   --radius: 0.75rem;
-  --sidebar: #060A12;
-  --sidebar-foreground: #CBD5E1;
-  --sidebar-primary: #4F46E5;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #333333;
+  --sidebar-primary: #10B981;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(79, 70, 229, 0.12);
-  --sidebar-accent-foreground: #A5B4FC;
-  --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-ring: #4F46E5;
+  --sidebar-accent: rgba(16, 185, 129, 0.08);
+  --sidebar-accent-foreground: #059669;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #10B981;
 }
 
 @layer base {
@@ -86,7 +86,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-color: #0B0F19;
+    background-color: #F8F9FA;
     min-height: 100vh;
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   }
@@ -99,104 +99,61 @@
   }
 }
 
-/* ─── Frosted Glass Cards ──────────────────────────────── */
+/* ─── Cards ───────────────────────────────────────────── */
 .glass-card {
-  background: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 1.25rem;
   box-shadow:
-    0 24px 48px -8px rgba(0, 0, 0, 0.7),
-    0 8px 16px -6px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .glass-card-hover {
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .glass-card-hover:hover {
-  background: rgba(17, 24, 39, 0.75);
-  border-color: rgba(79, 70, 229, 0.25);
+  border-color: #CBD5E1;
   transform: translateY(-2px);
   box-shadow:
-    0 28px 52px -8px rgba(0, 0, 0, 0.8),
-    0 12px 20px -6px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-/* ─── Electric Indigo CTA Button ───────────────────────── */
+/* ─── Primary CTA Button (Emerald) ────────────────────── */
 .btn-electric {
-  background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   color: #ffffff;
   font-weight: 700;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 0 #312e81, 0 8px 24px -8px rgba(79, 70, 229, 0.5);
+  box-shadow: 0 4px 0 #065F46, 0 8px 24px -8px rgba(16, 185, 129, 0.35);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .btn-electric:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #312e81, 0 18px 36px -8px rgba(79, 70, 229, 0.65);
+  box-shadow: 0 6px 0 #065F46, 0 18px 36px -8px rgba(16, 185, 129, 0.45);
 }
 .btn-electric:active {
   transform: translateY(3px) scale(0.97);
   box-shadow: none;
 }
 
-/* ─── Magic / Premium Purple Button ────────────────────── */
+/* ─── Accent Yellow Button ────────────────────────────── */
 .btn-magic {
-  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  color: #92400E;
   font-weight: 700;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 0 #4c1d95, 0 8px 24px -8px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 4px 0 #B45309, 0 8px 24px -8px rgba(251, 191, 36, 0.4);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .btn-magic:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #4c1d95, 0 18px 36px -8px rgba(139, 92, 246, 0.75);
+  box-shadow: 0 6px 0 #B45309, 0 18px 36px -8px rgba(251, 191, 36, 0.55);
 }
 .btn-magic:active {
   transform: translateY(3px) scale(0.97);
   box-shadow: none;
-}
-
-/* ─── Glow Effects ─────────────────────────────────────── */
-.glow-blue {
-  position: absolute;
-  inset: -16px;
-  background: rgba(59, 130, 246, 0.22);
-  filter: blur(28px);
-  border-radius: 9999px;
-  pointer-events: none;
-  z-index: 0;
-}
-.glow-green {
-  position: absolute;
-  inset: -16px;
-  background: rgba(16, 185, 129, 0.25);
-  filter: blur(28px);
-  border-radius: 9999px;
-  pointer-events: none;
-  z-index: 0;
-}
-.glow-indigo {
-  position: absolute;
-  inset: -16px;
-  background: rgba(79, 70, 229, 0.28);
-  filter: blur(32px);
-  border-radius: 9999px;
-  pointer-events: none;
-  z-index: 0;
-}
-.glow-purple {
-  position: absolute;
-  inset: -16px;
-  background: rgba(139, 92, 246, 0.28);
-  filter: blur(32px);
-  border-radius: 9999px;
-  pointer-events: none;
-  z-index: 0;
 }
 
 /* ─── Tag Pills ───────────────────────────────────────── */
@@ -214,113 +171,95 @@
   white-space: nowrap;
 }
 .tag-pill-blue {
-  background: rgba(59, 130, 246, 0.1);
-  color: #93C5FD;
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563EB;
   border-color: rgba(59, 130, 246, 0.2);
 }
 .tag-pill-indigo {
-  background: rgba(79, 70, 229, 0.12);
-  color: #A5B4FC;
-  border-color: rgba(79, 70, 229, 0.25);
+  background: rgba(79, 70, 229, 0.08);
+  color: #4338CA;
+  border-color: rgba(79, 70, 229, 0.2);
 }
 .tag-pill-green {
-  background: rgba(16, 185, 129, 0.1);
-  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.08);
+  color: #059669;
   border-color: rgba(16, 185, 129, 0.2);
 }
 .tag-pill-yellow {
-  background: rgba(245, 158, 11, 0.1);
-  color: #fcd34d;
-  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(251, 191, 36, 0.1);
+  color: #B45309;
+  border-color: rgba(251, 191, 36, 0.3);
 }
 .tag-pill-red {
-  background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.08);
+  color: #DC2626;
   border-color: rgba(239, 68, 68, 0.2);
 }
 .tag-pill-slate {
-  background: rgba(100, 116, 139, 0.15);
-  color: #94A3B8;
+  background: rgba(100, 116, 139, 0.08);
+  color: #475569;
   border-color: rgba(100, 116, 139, 0.2);
 }
 .tag-pill-purple {
-  background: rgba(139, 92, 246, 0.12);
-  color: #C4B5FD;
-  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.08);
+  color: #7C3AED;
+  border-color: rgba(139, 92, 246, 0.2);
 }
 
 /* ─── Dashed Empty State ──────────────────────────────── */
 .glass-card-dashed {
-  background: rgba(17, 24, 39, 0.35);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  background: #FAFBFC;
+  border: 2px dashed #CBD5E1;
   border-radius: 1.25rem;
   box-shadow: none;
 }
 
-/* ─── Sidebar Gradient ────────────────────────────────── */
+/* ─── Sidebar ────────────────────────────────────────── */
 .sidebar-gradient {
-  background: linear-gradient(180deg, #060A12 0%, #0B0F19 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: #FFFFFF;
+  border-right: 1px solid #E2E8F0;
 }
 
 /* ─── Application Timeline ────────────────────────────── */
 @keyframes pulse-mint {
-  0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.15); }
-  50% { box-shadow: 0 0 16px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.3); }
+  0%, 100% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.3), 0 0 14px rgba(16, 185, 129, 0.1); }
+  50% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.5), 0 0 28px rgba(16, 185, 129, 0.2); }
 }
-@keyframes pulse-indigo {
-  0%, 100% { box-shadow: 0 0 8px rgba(79, 70, 229, 0.6), 0 0 20px rgba(79, 70, 229, 0.2); }
-  50% { box-shadow: 0 0 16px rgba(79, 70, 229, 0.9), 0 0 40px rgba(79, 70, 229, 0.4); }
+@keyframes pulse-emerald {
+  0%, 100% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.4), 0 0 14px rgba(16, 185, 129, 0.15); }
+  50% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.6), 0 0 28px rgba(16, 185, 129, 0.25); }
 }
 .timeline-dot-done {
   background: #10B981;
-  border: 2px solid rgba(16, 185, 129, 0.4);
+  border: 2px solid rgba(16, 185, 129, 0.3);
   animation: pulse-mint 2.5s ease-in-out infinite;
 }
 .timeline-dot-current {
-  background: #4F46E5;
-  border: 2px solid rgba(79, 70, 229, 0.5);
-  animation: pulse-indigo 2s ease-in-out infinite;
+  background: #10B981;
+  border: 2px solid rgba(16, 185, 129, 0.4);
+  animation: pulse-emerald 2s ease-in-out infinite;
 }
 .timeline-dot-future {
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: #E2E8F0;
+  border: 2px solid #CBD5E1;
 }
 .timeline-line-done {
-  background: linear-gradient(to bottom, rgba(16, 185, 129, 0.6), rgba(79, 70, 229, 0.3));
+  background: linear-gradient(to bottom, rgba(16, 185, 129, 0.5), rgba(16, 185, 129, 0.2));
 }
 .timeline-line-current {
-  background: linear-gradient(to bottom, rgba(79, 70, 229, 0.4), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(to bottom, rgba(16, 185, 129, 0.3), #E2E8F0);
 }
 .timeline-line-future {
-  background: rgba(255, 255, 255, 0.05);
+  background: #E2E8F0;
 }
 
-/* ─── Match Reveal Radial Glow ────────────────────────── */
-.match-radial-glow {
-  position: absolute;
-  inset: -24px;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.3) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-.match-radial-glow-green {
-  position: absolute;
-  inset: -24px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ─── Mobile Bottom Nav Glass ─────────────────────────── */
+/* ─── Mobile Bottom Nav ──────────────────────────────── */
 .bottom-nav-glass {
-  background: rgba(6, 10, 18, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 -8px 32px -8px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-top: 1px solid #E2E8F0;
+  box-shadow: 0 -4px 16px -4px rgba(0, 0, 0, 0.06);
 }
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -335,9 +274,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }

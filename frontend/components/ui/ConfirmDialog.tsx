@@ -34,17 +34,17 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-slate-900 border-white/10">
+      <AlertDialogContent className="bg-white border-[#E2E8F0]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-white">{title}</AlertDialogTitle>
+          <AlertDialogTitle className="text-[#333]">{title}</AlertDialogTitle>
           {description && (
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-[#64748B]">
               {description}
             </AlertDialogDescription>
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-white/8 border-white/10 text-slate-300 hover:bg-white/12">
+          <AlertDialogCancel className="bg-[#F1F5F9] border-[#E2E8F0] text-[#475569] hover:bg-[#E2E8F0]">
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
@@ -52,7 +52,7 @@ export function ConfirmDialog({
             className={
               destructive
                 ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-[#10B981] hover:bg-[#059669] text-white"
             }
           >
             {confirmLabel}

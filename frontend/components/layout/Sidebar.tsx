@@ -51,21 +51,21 @@ export function Sidebar({ role }: SidebarProps) {
   return (
     <aside className="fixed left-0 top-0 h-full w-64 sidebar-gradient z-40 hidden md:flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-white/6">
+      <div className="h-16 flex items-center px-5 border-b border-[#E2E8F0]">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30 group-hover:shadow-blue-600/50 transition-shadow">
+          <div className="w-9 h-9 bg-[#10B981] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 transition-shadow">
             <GraduationCap size={18} className="text-white" />
           </div>
           <div className="leading-tight">
-            <div className="font-black tracking-tight text-white text-sm leading-none">Find Your</div>
-            <div className="font-black tracking-tight text-blue-400 text-sm leading-tight">University</div>
+            <div className="font-black tracking-tight text-[#333] text-sm leading-none">Find Your</div>
+            <div className="font-black tracking-tight text-[#10B981] text-sm leading-tight">Uni</div>
           </div>
         </Link>
       </div>
 
       {/* Role badge */}
       <div className="px-5 pt-5 pb-2">
-        <span className="tag-pill tag-pill-blue">
+        <span className="tag-pill tag-pill-green">
           {role} portal
         </span>
       </div>
@@ -82,17 +82,17 @@ export function Sidebar({ role }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all",
                 active
-                  ? "bg-blue-600/15 text-blue-300 border border-blue-500/25 shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-white/6 border border-transparent"
+                  ? "bg-[rgba(16,185,129,0.08)] text-[#059669] border border-[rgba(16,185,129,0.2)] shadow-sm"
+                  : "text-[#64748B] hover:text-[#333] hover:bg-[#F1F5F9] border border-transparent"
               )}
             >
               <Icon
                 size={16}
-                className={active ? "text-blue-400" : ""}
+                className={active ? "text-[#10B981]" : ""}
               />
               {item.label}
               {active && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
+                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#10B981]" />
               )}
             </Link>
           );
@@ -100,13 +100,13 @@ export function Sidebar({ role }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-white/6">
+      <div className="p-4 border-t border-[#E2E8F0]">
         <Link
           href="/universities"
-          className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors font-medium"
+          className="flex items-center gap-2 text-xs text-[#64748B] hover:text-[#333] transition-colors font-medium"
         >
           <Building2 size={12} />
-          Browse Universities
+          Browse Unis
         </Link>
       </div>
     </aside>

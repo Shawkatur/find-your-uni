@@ -40,35 +40,35 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
   const isMidMatch = pct >= 60;
 
   const scoreColor = isHighMatch
-    ? "text-emerald-400"
+    ? "text-[#059669]"
     : isMidMatch
-    ? "text-indigo-400"
-    : "text-yellow-400";
+    ? "text-[#2563EB]"
+    : "text-[#D97706]";
 
   const barColor = isHighMatch
-    ? "from-emerald-500 to-green-400"
+    ? "from-[#10B981] to-[#34D399]"
     : isMidMatch
-    ? "from-indigo-600 to-blue-400"
-    : "from-yellow-500 to-orange-400";
+    ? "from-[#3B82F6] to-[#60A5FA]"
+    : "from-[#F59E0B] to-[#FBBF24]";
 
   // Rank badge color
   const rankColor =
     rank === 1
-      ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/25"
+      ? "bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]"
       : rank === 2
-      ? "bg-slate-400/10 text-slate-300 border-slate-400/20"
+      ? "bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]"
       : rank === 3
-      ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-      : "bg-white/5 text-slate-500 border-white/8";
+      ? "bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]"
+      : "bg-[#F8F9FA] text-[#94A3B8] border-[#E2E8F0]";
 
   return (
     <GlassCard hover className="transition-all duration-300 overflow-hidden">
       {/* Rank stripe at top-left corner */}
       {rank <= 3 && (
         <div className={`absolute top-0 left-0 w-1 h-full rounded-l-[1.25rem] ${
-          rank === 1 ? "bg-gradient-to-b from-yellow-400 to-yellow-600/0" :
-          rank === 2 ? "bg-gradient-to-b from-slate-400 to-slate-400/0" :
-          "bg-gradient-to-b from-orange-400 to-orange-400/0"
+          rank === 1 ? "bg-gradient-to-b from-[#FBBF24] to-[#FBBF24]/0" :
+          rank === 2 ? "bg-gradient-to-b from-[#94A3B8] to-[#94A3B8]/0" :
+          "bg-gradient-to-b from-[#FB923C] to-[#FB923C]/0"
         }`} />
       )}
 
@@ -76,31 +76,19 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
         {/* Score ring */}
         <div className="flex flex-col items-center gap-2 shrink-0">
           <div className="relative">
-            {isHighMatch ? (
-              <div className="match-radial-glow-green" />
-            ) : (
-              <div className="match-radial-glow" />
-            )}
             <div
               className={`relative w-16 h-16 rounded-2xl flex flex-col items-center justify-center z-10 border ${
                 isHighMatch
-                  ? "bg-emerald-950/60 border-emerald-500/30"
+                  ? "bg-[#ECFDF5] border-[rgba(16,185,129,0.3)]"
                   : isMidMatch
-                  ? "bg-indigo-950/60 border-indigo-500/30"
-                  : "bg-yellow-950/40 border-yellow-500/20"
+                  ? "bg-[#EFF6FF] border-[rgba(59,130,246,0.3)]"
+                  : "bg-[#FFFBEB] border-[rgba(245,158,11,0.3)]"
               }`}
-              style={{
-                boxShadow: isHighMatch
-                  ? "0 0 40px rgba(16,185,129,0.25)"
-                  : isMidMatch
-                  ? "0 0 40px rgba(79,70,229,0.25)"
-                  : "none",
-              }}
             >
               <span className={`text-2xl font-black tracking-tight leading-none ${scoreColor}`}>
                 {pct}
               </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60 text-current mt-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] mt-0.5">
                 match
               </span>
             </div>
@@ -115,11 +103,11 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="min-w-0">
-              <h3 className="text-white font-black tracking-tight leading-snug truncate">
+              <h3 className="text-[#333] font-black tracking-tight leading-snug truncate">
                 {result.university_name}
               </h3>
-              <p className="text-slate-300 text-sm font-semibold mt-0.5">{result.program_name}</p>
-              <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1">
+              <p className="text-[#475569] text-sm font-semibold mt-0.5">{result.program_name}</p>
+              <p className="text-[#94A3B8] text-xs mt-0.5 flex items-center gap-1">
                 <Globe size={10} />
                 {result.country}
               </p>
@@ -127,16 +115,16 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
             <div className="flex flex-col gap-1.5 shrink-0 items-end">
               {isHighMatch && (
                 <span className="tag-pill tag-pill-green flex items-center gap-1">
-                  <Sparkles size={8} /> High Match
+                  <Sparkles size={8} /> Great Fit
                 </span>
               )}
               {result.ranking_qs && (
-                <span className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
+                <span className="flex items-center gap-1 text-[#D97706] text-xs font-bold">
                   <Star size={10} fill="currentColor" /> QS #{result.ranking_qs}
                 </span>
               )}
               {result.tuition_usd_per_year && (
-                <span className="flex items-center gap-1 text-slate-400 text-xs font-medium">
+                <span className="flex items-center gap-1 text-[#64748B] text-xs font-medium">
                   <DollarSign size={10} />
                   ${result.tuition_usd_per_year.toLocaleString()}/yr
                 </span>
@@ -147,10 +135,10 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
           {/* Match bar */}
           <div className="mb-3">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide">Fit Score</span>
+              <span className="text-[10px] text-[#94A3B8] font-semibold uppercase tracking-wide">Fit Score</span>
               <span className={`text-[11px] font-black ${scoreColor}`}>{pct}%</span>
             </div>
-            <div className="h-1.5 bg-white/6 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
               <div
                 className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-700`}
                 style={{ width: `${pct}%` }}
@@ -168,14 +156,14 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
               ].map(({ label, value, icon: Icon }) => (
                 <div
                   key={label}
-                  className="bg-white/4 border border-white/6 rounded-xl p-3 text-center"
+                  className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 text-center"
                 >
-                  <Icon size={13} className="text-slate-500 mx-auto mb-1.5" />
-                  <div className="text-white font-black text-sm tracking-tight">{value}%</div>
-                  <div className="text-slate-500 text-[9px] uppercase tracking-widest font-bold mt-0.5">
+                  <Icon size={13} className="text-[#94A3B8] mx-auto mb-1.5" />
+                  <div className="text-[#333] font-black text-sm tracking-tight">{value}%</div>
+                  <div className="text-[#94A3B8] text-[9px] uppercase tracking-widest font-bold mt-0.5">
                     {label}
                   </div>
-                  <Progress value={value} className="h-1 mt-2 bg-white/6" />
+                  <Progress value={value} className="h-1 mt-2 bg-[#F1F5F9]" />
                 </div>
               ))}
             </div>
@@ -183,7 +171,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
 
           {/* AI Summary */}
           {result.ai_summary && (
-            <p className="text-slate-400 text-xs italic mb-3 leading-relaxed border-l-2 border-indigo-500/35 pl-3">
+            <p className="text-[#64748B] text-xs italic mb-3 leading-relaxed border-l-2 border-[#10B981]/30 pl-3">
               {result.ai_summary}
             </p>
           )}
@@ -202,7 +190,7 @@ export function MatchResultCard({ result, rank }: MatchResultCardProps) {
             <ShortlistButton universityId={result.university_id} size="sm" />
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-1 text-slate-500 hover:text-indigo-400 text-xs transition-colors font-semibold"
+              className="flex items-center gap-1 text-[#64748B] hover:text-[#10B981] text-xs transition-colors font-semibold"
             >
               {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
               {expanded ? "Hide breakdown" : "Score breakdown"}

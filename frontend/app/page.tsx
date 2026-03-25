@@ -15,23 +15,23 @@ const stats = [
 const steps = [
   {
     icon: FileText,
-    title: "Build Your Profile",
-    description: "Enter your academic history, test scores, and study preferences in minutes.",
+    title: "Tell us about you",
+    description: "Drop in your grades, test scores, and where you want to study. Takes 5 minutes.",
   },
   {
     icon: Sparkles,
-    title: "Get AI-Matched",
-    description: "Our engine ranks universities by fit score using rankings, cost, and BD acceptance rates.",
+    title: "See your top picks",
+    description: "We rank unis by fit using QS rankings, cost, and BD acceptance rates.",
   },
   {
     icon: Building2,
-    title: "Apply with Confidence",
-    description: "Track applications, upload documents, and connect with verified consultants.",
+    title: "Apply and track it all",
+    description: "Track apps, upload docs, and connect with verified consultants.",
   },
 ];
 
 const features = [
-  "AI-powered university matching",
+  "Smart uni matching that actually works",
   "Real QS rankings & BD acceptance data",
   "One-click application tracking",
   "Verified consultant network",
@@ -43,23 +43,23 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#333]">
       {/* Nav */}
-      <nav className="border-b border-white/8 bg-[#0F172A]/80 backdrop-blur-md sticky top-0 z-50">
+      <nav className="border-b border-[#E2E8F0] bg-white/90 backdrop-blur-sm sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+            <div className="w-9 h-9 bg-[#10B981] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <GraduationCap size={18} className="text-white" />
             </div>
-            <span className="font-black tracking-tight text-white text-base">Find Your University</span>
+            <span className="font-black tracking-tight text-[#333] text-base">Find Your Uni</span>
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/universities" className="text-slate-400 hover:text-white text-sm transition-colors font-medium">
+            <Link href="/universities" className="text-[#64748B] hover:text-[#333] text-sm transition-colors font-medium">
               Universities
             </Link>
-            <Link href="/agencies" className="text-slate-400 hover:text-white text-sm transition-colors font-medium">
+            <Link href="/agencies" className="text-[#64748B] hover:text-[#333] text-sm transition-colors font-medium">
               Agencies
             </Link>
             <Link href="/auth/login">
@@ -72,7 +72,7 @@ export default function LandingPage() {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            className="md:hidden p-2 text-[#64748B] hover:text-[#333] transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
@@ -82,11 +82,11 @@ export default function LandingPage() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden border-t border-white/8 bg-[#0F172A]/95 backdrop-blur-md px-6 py-4 flex flex-col gap-4">
-            <Link href="/universities" onClick={() => setMenuOpen(false)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">
+          <div className="md:hidden border-t border-[#E2E8F0] bg-white px-6 py-4 flex flex-col gap-4">
+            <Link href="/universities" onClick={() => setMenuOpen(false)} className="text-[#475569] hover:text-[#333] text-sm font-medium transition-colors">
               Universities
             </Link>
-            <Link href="/agencies" onClick={() => setMenuOpen(false)} className="text-slate-300 hover:text-white text-sm font-medium transition-colors">
+            <Link href="/agencies" onClick={() => setMenuOpen(false)} className="text-[#475569] hover:text-[#333] text-sm font-medium transition-colors">
               Agencies
             </Link>
             <div className="flex gap-3 pt-1">
@@ -103,39 +103,34 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 pt-28 pb-20 text-center relative">
-        {/* Background glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[90vw] max-w-[600px] h-[300px] sm:h-[400px] bg-blue-600/10 rounded-full blur-3xl" />
-        </div>
-
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-semibold mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.06)] text-[#059669] text-sm font-semibold mb-8">
             <Sparkles size={14} />
-            AI-powered for Bangladeshi students
+            Built for Bangladeshi students
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white leading-none mb-6">
-            Find Your Perfect
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-[#333] leading-none mb-6">
+            Find your
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
-              University
+            <span className="text-[#10B981]">
+              perfect uni
             </span>
           </h1>
 
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-            Our AI matches your profile with over 1,200 universities worldwide.
-            Get ranked results, AI summaries, and apply — all in one place.
+          <p className="text-xl text-[#64748B] max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
+            We crunch your grades, scores, and budget against 1,200+ unis worldwide.
+            Get ranked results and apply — all in one place.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register/student">
               <Button size="lg" className="px-8">
-                Start Matching — Free <ArrowRight size={16} className="ml-1" />
+                Get Started — Free <ArrowRight size={16} className="ml-1" />
               </Button>
             </Link>
             <Link href="/universities">
               <Button variant="outline" size="lg" className="px-8">
-                Browse Universities
+                Browse Unis
               </Button>
             </Link>
           </div>
@@ -146,9 +141,9 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="glass-card p-6 text-center hover:border-blue-500/20 transition-colors">
-              <div className="text-3xl font-black tracking-tight text-white mb-1">{stat.value}</div>
-              <div className="text-slate-400 text-sm font-medium">{stat.label}</div>
+            <div key={stat.label} className="glass-card p-6 text-center hover:border-[#10B981]/20 transition-colors">
+              <div className="text-3xl font-black tracking-tight text-[#333] mb-1">{stat.value}</div>
+              <div className="text-[#64748B] text-sm font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -157,8 +152,8 @@ export default function LandingPage() {
       {/* How It Works */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
-          <h2 className="text-4xl font-black tracking-tight text-white mb-4">How It Works</h2>
-          <p className="text-slate-400 max-w-xl mx-auto font-normal">Three simple steps to find and apply to your dream university.</p>
+          <h2 className="text-4xl font-black tracking-tight text-[#333] mb-4">How It Works</h2>
+          <p className="text-[#64748B] max-w-xl mx-auto font-normal">Three steps. No fluff.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -166,16 +161,16 @@ export default function LandingPage() {
             const Icon = step.icon;
             return (
               <div key={i} className="glass-card glass-card-hover p-8 text-center relative">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-black shadow-lg shadow-blue-600/40">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-[#10B981] rounded-full flex items-center justify-center text-white text-sm font-black shadow-lg shadow-emerald-500/30">
                   {i + 1}
                 </div>
                 <div className="relative inline-flex mb-6 mt-2">
-                  <div className="w-14 h-14 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center justify-center">
-                    <Icon size={24} className="text-blue-400" />
+                  <div className="w-14 h-14 bg-[rgba(16,185,129,0.06)] border border-[rgba(16,185,129,0.15)] rounded-2xl flex items-center justify-center">
+                    <Icon size={24} className="text-[#10B981]" />
                   </div>
                 </div>
-                <h3 className="text-lg font-black tracking-tight text-white mb-2">{step.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed font-normal">{step.description}</p>
+                <h3 className="text-lg font-black tracking-tight text-[#333] mb-2">{step.title}</h3>
+                <p className="text-[#64748B] text-sm leading-relaxed font-normal">{step.description}</p>
               </div>
             );
           })}
@@ -187,17 +182,17 @@ export default function LandingPage() {
         <div className="glass-card p-12">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-black tracking-tight text-white mb-4">
+              <h2 className="text-3xl font-black tracking-tight text-[#333] mb-4">
                 Everything you need to study abroad
               </h2>
-              <p className="text-slate-400 mb-8 font-normal leading-relaxed">
-                Built specifically for Bangladeshi students with real data on BD acceptance rates,
+              <p className="text-[#64748B] mb-8 font-normal leading-relaxed">
+                Built for Bangladeshi students with real data on BD acceptance rates,
                 scholarships, and verified consultant networks.
               </p>
               <div className="grid grid-cols-1 gap-3">
                 {features.map((f) => (
-                  <div key={f} className="flex items-center gap-3 text-slate-300">
-                    <CheckCircle size={16} className="text-emerald-400 shrink-0" />
+                  <div key={f} className="flex items-center gap-3 text-[#475569]">
+                    <CheckCircle size={16} className="text-[#10B981] shrink-0" />
                     <span className="text-sm font-medium">{f}</span>
                   </div>
                 ))}
@@ -205,52 +200,49 @@ export default function LandingPage() {
             </div>
             <div className="space-y-4">
               {/* Preview card 1 */}
-              <div className="glass-card p-5 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+              <div className="glass-card p-5 border-[rgba(16,185,129,0.2)] hover:border-[rgba(16,185,129,0.3)] transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
-                    <Star size={18} className="text-blue-400" />
+                  <div className="w-10 h-10 bg-[rgba(16,185,129,0.06)] rounded-xl flex items-center justify-center">
+                    <Star size={18} className="text-[#10B981]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-white font-black tracking-tight text-sm">University of Toronto</div>
-                    <div className="text-slate-500 text-xs font-medium">Canada · QS #21</div>
+                    <div className="text-[#333] font-black tracking-tight text-sm">University of Toronto</div>
+                    <div className="text-[#94A3B8] text-xs font-medium">Canada · QS #21</div>
                   </div>
                   <div className="text-right">
-                    <div className="relative inline-block">
-                      <div className="glow-green" style={{ inset: "-8px" }} />
-                      <div className="relative text-emerald-400 font-black text-xl tracking-tight">92%</div>
-                    </div>
-                    <div className="text-slate-500 text-xs">Match Score</div>
+                    <div className="text-[#059669] font-black text-xl tracking-tight">92%</div>
+                    <div className="text-[#94A3B8] text-xs">Fit Score</div>
                   </div>
                 </div>
-                <div className="h-2 bg-white/8 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full" style={{ width: "92%" }} />
+                <div className="h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#10B981] to-[#34D399] rounded-full" style={{ width: "92%" }} />
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <span className="tag-pill tag-pill-green">High Match</span>
+                  <span className="tag-pill tag-pill-green">Great Fit</span>
                   <span className="tag-pill tag-pill-blue">Scholarship</span>
                 </div>
               </div>
 
               {/* Preview card 2 */}
-              <div className="glass-card p-5 hover:border-white/20 transition-colors">
+              <div className="glass-card p-5 hover:border-[#CBD5E1] transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center">
-                    <Building2 size={18} className="text-purple-400" />
+                  <div className="w-10 h-10 bg-[rgba(59,130,246,0.06)] rounded-xl flex items-center justify-center">
+                    <Building2 size={18} className="text-[#3B82F6]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-white font-black tracking-tight text-sm">TU Munich</div>
-                    <div className="text-slate-500 text-xs font-medium">Germany · QS #37</div>
+                    <div className="text-[#333] font-black tracking-tight text-sm">TU Munich</div>
+                    <div className="text-[#94A3B8] text-xs font-medium">Germany · QS #37</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-blue-400 font-black text-xl tracking-tight">85%</div>
-                    <div className="text-slate-500 text-xs">Match Score</div>
+                    <div className="text-[#2563EB] font-black text-xl tracking-tight">85%</div>
+                    <div className="text-[#94A3B8] text-xs">Fit Score</div>
                   </div>
                 </div>
-                <div className="h-2 bg-white/8 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: "85%" }} />
+                <div className="h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] rounded-full" style={{ width: "85%" }} />
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <span className="tag-pill tag-pill-blue">Good Match</span>
+                  <span className="tag-pill tag-pill-blue">Good Fit</span>
                 </div>
               </div>
             </div>
@@ -260,21 +252,16 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-6 py-20">
-        <div
-          className="glass-card p-16 text-center border-blue-500/20 relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, rgba(37,99,235,0.15), rgba(147,51,234,0.1))" }}
-        >
-          {/* background glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-purple-600/10 pointer-events-none" />
+        <div className="glass-card p-16 text-center border-[rgba(16,185,129,0.15)] relative overflow-hidden bg-[rgba(16,185,129,0.02)]">
           <div className="relative">
-            <h2 className="text-4xl font-black tracking-tight text-white mb-4">Ready to find your university?</h2>
-            <p className="text-slate-300 mb-10 max-w-md mx-auto font-normal leading-relaxed">
-              Join hundreds of Bangladeshi students who found their perfect university match.
+            <h2 className="text-4xl font-black tracking-tight text-[#333] mb-4">Ready to find your uni?</h2>
+            <p className="text-[#64748B] mb-10 max-w-md mx-auto font-normal leading-relaxed">
+              Join hundreds of Bangladeshi students who found their perfect uni match.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/register/student">
                 <Button size="lg" className="px-8">
-                  Register as Student
+                  Get Started
                 </Button>
               </Link>
               <Link href="/agencies">
@@ -288,18 +275,18 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/8 py-10">
+      <footer className="border-t border-[#E2E8F0] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 bg-[#10B981] rounded-lg flex items-center justify-center">
               <GraduationCap size={14} className="text-white" />
             </div>
-            <span className="text-slate-400 text-sm font-medium">Find Your University © 2026</span>
+            <span className="text-[#64748B] text-sm font-medium">Find Your Uni © 2026</span>
           </div>
-          <div className="flex gap-6 text-sm text-slate-500">
-            <Link href="/universities" className="hover:text-slate-300 transition-colors font-medium">Universities</Link>
-            <Link href="/agencies" className="hover:text-slate-300 transition-colors font-medium">Agencies</Link>
-            <Link href="/auth/login" className="hover:text-slate-300 transition-colors font-medium">Sign In</Link>
+          <div className="flex gap-6 text-sm text-[#94A3B8]">
+            <Link href="/universities" className="hover:text-[#333] transition-colors font-medium">Universities</Link>
+            <Link href="/agencies" className="hover:text-[#333] transition-colors font-medium">Agencies</Link>
+            <Link href="/auth/login" className="hover:text-[#333] transition-colors font-medium">Sign In</Link>
           </div>
         </div>
       </footer>

@@ -14,13 +14,13 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // Full linear application journey (matches backend status flow)
 const JOURNEY_STEPS: { status: AppStatus; label: string; desc: string }[] = [
-  { status: "lead",            label: "Lead Created",          desc: "Your application has been started." },
-  { status: "pre_evaluation",  label: "Pre-Evaluation",       desc: "Your profile is being evaluated." },
-  { status: "docs_collection", label: "Document Collection",   desc: "Gathering required documents." },
-  { status: "applied",         label: "Applied",              desc: "Application sent to the university." },
-  { status: "offer_received",  label: "Offer Received",       desc: "Congratulations — you have received an offer!" },
-  { status: "visa_stage",      label: "Visa Stage",           desc: "Processing visa application." },
-  { status: "enrolled",        label: "Enrolled",             desc: "You are now enrolled at this university." },
+  { status: "lead",            label: "Started",                desc: "Your application has been kicked off." },
+  { status: "pre_evaluation",  label: "Pre-Evaluation",        desc: "We're reviewing your profile." },
+  { status: "docs_collection", label: "Docs Collection",        desc: "Gathering your documents." },
+  { status: "applied",         label: "Applied",               desc: "Sent to the uni — fingers crossed!" },
+  { status: "offer_received",  label: "Offer Received",        desc: "You got an offer!" },
+  { status: "visa_stage",      label: "Visa Stage",            desc: "Processing your visa." },
+  { status: "enrolled",        label: "Enrolled",              desc: "You're in! Congrats." },
 ];
 
 // Terminal negative statuses shown separately
@@ -30,7 +30,6 @@ const STATUS_ORDER: AppStatus[] = ["lead", "pre_evaluation", "docs_collection", 
 
 function getStepState(stepStatus: AppStatus, currentStatus: AppStatus): "done" | "current" | "future" {
   if (TERMINAL_NEGATIVE.includes(currentStatus)) {
-    // All steps before current are done; treat last known as done
     return "done";
   }
   const currentIdx = STATUS_ORDER.indexOf(currentStatus);
@@ -48,7 +47,6 @@ export default function ApplicationDetailPage() {
     queryFn: async () => {
       const res = await api.get(`/applications/${id}`);
       const data = res.data;
-      // Map Supabase join names (plural) to frontend field names (singular)
       return {
         ...data,
         student: data.students ?? data.student,
@@ -60,14 +58,14 @@ export default function ApplicationDetailPage() {
   });
 
   if (isLoading) return <LoadingSpinner size="lg" className="mt-20" />;
-  if (!app) return <div className="text-slate-400 text-center mt-20">Application not found.</div>;
+  if (!app) return <div className="text-[#64748B] text-center mt-20">Application not found.</div>;
 
   const whatsappLink = app.consultant?.whatsapp
     ? `https://wa.me/${app.consultant.whatsapp.replace(/\D/g, "")}`
     : null;
 
   const isTerminalNegative = TERMINAL_NEGATIVE.includes(app.status);
-  const journeySteps = isTerminalNegative ? JOURNEY_STEPS : JOURNEY_STEPS;
+  const journeySteps = JOURNEY_STEPS;
   const completedCount = isTerminalNegative
     ? STATUS_ORDER.length
     : STATUS_ORDER.indexOf(app.status) + 1;
@@ -83,16 +81,13 @@ export default function ApplicationDetailPage() {
           {/* University header card */}
           <GlassCard>
             <div className="flex items-start gap-4">
-              <div
-                className="w-14 h-14 bg-indigo-600/10 rounded-2xl flex items-center justify-center shrink-0 border border-indigo-500/20"
-                style={{ boxShadow: "0 0 30px rgba(79,70,229,0.2)" }}
-              >
-                <Building2 size={22} className="text-indigo-400" />
+              <div className="w-14 h-14 bg-[rgba(16,185,129,0.06)] rounded-2xl flex items-center justify-center shrink-0 border border-[rgba(16,185,129,0.15)]">
+                <Building2 size={22} className="text-[#10B981]" />
               </div>
               <div className="flex-1">
-                <h2 className="text-white font-black tracking-tight text-lg">{app.university?.name}</h2>
-                <p className="text-slate-400 text-sm font-medium">{app.program?.name}</p>
-                <p className="text-slate-500 text-xs mt-0.5">{app.university?.country}</p>
+                <h2 className="text-[#333] font-black tracking-tight text-lg">{app.university?.name}</h2>
+                <p className="text-[#64748B] text-sm font-medium">{app.program?.name}</p>
+                <p className="text-[#94A3B8] text-xs mt-0.5">{app.university?.country}</p>
               </div>
               <StatusBadge status={app.status} />
             </div>
@@ -102,20 +97,19 @@ export default function ApplicationDetailPage() {
           <GlassCard>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 flex items-center justify-center">
-                  <CheckCircle2 size={14} className="text-emerald-400" />
+                <div className="w-7 h-7 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
+                  <CheckCircle2 size={14} className="text-[#10B981]" />
                 </div>
-                <h3 className="text-white font-black tracking-tight">Application Journey</h3>
+                <h3 className="text-[#333] font-black tracking-tight">Your Journey</h3>
               </div>
-              {/* Progress indicator */}
               <div className="flex items-center gap-2">
-                <div className="w-20 h-1.5 bg-white/6 rounded-full overflow-hidden">
+                <div className="w-20 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-700"
+                    className="h-full bg-gradient-to-r from-[#10B981] to-[#34D399] rounded-full transition-all duration-700"
                     style={{ width: `${(completedCount / journeySteps.length) * 100}%` }}
                   />
                 </div>
-                <span className="text-xs text-slate-500 font-bold">
+                <span className="text-xs text-[#94A3B8] font-bold">
                   {completedCount}/{journeySteps.length}
                 </span>
               </div>
@@ -123,12 +117,12 @@ export default function ApplicationDetailPage() {
 
             {/* Rejected / Withdrawn banner */}
             {isTerminalNegative && (
-              <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/20 flex items-center gap-3">
+              <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                <p className="text-red-400 text-sm font-semibold capitalize">
-                  Application {app.status}
+                <p className="text-red-600 text-sm font-semibold capitalize">
+                  Application {app.status.replace(/_/g, " ")}
                   {app.status_history?.at(-1)?.note && (
-                    <span className="text-red-400/70 font-normal ml-2">
+                    <span className="text-red-400 font-normal ml-2">
                       — {app.status_history.at(-1)!.note}
                     </span>
                   )}
@@ -144,9 +138,7 @@ export default function ApplicationDetailPage() {
 
                 return (
                   <div key={step.status} className="flex gap-4">
-                    {/* Connector column */}
                     <div className="flex flex-col items-center" style={{ minWidth: 20 }}>
-                      {/* Dot */}
                       <div
                         className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center z-10 ${
                           state === "done"
@@ -157,13 +149,12 @@ export default function ApplicationDetailPage() {
                         }`}
                       >
                         {state === "done" && (
-                          <CheckCircle2 size={10} className="text-emerald-950" />
+                          <CheckCircle2 size={10} className="text-white" />
                         )}
                         {state === "current" && (
                           <Circle size={8} className="text-white fill-white" />
                         )}
                       </div>
-                      {/* Line */}
                       {!isLast && (
                         <div
                           className={`w-px flex-1 my-1 ${
@@ -178,36 +169,34 @@ export default function ApplicationDetailPage() {
                       )}
                     </div>
 
-                    {/* Content */}
                     <div className={`pb-5 flex-1 ${isLast ? "pb-0" : ""}`}>
                       <div
                         className={`font-bold text-sm tracking-tight ${
                           state === "done"
-                            ? "text-emerald-400"
+                            ? "text-[#059669]"
                             : state === "current"
-                            ? "text-indigo-300"
-                            : "text-slate-600"
+                            ? "text-[#333]"
+                            : "text-[#CBD5E1]"
                         }`}
                       >
                         {step.label}
                         {state === "current" && (
-                          <span className="ml-2 tag-pill tag-pill-indigo text-[9px] align-middle">
+                          <span className="ml-2 tag-pill tag-pill-green text-[9px] align-middle">
                             Current
                           </span>
                         )}
                       </div>
                       <p
                         className={`text-xs mt-0.5 font-normal ${
-                          state === "future" ? "text-slate-700" : "text-slate-500"
+                          state === "future" ? "text-[#E2E8F0]" : "text-[#94A3B8]"
                         }`}
                       >
                         {step.desc}
                       </p>
-                      {/* Show timestamp from history if available */}
                       {state !== "future" && app.status_history && (() => {
                         const entry = app.status_history.find((h) => h.status === step.status);
                         return entry ? (
-                          <p className="text-[10px] text-slate-600 mt-1 flex items-center gap-1">
+                          <p className="text-[10px] text-[#CBD5E1] mt-1 flex items-center gap-1">
                             <Clock size={9} />
                             {new Date(entry.changed_at).toLocaleDateString("en-US", {
                               month: "short", day: "numeric", year: "numeric",
@@ -226,14 +215,14 @@ export default function ApplicationDetailPage() {
           <GlassCard>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-blue-600/15 border border-blue-500/20 flex items-center justify-center">
-                  <FileText size={13} className="text-blue-400" />
+                <div className="w-7 h-7 rounded-lg bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)] flex items-center justify-center">
+                  <FileText size={13} className="text-[#3B82F6]" />
                 </div>
-                <h3 className="text-white font-black tracking-tight">Documents</h3>
+                <h3 className="text-[#333] font-black tracking-tight">Documents</h3>
               </div>
               <Link href="/student/documents">
                 <Button size="sm" variant="outline">
-                  Manage Documents
+                  Manage Docs
                 </Button>
               </Link>
             </div>
@@ -242,20 +231,20 @@ export default function ApplicationDetailPage() {
                 {app.documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-3 bg-emerald-600/5 border border-emerald-500/15 rounded-xl"
+                    className="flex items-center justify-between p-3 bg-[rgba(16,185,129,0.04)] border border-[rgba(16,185,129,0.12)] rounded-xl"
                   >
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                      <CheckCircle2 size={15} className="text-[#10B981] shrink-0" />
                       <div>
-                        <div className="text-white text-sm font-semibold capitalize">
+                        <div className="text-[#333] text-sm font-semibold capitalize">
                           {doc.doc_type.replace(/_/g, " ")}
                         </div>
-                        <div className="text-slate-500 text-xs">{doc.filename}</div>
+                        <div className="text-[#94A3B8] text-xs">{doc.filename}</div>
                       </div>
                     </div>
                     {doc.url && (
                       <a href={doc.url} target="_blank" rel="noopener noreferrer"
-                        className="text-indigo-400 text-xs hover:text-indigo-300 font-semibold">
+                        className="text-[#10B981] text-xs hover:text-[#059669] font-semibold">
                         View
                       </a>
                     )}
@@ -263,7 +252,7 @@ export default function ApplicationDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 text-sm">No documents uploaded for this application.</p>
+              <p className="text-[#94A3B8] text-sm">No documents uploaded for this application yet.</p>
             )}
           </GlassCard>
         </div>
@@ -273,24 +262,21 @@ export default function ApplicationDetailPage() {
           {/* Consultant */}
           {app.consultant && (
             <GlassCard>
-              <h3 className="text-white font-black tracking-tight mb-4">Your Consultant</h3>
+              <h3 className="text-[#333] font-black tracking-tight mb-4">Your Consultant</h3>
               <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-12 h-12 bg-violet-600/15 rounded-2xl flex items-center justify-center border border-violet-500/25"
-                  style={{ boxShadow: "0 0 20px rgba(139,92,246,0.2)" }}
-                >
-                  <span className="text-violet-400 font-black text-sm">
+                <div className="w-12 h-12 bg-[rgba(16,185,129,0.08)] rounded-2xl flex items-center justify-center border border-[rgba(16,185,129,0.15)]">
+                  <span className="text-[#10B981] font-black text-sm">
                     {app.consultant.full_name.slice(0, 2).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <div className="text-white font-bold text-sm">{app.consultant.full_name}</div>
-                  <div className="text-slate-400 text-xs">{app.consultant.role_title ?? "Consultant"}</div>
+                  <div className="text-[#333] font-bold text-sm">{app.consultant.full_name}</div>
+                  <div className="text-[#64748B] text-xs">{app.consultant.role_title ?? "Consultant"}</div>
                 </div>
               </div>
               {whatsappLink && (
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_4px_0_#065f46] hover:shadow-[0_6px_0_#065f46] active:shadow-none active:translate-y-[3px]">
+                  <Button className="w-full">
                     <MessageCircle size={15} className="mr-2" /> WhatsApp
                   </Button>
                 </a>
@@ -300,21 +286,21 @@ export default function ApplicationDetailPage() {
 
           {/* Application Info */}
           <GlassCard>
-            <h3 className="text-white font-black tracking-tight mb-4">Application Info</h3>
+            <h3 className="text-[#333] font-black tracking-tight mb-4">App Info</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Status</span>
+                <span className="text-[#94A3B8] font-medium">Status</span>
                 <StatusBadge status={app.status} />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Created</span>
-                <span className="text-white font-semibold">
+                <span className="text-[#94A3B8] font-medium">Created</span>
+                <span className="text-[#333] font-semibold">
                   {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Last Updated</span>
-                <span className="text-white font-semibold">
+                <span className="text-[#94A3B8] font-medium">Last Updated</span>
+                <span className="text-[#333] font-semibold">
                   {new Date(app.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               </div>

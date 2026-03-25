@@ -60,19 +60,19 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
               className={cn(
                 "w-10 h-7 rounded-xl flex items-center justify-center transition-all",
                 active
-                  ? "bg-indigo-600/20 border border-indigo-500/25"
+                  ? "bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)]"
                   : ""
               )}
             >
               <Icon
                 size={17}
-                className={active ? "text-indigo-400" : "text-slate-500"}
+                className={active ? "text-[#10B981]" : "text-[#94A3B8]"}
               />
             </div>
             <span
               className={cn(
                 "text-[10px] font-bold uppercase tracking-wide leading-none",
-                active ? "text-indigo-400" : "text-slate-500"
+                active ? "text-[#10B981]" : "text-[#94A3B8]"
               )}
             >
               {tab.label}

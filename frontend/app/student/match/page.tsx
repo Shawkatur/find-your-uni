@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 const LOADING_STEPS = [
-  "Scanning 1,200+ universities...",
-  "Analyzing QS rankings & tuition costs...",
-  "Calculating Bangladeshi acceptance rates...",
-  "Running AI profile matching...",
-  "Ranking universities by fit score...",
+  "Scanning 1,200+ unis...",
+  "Checking QS rankings & tuition...",
+  "Looking at Bangladeshi acceptance rates...",
+  "Matching your profile...",
+  "Ranking unis by fit...",
 ];
 
 export default function MatchPage() {
@@ -53,7 +53,7 @@ export default function MatchPage() {
     },
     onSuccess: (data) => {
       const count = Array.isArray(data) ? data.length : 0;
-      toast.success(count > 0 ? `Found ${count} matched universities!` : "No matches yet — try updating your profile.");
+      toast.success(count > 0 ? `Found ${count} matching unis!` : "No matches yet — try updating your profile.");
       qc.invalidateQueries({ queryKey: ["match-results"] });
       qc.invalidateQueries({ queryKey: ["match-results-preview"] });
       setHasRun(true);
@@ -62,11 +62,11 @@ export default function MatchPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const detail = (err as any)?.response?.data?.detail as string | undefined;
       if (detail?.toLowerCase().includes("student profile not found")) {
-        toast.error("Your student profile is incomplete. Please complete registration first.", { duration: 6000 });
+        toast.error("Your profile is incomplete. Let's finish setting it up first.", { duration: 6000 });
         setTimeout(() => { window.location.href = "/auth/register/student"; }, 3000);
         return;
       }
-      toast.error(detail ?? "Matchmaking failed. Please try again.");
+      toast.error(detail ?? "Matching failed. Give it another shot.");
     },
   });
 
@@ -75,8 +75,8 @@ export default function MatchPage() {
 
   return (
     <PageWrapper
-      title="University Match"
-      subtitle="AI-powered matching based on your academic profile and preferences."
+      title="Uni Match"
+      subtitle="We crunch your grades, scores, and budget against 1,200+ unis worldwide."
       actions={
         results.length > 0 && (
           <Button
@@ -93,44 +93,28 @@ export default function MatchPage() {
       {/* Hero — shown when no results yet */}
       {isEmpty && !hasRun && !runMatch.isPending && (
         <div className="relative flex flex-col items-center text-center py-10 md:py-20 overflow-hidden">
-          {/* Background radial glow */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 60% 50% at 50% 40%, rgba(79,70,229,0.15) 0%, transparent 70%)",
-            }}
-          />
-
           {/* Icon */}
           <div className="relative mb-8">
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: "radial-gradient(circle, rgba(79,70,229,0.4) 0%, transparent 70%)",
-                filter: "blur(24px)",
-              }}
-            />
-            <div className="relative w-24 h-24 rounded-3xl bg-indigo-600/15 border border-indigo-500/25 flex items-center justify-center backdrop-blur-sm">
-              <Sparkles size={40} className="text-indigo-400" />
+            <div className="relative w-24 h-24 rounded-3xl bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.2)] flex items-center justify-center">
+              <Sparkles size={40} className="text-[#10B981]" />
             </div>
           </div>
 
           <h2 className="relative text-2xl sm:text-4xl font-black tracking-tight mb-3">
-            <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Find Your Best Universities
+            <span className="text-[#10B981]">
+              Find your best unis
             </span>
           </h2>
-          <p className="relative text-slate-400 max-w-md mx-auto mb-3 leading-relaxed">
-            Our AI analyzes your academic profile against <strong className="text-white">1,200+ universities</strong> using
-            QS rankings, cost efficiency, and Bangladeshi acceptance rates.
+          <p className="relative text-[#64748B] max-w-md mx-auto mb-3 leading-relaxed">
+            We match your profile against <strong className="text-[#333]">1,200+ unis</strong> using
+            QS rankings, cost, and Bangladeshi acceptance rates.
           </p>
 
           {/* Feature pills */}
           <div className="relative flex flex-wrap gap-2 justify-center mb-10">
-            <span className="tag-pill tag-pill-indigo"><Zap size={9} /> QS Rankings</span>
+            <span className="tag-pill tag-pill-blue"><Zap size={9} /> QS Rankings</span>
             <span className="tag-pill tag-pill-green"><Globe size={9} /> BD Acceptance</span>
-            <span className="tag-pill tag-pill-purple"><Sparkles size={9} /> AI Matching</span>
+            <span className="tag-pill tag-pill-purple"><Sparkles size={9} /> Smart Matching</span>
           </div>
 
           <Button
@@ -140,7 +124,7 @@ export default function MatchPage() {
             className="relative"
           >
             <Sparkles size={18} className="mr-2" />
-            Calculate My Matches
+            Show me my matches
           </Button>
         </div>
       )}
@@ -150,19 +134,19 @@ export default function MatchPage() {
         <div className="flex flex-col items-center justify-center py-10 md:py-20 gap-6">
           {/* Animated rings */}
           <div className="relative w-20 h-20">
-            <div className="absolute inset-0 rounded-full border-2 border-indigo-600/30 animate-ping" />
-            <div className="absolute inset-2 rounded-full border-2 border-indigo-500/50 animate-spin" style={{ animationDuration: "2s" }} />
-            <div className="absolute inset-4 rounded-full border-2 border-t-indigo-400 border-transparent animate-spin" style={{ animationDuration: "1s" }} />
+            <div className="absolute inset-0 rounded-full border-2 border-[#10B981]/30 animate-ping" />
+            <div className="absolute inset-2 rounded-full border-2 border-[#10B981]/50 animate-spin" style={{ animationDuration: "2s" }} />
+            <div className="absolute inset-4 rounded-full border-2 border-t-[#10B981] border-transparent animate-spin" style={{ animationDuration: "1s" }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles size={18} className="text-indigo-400" />
+              <Sparkles size={18} className="text-[#10B981]" />
             </div>
           </div>
 
           <div className="text-center">
-            <p className="text-white font-bold text-lg mb-1 transition-all duration-500">
+            <p className="text-[#333] font-bold text-lg mb-1 transition-all duration-500">
               {LOADING_STEPS[loadingStep]}
             </p>
-            <p className="text-slate-500 text-sm">This usually takes 10–20 seconds.</p>
+            <p className="text-[#94A3B8] text-sm">Usually takes 10–20 seconds.</p>
           </div>
 
           {/* Progress dots */}
@@ -171,7 +155,7 @@ export default function MatchPage() {
               <div
                 key={i}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                  i <= loadingStep ? "bg-indigo-500" : "bg-white/10"
+                  i <= loadingStep ? "bg-[#10B981]" : "bg-[#E2E8F0]"
                 }`}
               />
             ))}
@@ -185,17 +169,17 @@ export default function MatchPage() {
           {/* Results header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between mb-6">
             <div>
-              <p className="text-white font-black text-lg">
-                {results.length} universities matched
+              <p className="text-[#333] font-black text-lg">
+                {results.length} unis matched
               </p>
-              <p className="text-slate-500 text-sm mt-0.5">
-                Ranked by fit score · your profile vs. admission requirements
+              <p className="text-[#94A3B8] text-sm mt-0.5">
+                Ranked by fit score based on your profile
               </p>
             </div>
             {highMatches > 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/10 border border-emerald-500/20">
-                <Trophy size={14} className="text-emerald-400" />
-                <span className="text-emerald-400 font-bold text-sm">{highMatches} High Matches</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[rgba(16,185,129,0.06)] border border-[rgba(16,185,129,0.15)]">
+                <Trophy size={14} className="text-[#10B981]" />
+                <span className="text-[#059669] font-bold text-sm">{highMatches} Great Fits</span>
               </div>
             )}
           </div>
@@ -213,7 +197,7 @@ export default function MatchPage() {
         <EmptyState
           icon={Sparkles}
           title="No matches found"
-          description="Try updating your profile with test scores or expanding your target countries and degree level."
+          description="Try updating your profile with test scores or expanding your target countries."
           action={{ label: "Edit Profile", onClick: () => (window.location.href = "/student/profile") }}
         />
       )}

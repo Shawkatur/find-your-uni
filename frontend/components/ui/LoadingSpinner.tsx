@@ -17,18 +17,18 @@ export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerP
     <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
       <div
         className={cn(
-          "rounded-full border-blue-600 border-t-transparent animate-spin",
+          "rounded-full border-[#10B981] border-t-transparent animate-spin",
           sizeMap[size]
         )}
       />
-      {text && <p className="text-sm text-slate-400">{text}</p>}
+      {text && <p className="text-sm text-[#64748B]">{text}</p>}
     </div>
   );
 }
 
 export function FullPageLoader({ text = "Loading..." }: { text?: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0F172A]">
+    <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
       <LoadingSpinner size="lg" text={text} />
     </div>
   );

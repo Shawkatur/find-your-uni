@@ -20,7 +20,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-[#0F172A] flex">
+      <div className="min-h-screen bg-[#F8F9FA] flex">
         <Sidebar role="student" />
         <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
           <Header />

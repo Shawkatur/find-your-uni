@@ -101,8 +101,8 @@ export function ShortlistButton({
         "flex items-center justify-center rounded-lg transition-all",
         size === "sm" ? "w-7 h-7" : "w-9 h-9",
         saved
-          ? "bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-red-600/20 hover:text-red-400 hover:border-red-500/30"
-          : "bg-white/8 text-slate-400 border border-white/10 hover:bg-blue-600/20 hover:text-blue-400 hover:border-blue-500/30",
+          ? "bg-[rgba(16,185,129,0.1)] text-[#10B981] border border-[rgba(16,185,129,0.3)] hover:bg-red-50 hover:text-red-500 hover:border-red-200"
+          : "bg-[#F1F5F9] text-[#94A3B8] border border-[#E2E8F0] hover:bg-[rgba(16,185,129,0.08)] hover:text-[#10B981] hover:border-[rgba(16,185,129,0.2)]",
         isPending && "opacity-50 cursor-not-allowed",
         className
       )}

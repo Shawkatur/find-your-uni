@@ -37,10 +37,6 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-function field(label: string, name: keyof FormData, type = "text", placeholder?: string) {
-  return { label, name, type, placeholder };
-}
-
 export default function StudentProfilePage() {
   const qc = useQueryClient();
 
@@ -49,7 +45,6 @@ export default function StudentProfilePage() {
     queryFn: async () => {
       const res = await api.get("/auth/me");
       const profile = res.data?.profile ?? res.data;
-      // Flatten nested academic_history and test_scores for the form
       return {
         ...profile,
         ssc_gpa:              profile?.academic_history?.ssc_gpa,
@@ -128,30 +123,26 @@ export default function StudentProfilePage() {
     onError: () => toast.error("Failed to save profile."),
   });
 
-  const inputClass = "bg-white/8 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500";
-
   const renderField = (label: string, name: keyof FormData, type = "text", placeholder?: string) => (
     <div key={name}>
-      <Label className="text-slate-300 mb-1.5 block text-sm">{label}</Label>
+      <Label className="text-[#475569] mb-1.5 block text-sm">{label}</Label>
       <Input
         {...register(name)}
         type={type}
         placeholder={placeholder}
-        className={inputClass}
       />
-      {errors[name] && <p className="text-red-400 text-xs mt-1">{String(errors[name]?.message)}</p>}
+      {errors[name] && <p className="text-red-500 text-xs mt-1">{String(errors[name]?.message)}</p>}
     </div>
   );
 
   return (
     <PageWrapper
       title="My Profile"
-      subtitle="Keep your academic profile up-to-date for better match results."
+      subtitle="Update your info so we can find better matches."
       actions={
         <Button
           onClick={handleSubmit((data) => saveMutation.mutate(data as FormData))}
           disabled={saveMutation.isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           <Save size={15} className="mr-2" />
           {saveMutation.isPending ? "Saving..." : "Save Changes"}
@@ -159,12 +150,12 @@ export default function StudentProfilePage() {
       }
     >
       <Tabs defaultValue="personal">
-        <TabsList className="bg-white/8 border border-white/10 mb-6 flex-wrap">
+        <TabsList className="bg-[#F1F5F9] border border-[#E2E8F0] mb-6 flex-wrap">
           {["personal", "academics", "scores", "preferences"].map((tab) => (
             <TabsTrigger
               key={tab}
               value={tab}
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-400 capitalize"
+              className="data-[state=active]:bg-[#10B981] data-[state=active]:text-white text-[#64748B] capitalize"
             >
               {tab}
             </TabsTrigger>
@@ -201,7 +192,7 @@ export default function StudentProfilePage() {
               {renderField("GRE Score (260–340)", "gre_score", "number", "320")}
               {renderField("GMAT Score (200–800)", "gmat_score", "number", "680")}
             </div>
-            <p className="text-slate-500 text-xs mt-4">Leave blank if not applicable.</p>
+            <p className="text-[#94A3B8] text-xs mt-4">Leave blank if not applicable.</p>
           </GlassCard>
         </TabsContent>
 
@@ -209,10 +200,10 @@ export default function StudentProfilePage() {
           <GlassCard>
             <div className="space-y-5">
               <div>
-                <Label className="text-slate-300 mb-1.5 block text-sm">Target Degree</Label>
+                <Label className="text-[#475569] mb-1.5 block text-sm">Target Degree</Label>
                 <select
                   {...register("target_degree")}
-                  className="w-full bg-white/8 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#CBD5E1] text-[#333] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="bachelor">Bachelor&apos;s</option>
                   <option value="master">Master&apos;s</option>

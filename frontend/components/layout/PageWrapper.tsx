@@ -17,10 +17,10 @@ export function PageWrapper({ children, className, title, subtitle, actions }: P
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-8">
           <div>
             {title && (
-              <h1 className="text-xl md:text-2xl font-black tracking-tight text-white">{title}</h1>
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[#333]">{title}</h1>
             )}
             {subtitle && (
-              <p className="text-slate-400 mt-1 font-normal">{subtitle}</p>
+              <p className="text-[#64748B] mt-1 font-normal">{subtitle}</p>
             )}
           </div>
           {actions && <div className="flex items-center gap-3">{actions}</div>}

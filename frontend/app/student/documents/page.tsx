@@ -48,12 +48,12 @@ export default function DocumentsPage() {
       formData.append("doc_type", docType);
 
       await api.post("/documents/upload", formData);
-      toast.success("Document uploaded successfully!");
+      toast.success("Document uploaded!");
       qc.invalidateQueries({ queryKey: ["student-documents"] });
     } catch (err: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const detail = (err as any)?.response?.data?.detail;
-      const msg = typeof detail === "string" ? detail : "Upload failed. Please try again.";
+      const msg = typeof detail === "string" ? detail : "Upload failed. Try again.";
       toast.error(msg);
     } finally {
       setUploading(false);
@@ -73,7 +73,7 @@ export default function DocumentsPage() {
     onError: () => toast.error("Failed to delete document."),
   });
 
-  // Build a map of uploaded doc types → document
+  // Build a map of uploaded doc types -> document
   const uploadedMap = new Map<DocType, Document[]>();
   for (const doc of documents) {
     const existing = uploadedMap.get(doc.doc_type) ?? [];
@@ -86,46 +86,43 @@ export default function DocumentsPage() {
   const progressPct = Math.round((uploadedCount / DOC_TYPES.length) * 100);
 
   return (
-    <PageWrapper title="Documents" subtitle="Build your application document portfolio.">
+    <PageWrapper title="Documents" subtitle="Your docs, sorted.">
       {/* Document Readiness Header */}
       <GlassCard className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-500/25 flex items-center justify-center"
-              style={{ boxShadow: "0 0 20px rgba(79,70,229,0.2)" }}
-            >
-              <Shield size={18} className="text-indigo-400" />
+            <div className="w-10 h-10 rounded-xl bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
+              <Shield size={18} className="text-[#10B981]" />
             </div>
             <div>
-              <h2 className="text-white font-black tracking-tight">Document Readiness</h2>
-              <p className="text-slate-500 text-xs font-medium mt-0.5">
-                {requiredUploaded}/{requiredCount} required documents uploaded
+              <h2 className="text-[#333] font-black tracking-tight">Doc Readiness</h2>
+              <p className="text-[#94A3B8] text-xs font-medium mt-0.5">
+                {requiredUploaded}/{requiredCount} required docs uploaded
               </p>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-black text-white tracking-tight">{uploadedCount}</div>
-            <div className="text-slate-500 text-xs">/ {DOC_TYPES.length} docs</div>
+            <div className="text-3xl font-black text-[#333] tracking-tight">{uploadedCount}</div>
+            <div className="text-[#94A3B8] text-xs">/ {DOC_TYPES.length} docs</div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="h-2.5 bg-white/6 rounded-full overflow-hidden mb-2">
+        <div className="h-2.5 bg-[#F1F5F9] rounded-full overflow-hidden mb-2">
           <div
             className={`h-full rounded-full transition-all duration-700 ${
               progressPct === 100
-                ? "bg-gradient-to-r from-emerald-500 to-green-400"
+                ? "bg-gradient-to-r from-[#10B981] to-[#34D399]"
                 : progressPct >= 50
-                ? "bg-gradient-to-r from-indigo-600 to-blue-400"
-                : "bg-gradient-to-r from-indigo-700 to-indigo-500"
+                ? "bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]"
+                : "bg-gradient-to-r from-[#3B82F6] to-[#93C5FD]"
             }`}
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <div className="flex justify-between text-xs text-slate-600 font-medium">
+        <div className="flex justify-between text-xs text-[#CBD5E1] font-medium">
           <span>0%</span>
-          <span className={progressPct >= 100 ? "text-emerald-400 font-bold" : "text-slate-400"}>
+          <span className={progressPct >= 100 ? "text-[#10B981] font-bold" : "text-[#64748B]"}>
             {progressPct}% complete
           </span>
           <span>100%</span>
@@ -143,28 +140,22 @@ export default function DocumentsPage() {
               key={docTypeItem.value}
               className={`relative rounded-2xl border p-4 transition-all duration-200 ${
                 isDone
-                  ? "bg-emerald-600/6 border-emerald-500/20"
-                  : "bg-white/2 border-white/6 border-dashed"
+                  ? "bg-[rgba(16,185,129,0.03)] border-[rgba(16,185,129,0.15)]"
+                  : "bg-[#FAFBFC] border-[#E2E8F0] border-dashed"
               }`}
-              style={
-                isDone
-                  ? { boxShadow: "0 0 20px rgba(16,185,129,0.08)" }
-                  : undefined
-              }
             >
               <div className="flex items-start gap-3">
-                {/* Status icon */}
                 <div className="mt-0.5 shrink-0">
                   {isDone ? (
-                    <CheckCircle2 size={18} className="text-emerald-400" style={{ filter: "drop-shadow(0 0 6px rgba(16,185,129,0.6))" }} />
+                    <CheckCircle2 size={18} className="text-[#10B981]" />
                   ) : (
-                    <Circle size={18} className="text-slate-700" />
+                    <Circle size={18} className="text-[#CBD5E1]" />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm font-bold tracking-tight ${isDone ? "text-white" : "text-slate-600"}`}>
+                    <span className={`text-sm font-bold tracking-tight ${isDone ? "text-[#333]" : "text-[#94A3B8]"}`}>
                       {docTypeItem.label}
                     </span>
                     {docTypeItem.required && !isDone && (
@@ -175,22 +166,21 @@ export default function DocumentsPage() {
                     )}
                   </div>
 
-                  {/* Uploaded files */}
                   {isDone && (
                     <div className="mt-1.5 space-y-1">
                       {uploaded.map((doc) => (
                         <div key={doc.id} className="flex items-center justify-between gap-2">
-                          <span className="text-emerald-600/80 text-xs truncate">{doc.filename}</span>
+                          <span className="text-[#059669] text-xs truncate">{doc.filename}</span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {doc.url && (
                               <a href={doc.url} target="_blank" rel="noopener noreferrer"
-                                className="text-indigo-400 hover:text-indigo-300">
+                                className="text-[#10B981] hover:text-[#059669]">
                                 <ExternalLink size={11} />
                               </a>
                             )}
                             <button
                               onClick={() => setDeleteId(doc.id)}
-                              className="text-slate-600 hover:text-red-400 transition-colors"
+                              className="text-[#CBD5E1] hover:text-red-500 transition-colors"
                             >
                               <Trash2 size={11} />
                             </button>
@@ -200,14 +190,13 @@ export default function DocumentsPage() {
                     </div>
                   )}
 
-                  {/* Upload CTA for missing doc */}
                   {!isDone && (
                     <button
                       onClick={() => {
                         setDocType(docTypeItem.value);
                         setTimeout(() => fileRef.current?.click(), 50);
                       }}
-                      className="mt-1.5 text-xs text-slate-600 hover:text-indigo-400 transition-colors font-medium flex items-center gap-1"
+                      className="mt-1.5 text-xs text-[#94A3B8] hover:text-[#10B981] transition-colors font-medium flex items-center gap-1"
                     >
                       <Upload size={10} /> Add file
                     </button>
@@ -222,19 +211,19 @@ export default function DocumentsPage() {
       {/* Upload Section */}
       <GlassCard>
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-7 h-7 rounded-lg bg-blue-600/15 border border-blue-500/20 flex items-center justify-center">
-            <Upload size={13} className="text-blue-400" />
+          <div className="w-7 h-7 rounded-lg bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)] flex items-center justify-center">
+            <Upload size={13} className="text-[#3B82F6]" />
           </div>
-          <h2 className="text-white font-black tracking-tight">Upload Document</h2>
+          <h2 className="text-[#333] font-black tracking-tight">Upload Document</h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <select
             value={docType}
             onChange={(e) => setDocType(e.target.value as DocType)}
-            className="bg-white/6 border border-white/10 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 flex-1 cursor-pointer"
+            className="bg-white border border-[#CBD5E1] text-[#333] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#10B981] flex-1 cursor-pointer"
           >
             {DOC_TYPES.map((t) => (
-              <option key={t.value} value={t.value} style={{ background: "#111827" }}>
+              <option key={t.value} value={t.value}>
                 {t.label}
               </option>
             ))}
@@ -259,7 +248,7 @@ export default function DocumentsPage() {
             )}
           </Button>
         </div>
-        <p className="text-slate-600 text-xs mt-2">Supported: PDF, DOC, DOCX, JPG, PNG · max 10MB</p>
+        <p className="text-[#CBD5E1] text-xs mt-2">PDF, DOC, DOCX, JPG, PNG · max 10MB</p>
       </GlassCard>
 
       {isLoading && <LoadingSpinner size="lg" className="py-10" />}
@@ -268,7 +257,7 @@ export default function DocumentsPage() {
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         title="Delete Document"
-        description="This will permanently delete the document. This action cannot be undone."
+        description="This will permanently delete the document. Can't undo this."
         confirmLabel="Delete"
         destructive
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}

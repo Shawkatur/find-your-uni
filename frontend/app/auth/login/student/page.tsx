@@ -50,40 +50,34 @@ export default function StudentLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
-      {/* Background glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-96 h-96 bg-blue-600/8 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
       <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative mb-5">
-            <div className="glow-blue" />
-            <div className="relative w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30">
+            <div className="relative w-16 h-16 bg-[#10B981] rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20">
               <GraduationCap size={30} className="text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Student Sign In</h1>
-          <p className="text-slate-400 mt-1 font-normal">Access your university matches and applications</p>
+          <h1 className="text-3xl font-black tracking-tight text-[#333]">Welcome back</h1>
+          <p className="text-[#64748B] mt-1 font-normal">Sign in to your student account</p>
         </div>
 
         {/* Card */}
         <div className="glass-card p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <Label className="text-slate-300 mb-2 block font-semibold text-sm">Email</Label>
+              <Label className="text-[#475569] mb-2 block font-semibold text-sm">Email</Label>
               <Input
                 {...register("email")}
                 type="email"
                 placeholder="you@example.com"
               />
-              {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email.message}</p>}
+              {errors.email && <p className="text-red-500 text-xs mt-1.5">{errors.email.message}</p>}
             </div>
 
             <div>
-              <Label className="text-slate-300 mb-2 block font-semibold text-sm">Password</Label>
+              <Label className="text-[#475569] mb-2 block font-semibold text-sm">Password</Label>
               <div className="relative">
                 <Input
                   {...register("password")}
@@ -94,12 +88,12 @@ export default function StudentLoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors"
                 >
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1.5">{errors.password.message}</p>}
+              {errors.password && <p className="text-red-500 text-xs mt-1.5">{errors.password.message}</p>}
             </div>
 
             <Button
@@ -112,18 +106,18 @@ export default function StudentLoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-white/8 text-center">
-            <p className="text-slate-400 text-sm">
+          <div className="mt-6 pt-6 border-t border-[#E2E8F0] text-center">
+            <p className="text-[#64748B] text-sm">
               Don&apos;t have an account?{" "}
-              <Link href="/auth/register/student" className="text-blue-400 hover:text-blue-300 font-semibold">
-                Register as Student
+              <Link href="/auth/register/student" className="text-[#10B981] hover:text-[#059669] font-semibold">
+                Register
               </Link>
             </p>
           </div>
         </div>
 
-        <p className="text-center text-slate-500 text-sm mt-6">
-          <Link href="/auth/login" className="hover:text-slate-300 transition-colors">← Choose account type</Link>
+        <p className="text-center text-[#94A3B8] text-sm mt-6">
+          <Link href="/auth/login" className="hover:text-[#64748B] transition-colors">← Choose account type</Link>
         </p>
       </div>
     </div>

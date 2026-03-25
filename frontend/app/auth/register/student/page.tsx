@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-// Minimal field type for steps
 interface FieldDef {
   name: string;
   label: string;
@@ -22,11 +21,10 @@ interface FieldDef {
   required?: boolean;
 }
 
-const stepTitles = ["Account", "Personal Info", "Academics", "Test Scores", "Preferences"];
+const stepTitles = ["Account", "About You", "Academics", "Test Scores", "Preferences"];
 
 type FormValues = Record<string, string>;
 
-// Map common country names → ISO 3166-1 alpha-2 codes
 const COUNTRY_ISO: Record<string, string> = {
   "usa": "US", "united states": "US", "america": "US", "us": "US",
   "uk": "GB", "united kingdom": "GB", "england": "GB", "britain": "GB", "gb": "GB",
@@ -49,7 +47,6 @@ function toISO(name: string): string {
   return COUNTRY_ISO[name.trim().toLowerCase()] ?? name.trim().toUpperCase().slice(0, 2);
 }
 
-// Simple validation per step
 function validateStep(step: number, values: FormValues): Record<string, string> {
   const errs: Record<string, string> = {};
   if (step === 0) {
@@ -120,13 +117,10 @@ function StudentRegisterForm() {
         password: values.password,
         options: { data: { full_name: values.full_name, role: "student" } },
       });
-      // Ignore "already registered" / rate-limit errors (user may have created
-      // a Supabase auth account but never finished creating the student profile)
       if (authErr && !authErr.message.includes("already") && !authErr.message.includes("rate")) {
         throw authErr;
       }
 
-      // Get a session — either from signup or by signing in (for existing auth users)
       if (!authData?.session) {
         const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
           email: values.email,
@@ -137,12 +131,10 @@ function StudentRegisterForm() {
             toast.error("An account with this email already exists. Please sign in instead.");
             return;
           }
-          // Email confirmation required — user must verify before backend profile is created.
-          toast.success("Account created! Check your email to confirm, then sign in to complete setup.");
+          toast.success("Account created! Check your email to confirm, then sign in.");
           router.push("/auth/login");
           return;
         }
-        // Session now persisted; the api interceptor will pick it up automatically.
       }
 
       await api.post("/auth/student/register", {
@@ -167,18 +159,16 @@ function StudentRegisterForm() {
         ref_code:            refCode,
       });
 
-      toast.success("Account created! Welcome aboard.");
+      toast.success("You're in! Let's go.");
       router.push("/student/dashboard");
     } catch (err: unknown) {
-      // 409 = profile already exists (e.g. during testing with BYPASS_AUTH)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((err as any)?.response?.status === 409) {
-        toast.success("Welcome back! Redirecting…");
+        toast.success("Welcome back! Redirecting...");
         router.push("/student/dashboard");
         return;
       }
       const msg = err instanceof Error ? err.message : "Registration failed";
-      // Supabase-specific: email provider disabled in dashboard
       if (msg.toLowerCase().includes("email signups are disabled") || msg.toLowerCase().includes("signups not allowed")) {
         toast.error("Email sign-up is currently disabled. Please contact support or try again later.");
         return;
@@ -190,33 +180,32 @@ function StudentRegisterForm() {
   };
 
   const progress = ((step + 1) / 5) * 100;
-  const inputClass = "bg-white/8 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500";
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-3">
+          <div className="w-12 h-12 bg-[#10B981] rounded-xl flex items-center justify-center mb-3">
             <GraduationCap size={22} className="text-white" />
           </div>
-          <h1 className="text-xl font-bold text-white">Student Registration</h1>
-          <p className="text-slate-400 text-sm mt-1">Step {step + 1} of 5 — {stepTitles[step]}</p>
+          <h1 className="text-xl font-bold text-[#333]">Create your account</h1>
+          <p className="text-[#64748B] text-sm mt-1">Step {step + 1} of 5 — {stepTitles[step]}</p>
         </div>
 
-        <Progress value={progress} className="mb-6 h-1.5 bg-white/10" />
+        <Progress value={progress} className="mb-6 h-1.5 bg-[#E2E8F0]" />
 
         <div className="flex justify-between mb-8 px-2">
           {stepTitles.map((title, i) => (
             <div key={i} className="flex flex-col items-center gap-1">
               <div className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
-                i < step ? "bg-green-600 text-white" :
-                i === step ? "bg-blue-600 text-white ring-2 ring-blue-400/30" :
-                "bg-white/10 text-slate-500"
+                i < step ? "bg-[#10B981] text-white" :
+                i === step ? "bg-[#10B981] text-white ring-2 ring-[#10B981]/30" :
+                "bg-[#E2E8F0] text-[#94A3B8]"
               )}>
                 {i < step ? <Check size={14} /> : i + 1}
               </div>
-              <span className={cn("text-xs hidden sm:block", i === step ? "text-white" : "text-slate-500")}>
+              <span className={cn("text-xs hidden sm:block", i === step ? "text-[#333]" : "text-[#94A3B8]")}>
                 {title}
               </span>
             </div>
@@ -225,39 +214,36 @@ function StudentRegisterForm() {
 
         <div className="glass-card p-8">
           <div className="space-y-5">
-            {/* Steps 0-3: render fields from stepFields array */}
             {step < 4 && (
               <div className={step === 2 ? "grid grid-cols-2 gap-4" : "space-y-5"}>
                 {stepFields[step].map((field) => (
                   <div key={field.name} className={step === 2 && ["bachelor_institution", "bachelor_field"].includes(field.name) ? "col-span-2" : ""}>
-                    <Label className="text-slate-300 mb-1.5 block">{field.label}</Label>
+                    <Label className="text-[#475569] mb-1.5 block">{field.label}</Label>
                     <Input
                       type={field.type ?? "text"}
                       placeholder={field.placeholder}
                       value={values[field.name] ?? ""}
                       onChange={(e) => setValue(field.name, e.target.value)}
-                      className={inputClass}
                     />
                     {errors[field.name] && (
-                      <p className="text-red-400 text-xs mt-1">{errors[field.name]}</p>
+                      <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>
                     )}
                   </div>
                 ))}
                 {step === 3 && (
-                  <p className="text-slate-500 text-xs">Leave blank if not taken. You can update later.</p>
+                  <p className="text-[#94A3B8] text-xs">Leave blank if not taken. You can update later.</p>
                 )}
               </div>
             )}
 
-            {/* Step 4: Preferences */}
             {step === 4 && (
               <div className="space-y-5">
                 <div>
-                  <Label className="text-slate-300 mb-1.5 block">Target Degree</Label>
+                  <Label className="text-[#475569] mb-1.5 block">Target Degree</Label>
                   <select
                     value={values.target_degree ?? "masters"}
                     onChange={(e) => setValue("target_degree", e.target.value)}
-                    className="w-full bg-white/8 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white border border-[#CBD5E1] text-[#333] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
                   >
                     <option value="bachelor">Bachelor&apos;s</option>
                     <option value="master">Master&apos;s</option>
@@ -266,28 +252,27 @@ function StudentRegisterForm() {
                   </select>
                 </div>
                 <div>
-                  <Label className="text-slate-300 mb-1.5 block">Annual Budget (USD)</Label>
+                  <Label className="text-[#475569] mb-1.5 block">Annual Budget (USD)</Label>
                   <Input type="number" placeholder="25000" value={values.budget_usd ?? ""}
-                    onChange={(e) => setValue("budget_usd", e.target.value)} className={inputClass} />
+                    onChange={(e) => setValue("budget_usd", e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-slate-300 mb-1.5 block">Target Countries (comma-separated)</Label>
+                  <Label className="text-[#475569] mb-1.5 block">Target Countries (comma-separated)</Label>
                   <Input placeholder="Canada, Germany, UK, Australia" value={values.target_countries ?? ""}
-                    onChange={(e) => setValue("target_countries", e.target.value)} className={inputClass} />
+                    onChange={(e) => setValue("target_countries", e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-slate-300 mb-1.5 block">Fields of Interest (comma-separated)</Label>
+                  <Label className="text-[#475569] mb-1.5 block">Fields of Interest (comma-separated)</Label>
                   <Input placeholder="Computer Science, Data Science" value={values.target_fields ?? ""}
-                    onChange={(e) => setValue("target_fields", e.target.value)} className={inputClass} />
+                    onChange={(e) => setValue("target_fields", e.target.value)} />
                 </div>
               </div>
             )}
 
-            {/* Navigation */}
             <div className="flex gap-3 pt-2">
               {step > 0 && (
                 <Button type="button" variant="outline" onClick={() => setStep(step - 1)}
-                  className="flex-1 border-white/10 text-slate-300 hover:bg-white/8">
+                  className="flex-1">
                   <ChevronLeft size={16} className="mr-1" /> Back
                 </Button>
               )}
@@ -295,7 +280,7 @@ function StudentRegisterForm() {
                 type="button"
                 onClick={handleNext}
                 disabled={submitting}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                className="flex-1"
               >
                 {step === 4 ? (submitting ? "Creating account..." : "Create Account") : (
                   <>Next <ChevronRight size={16} className="ml-1" /></>
@@ -305,9 +290,9 @@ function StudentRegisterForm() {
           </div>
         </div>
 
-        <p className="text-center text-slate-500 text-sm mt-4">
+        <p className="text-center text-[#94A3B8] text-sm mt-4">
           Already have an account?{" "}
-          <Link href="/auth/login/student" className="text-blue-400 hover:text-blue-300">Sign in</Link>
+          <Link href="/auth/login/student" className="text-[#10B981] hover:text-[#059669]">Sign in</Link>
         </p>
       </div>
     </div>
