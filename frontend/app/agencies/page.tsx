@@ -15,7 +15,7 @@ function AgencyList() {
   const { data: agencies = [], isLoading } = useQuery<Agency[]>({
     queryKey: ["agencies"],
     queryFn: async () => {
-      const res = await api.get("/consultants/agencies");
+      const res = await api.get("/agencies");
       return res.data?.items ?? res.data ?? [];
     },
   });

@@ -228,6 +228,7 @@ async def submit_review(
         "consultant_id": body.consultant_id,
         "rating":        body.rating,
         "comment":       body.comment,
+        "is_verified":   False,
     }
     # Check for existing review before insert
     existing = await (

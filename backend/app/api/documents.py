@@ -113,7 +113,7 @@ async def upload_document(
     }).execute()
 
     return {
-        "document_id":  doc_id,
+        "id":           doc_id,
         "storage_url":  key,
         "url":          url,
         "filename":     original_name,
@@ -170,9 +170,9 @@ async def delete_document(
     if not res.data:
         raise HTTPException(status_code=404, detail="Document not found")
 
+    await client.table("documents").delete().eq("id", doc_id).execute()
+
     try:
         await client.storage.from_(BUCKET).remove([res.data["storage_url"]])
     except Exception as exc:
         logger.error("Storage delete failed (non-fatal) for doc %s: %s", doc_id, exc)
-
-    await client.table("documents").delete().eq("id", doc_id).execute()

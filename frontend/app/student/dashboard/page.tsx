@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Sparkles, FileText, Upload, Building2, ArrowRight,
   TrendingUp, CheckCircle2, Clock, Send, Trophy,
@@ -17,6 +18,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function StudentDashboard() {
+  const router = useRouter();
   const { profile } = useAuth();
 
   const { data: applications = [], isLoading: appsLoading } = useQuery<Application[]>({
@@ -164,7 +166,7 @@ export default function StudentDashboard() {
                 icon={FileText}
                 title="No applications yet"
                 description="Run matchmaking to find your top universities and apply."
-                action={{ label: "Run Match", onClick: () => {} }}
+                action={{ label: "Run Match", onClick: () => router.push("/student/match") }}
                 className="py-8"
               />
             </div>
@@ -207,7 +209,7 @@ export default function StudentDashboard() {
               icon={Sparkles}
               title="No matches yet"
               description="Run matchmaking to see your top universities ranked by fit score."
-              action={{ label: "Run Match Now", onClick: () => {} }}
+              action={{ label: "Run Match Now", onClick: () => router.push("/student/match") }}
               className="py-8"
             />
           ) : (
