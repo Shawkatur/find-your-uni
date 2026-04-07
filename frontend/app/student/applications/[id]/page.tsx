@@ -123,7 +123,7 @@ export default function ApplicationDetailPage() {
                   Application {app.status.replace(/_/g, " ")}
                   {app.status_history?.at(-1)?.note && (
                     <span className="text-red-400 font-normal ml-2">
-                      — {app.status_history.at(-1)!.note}
+                      — {app.status_history?.at(-1)?.note}
                     </span>
                   )}
                 </p>

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FileText, ArrowRight, Building2 } from "lucide-react";
 import api from "@/lib/api";
-import type { Application, AppStatus } from "@/types";
+import type { Application, ApplicationApiResponse, AppStatus } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -71,11 +71,11 @@ export default function ApplicationsPage() {
     queryKey: ["student-applications-list"],
     queryFn: async () => {
       const res = await api.get("/applications?page_size=50");
-      return (res.data || []).map((app: Record<string, unknown>) => ({
+      return (res.data || []).map((app: ApplicationApiResponse): Application => ({
         ...app,
         student: app.students ?? app.student,
         program: app.programs ?? app.program,
-        university: (app.programs as Record<string, unknown>)?.universities ?? app.university,
+        university: app.programs?.universities ?? app.university,
       }));
     },
   });

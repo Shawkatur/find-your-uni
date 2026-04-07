@@ -186,7 +186,7 @@ export default function MatchPage() {
 
           <div className="space-y-4">
             {results.map((result, i) => (
-              <MatchResultCard key={i} result={result} rank={i + 1} />
+              <MatchResultCard key={`${result.university_id}-${result.program_id}`} result={result} rank={i + 1} />
             ))}
           </div>
         </div>

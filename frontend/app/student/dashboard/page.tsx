@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { Application, MatchResultItem } from "@/types";
+import type { Application, ApplicationApiResponse, MatchResultItem } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { GlassCard } from "@/components/layout/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -25,11 +25,11 @@ export default function StudentDashboard() {
     queryKey: ["student-applications"],
     queryFn: async () => {
       const res = await api.get("/applications?page_size=20");
-      return (res.data || []).map((app: Record<string, unknown>) => ({
+      return (res.data || []).map((app: ApplicationApiResponse): Application => ({
         ...app,
         student: app.students ?? app.student,
         program: app.programs ?? app.program,
-        university: (app.programs as Record<string, unknown>)?.universities ?? app.university,
+        university: app.programs?.universities ?? app.university,
       }));
     },
   });
@@ -216,7 +216,7 @@ export default function StudentDashboard() {
                 const isHigh = pct >= 80;
                 return (
                   <div
-                    key={i}
+                    key={`${result.university_id}-${result.program_id}`}
                     className="flex items-center gap-4 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#10B981]/25 hover:bg-[rgba(16,185,129,0.03)] transition-all duration-200"
                   >
                     <div className="relative shrink-0">

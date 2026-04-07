@@ -129,6 +129,17 @@ export interface Application {
   documents?: Document[];
 }
 
+// Raw shape returned by the API (Supabase joined columns use plural keys).
+// Use this when mapping API responses into the normalized `Application` type.
+export interface ApplicationApiResponse extends Omit<Application, "student" | "program" | "university"> {
+  students?: Student;
+  student?: Student;
+  programs?: Program & { universities?: University };
+  program?: Program;
+  universities?: University;
+  university?: University;
+}
+
 export interface StatusHistoryEntry {
   status: AppStatus;
   note?: string;
