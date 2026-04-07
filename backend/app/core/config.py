@@ -47,9 +47,13 @@ class Settings(BaseSettings):
             raise ValueError("CORS_ORIGINS must not be '*' in production")
         return v
     ADMIN_FRONTEND_URL: str = ""   # e.g. https://admin.ourdomain.com (auto-added to CORS)
+    STUDENT_FRONTEND_URL: str = "" # e.g. https://app.ourdomain.com (auto-added to CORS)
     # Accept comma-separated string OR JSON array from env
     # Default * allows all origins during testing
     CORS_ORIGINS: str = "*"
+    # Optional regex (e.g. r"https://.*\.vercel\.app") matched against Origin
+    # by FastAPI's CORSMiddleware in addition to CORS_ORIGINS exact matches.
+    CORS_ORIGIN_REGEX: str = ""
 
     # ── SSLCommerz (payment gateway) ─────────────────────────────────────────
     SSLCOMMERZ_STORE_ID: str = ""
@@ -83,6 +87,8 @@ class Settings(BaseSettings):
             origins = [o.strip() for o in val.split(",") if o.strip()]
         if self.ADMIN_FRONTEND_URL and self.ADMIN_FRONTEND_URL not in origins:
             origins.append(self.ADMIN_FRONTEND_URL)
+        if self.STUDENT_FRONTEND_URL and self.STUDENT_FRONTEND_URL not in origins:
+            origins.append(self.STUDENT_FRONTEND_URL)
         return origins
 
 
