@@ -47,9 +47,10 @@ async def register_student(
     res = await client.table("students").insert(row).execute()
     student = res.data[0]
 
-    # Create lead application based on ref_code
-    if body.ref_code:
-        await _create_lead_application(client, student["id"], body.ref_code)
+    # Always create a lead application so the student lands in the admin
+    # portal's lead queue immediately. If a ref_code is present we route to
+    # the matching consultant; otherwise it stays unassigned (admin pool).
+    await _create_lead_application(client, student["id"], body.ref_code or ADMIN_REF_CODE)
 
     return student
 
@@ -168,6 +169,20 @@ async def update_student_profile(
         update["onboarding_completed"] = body.onboarding_completed
 
     res = await client.table("students").update(update).eq("id", student["id"]).execute()
+
+    # Backfill: if this student has no application row at all, create an
+    # unassigned lead so they show up in the admin portal's lead queue.
+    # Covers existing students who registered before lead-on-register shipped.
+    existing_apps = await (
+        client.table("applications")
+        .select("id")
+        .eq("student_id", student["id"])
+        .limit(1)
+        .execute()
+    )
+    if not existing_apps.data:
+        await _create_lead_application(client, student["id"], ADMIN_REF_CODE)
+
     return res.data[0]
 
 
