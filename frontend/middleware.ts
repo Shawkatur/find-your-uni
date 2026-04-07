@@ -34,13 +34,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from auth pages
+  // Redirect authenticated users away from auth pages.
+  // Only student/consultant dashboards exist in this app — admin/super_admin
+  // live in the separate admin-dashboard project, so don't redirect them here.
   const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
   if (isAuthPage && user) {
     const role = user.app_metadata?.role ?? "student";
-    const dashUrl = request.nextUrl.clone();
-    dashUrl.pathname = `/${role}/dashboard`;
-    return NextResponse.redirect(dashUrl);
+    if (role === "student" || role === "consultant") {
+      const dashUrl = request.nextUrl.clone();
+      dashUrl.pathname = `/${role}/dashboard`;
+      return NextResponse.redirect(dashUrl);
+    }
   }
 
   return response;

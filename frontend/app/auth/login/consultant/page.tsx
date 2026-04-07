@@ -44,7 +44,12 @@ export default function ConsultantLoginPage() {
     }
 
     const role = authData.user?.app_metadata?.role ?? authData.user?.user_metadata?.role ?? "student";
-    router.push(`/${role}/dashboard`);
+    if (role !== "consultant") {
+      await supabase.auth.signOut();
+      toast.error("This login is for consultants only.");
+      return;
+    }
+    router.push("/consultant/dashboard");
   };
 
   return (
