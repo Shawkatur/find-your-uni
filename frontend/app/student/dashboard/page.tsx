@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Sparkles, FileText, Upload, Building2, ArrowRight,
   TrendingUp, CheckCircle2, Clock, Send, Trophy,
+  User, Plane, Stamp,
 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
@@ -302,6 +303,83 @@ export default function StudentDashboard() {
           </div>
         </GlassCard>
       )}
+
+      {/* How It Works */}
+      <div className="mt-10">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#333]">How It Works</h2>
+          <p className="text-[#64748B] text-sm mt-1">Follow these simple steps to study abroad through Find Your Uni.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            {
+              n: 1,
+              title: "Create Your Profile",
+              desc: "Fill out your academic background, preferred countries, and contact info so we can match you better.",
+              href: "/student/profile",
+              icon: User,
+            },
+            {
+              n: 2,
+              title: "Upload Documents",
+              desc: "Easily upload required documents like transcripts, passports, and English test scores.",
+              href: "/student/documents",
+              icon: Upload,
+            },
+            {
+              n: 3,
+              title: "Get Matched",
+              desc: "Our AI reviews your profile and ranks the best-fit universities based on your goals.",
+              href: "/student/match",
+              icon: Sparkles,
+            },
+            {
+              n: 4,
+              title: "Apply to Universities",
+              desc: "Apply to your shortlisted universities and track every application status from one place.",
+              href: "/student/applications",
+              icon: Send,
+            },
+            {
+              n: 5,
+              title: "Prepare for Visa",
+              desc: "Once you get an offer, you'll be guided step-by-step through your visa application.",
+              href: "/student/applications",
+              icon: Stamp,
+            },
+            {
+              n: 6,
+              title: "Fly to Your Dream University",
+              desc: "Book your flight, attend a pre-departure session, and begin your international journey.",
+              href: "/student/applications",
+              icon: Plane,
+            },
+          ].map((step) => {
+            const Icon = step.icon;
+            return (
+              <Link
+                key={step.n}
+                href={step.href}
+                className="group relative flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#10B981]/40 hover:shadow-sm transition-all overflow-hidden"
+              >
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#10B981]" />
+                <div className="text-5xl font-black text-[#E2E8F0] leading-none shrink-0 select-none w-10 text-center">
+                  {step.n}
+                </div>
+                <div className="flex-1 min-w-0 pl-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon size={15} className="text-[#10B981]" />
+                    <h3 className="text-[#333] font-black text-sm tracking-tight group-hover:text-[#10B981] transition-colors">
+                      {step.title}
+                    </h3>
+                  </div>
+                  <p className="text-[#64748B] text-xs leading-relaxed">{step.desc}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
     </PageWrapper>
   );
 }
