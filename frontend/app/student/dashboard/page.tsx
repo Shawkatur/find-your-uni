@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Sparkles, FileText, Upload, Building2, ArrowRight,
+  Sparkles, FileText, Upload, ArrowRight,
   TrendingUp, CheckCircle2, Clock, Send, Trophy,
   User, Plane, Stamp,
 } from "lucide-react";
@@ -14,7 +14,6 @@ import type { Application, ApplicationApiResponse, MatchResultItem } from "@/typ
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { GlassCard } from "@/components/layout/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -128,23 +127,34 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        <Link href="/student/match">
-          <Button size="lg">
-            <Sparkles size={16} className="mr-1.5" /> Show me my matches
-          </Button>
-        </Link>
-        <Link href="/student/documents">
-          <Button variant="outline">
-            <Upload size={15} className="mr-1.5" /> Upload Docs
-          </Button>
-        </Link>
-        <Link href="/universities">
-          <Button variant="outline">
-            <Building2 size={15} className="mr-1.5" /> Browse Unis
-          </Button>
-        </Link>
+      {/* Quick Actions — mirrors the 6-step "How It Works" flow */}
+      <div className="mb-8">
+        <p className="text-[#64748B] text-xs font-bold uppercase tracking-widest mb-3">Jump to a step</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          {[
+            { n: 1, label: "Profile", href: "/student/profile", icon: User },
+            { n: 2, label: "Documents", href: "/student/documents", icon: Upload },
+            { n: 3, label: "Match", href: "/student/match", icon: Sparkles },
+            { n: 4, label: "Applications", href: "/student/applications", icon: Send },
+            { n: 5, label: "Visa", href: "/student/applications", icon: Stamp },
+            { n: 6, label: "Fly", href: "/student/applications", icon: Plane },
+          ].map((s) => {
+            const Icon = s.icon;
+            return (
+              <Link
+                key={s.n}
+                href={s.href}
+                className="group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#10B981]/40 hover:bg-[rgba(16,185,129,0.04)] transition-all"
+              >
+                <span className="w-6 h-6 rounded-md bg-[#F1F5F9] group-hover:bg-[#10B981]/10 flex items-center justify-center text-[10px] font-black text-[#64748B] group-hover:text-[#10B981] transition-colors shrink-0">
+                  {s.n}
+                </span>
+                <Icon size={14} className="text-[#10B981] shrink-0" />
+                <span className="text-[#333] font-bold text-xs truncate">{s.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -212,7 +222,7 @@ export default function StudentDashboard() {
             />
           ) : (
             <div className="space-y-3">
-              {topMatches.map((result, i) => {
+              {topMatches.map((result) => {
                 const pct = Math.round(result.score * 100);
                 const isHigh = pct >= 80;
                 return (

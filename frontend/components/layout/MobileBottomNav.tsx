@@ -19,11 +19,12 @@ interface NavItem {
   matchPrefix?: boolean;
 }
 
+// Ordered to follow the "How It Works" 6-step flow
 const studentTabs: NavItem[] = [
   { label: "Home", href: "/student/dashboard", icon: LayoutDashboard },
+  { label: "Docs", href: "/student/documents", icon: Upload },
   { label: "Match", href: "/student/match", icon: Sparkles },
   { label: "Apply", href: "/student/applications", icon: FileText, matchPrefix: true },
-  { label: "Docs", href: "/student/documents", icon: Upload },
   { label: "Me", href: "/student/profile", icon: User },
 ];
 
