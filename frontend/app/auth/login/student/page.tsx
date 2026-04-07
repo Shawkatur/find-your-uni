@@ -44,9 +44,12 @@ export default function StudentLoginPage() {
     }
 
     const rawRole = authData.user?.app_metadata?.role ?? authData.user?.user_metadata?.role ?? "student";
-    const allowedRoles = ["student", "consultant", "admin", "super_admin"];
-    const role = allowedRoles.includes(rawRole) ? rawRole : "student";
-    router.push(`/${role}/dashboard`);
+    if (rawRole !== "student") {
+      await supabase.auth.signOut();
+      toast.error("This login is for students only. Please use the admin portal.");
+      return;
+    }
+    router.push("/student/dashboard");
   };
 
   return (
