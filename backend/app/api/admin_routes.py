@@ -14,7 +14,7 @@ from app.core.config import get_settings
 from app.core.security import require_role, require_admin_secret, get_current_user, get_ghost_context, GhostContext
 from app.core.ghost import ghost_audit, ghost_notify_lead_assignment
 from app.db.client import get_client
-from app.models.application import ConsultantStatusUpdate, ReassignBody, MatchSettingsUpdate
+from app.models.application import ConsultantStatusUpdate, ReassignBody, MatchSettingsUpdate, AgencyCreate, AgencyUpdate
 
 router = APIRouter(
     prefix="/admin",
@@ -58,15 +58,18 @@ async def get_stats(client: AsyncClient = Depends(get_client)):
 @router.get("/consultants")
 async def list_consultants(
     status: str | None = Query(None, description="Filter by status: pending|active|banned"),
+    agency_id: str | None = Query(None, description="Filter by agency"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     client: AsyncClient = Depends(get_client),
 ):
-    """List all consultants with optional status filter and pagination."""
+    """List all consultants with optional status/agency filters and pagination."""
     offset = (page - 1) * page_size
     q = client.table("consultants").select("*, agencies(name)", count="exact")
     if status:
         q = q.eq("status", status)
+    if agency_id:
+        q = q.eq("agency_id", agency_id)
     res = await q.order("created_at", desc=True).range(offset, offset + page_size - 1).execute()
     return {"items": res.data, "total": res.count or 0, "page": page, "page_size": page_size}
 
@@ -290,6 +293,73 @@ async def list_students(
         q = q.eq("onboarding_completed", onboarding_completed)
     res = await q.order("created_at", desc=True).range(offset, offset + page_size - 1).execute()
     return {"items": res.data, "total": res.count or 0, "page": page, "page_size": page_size}
+
+
+# ─── Agencies ─────────────────────────────────────────────────────────────────
+
+@router.get("/agencies")
+async def admin_list_agencies(
+    search: str | None = Query(None),
+    is_active: bool | None = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    client: AsyncClient = Depends(get_client),
+):
+    """List agencies (admin view: includes inactive). Supports search by name."""
+    offset = (page - 1) * page_size
+    q = client.table("agencies").select("*", count="exact")
+    if is_active is not None:
+        q = q.eq("is_active", is_active)
+    if search:
+        safe = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        q = q.ilike("name", f"%{safe}%")
+    res = await q.order("created_at", desc=True).range(offset, offset + page_size - 1).execute()
+    return {"items": res.data or [], "total": res.count or 0, "page": page, "page_size": page_size}
+
+
+@router.get("/agencies/{agency_id}")
+async def admin_get_agency(agency_id: str, client: AsyncClient = Depends(get_client)):
+    res = await client.table("agencies").select("*").eq("id", agency_id).limit(1).execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Agency not found")
+    return res.data[0]
+
+
+@router.post("/agencies", status_code=201)
+async def admin_create_agency(
+    body: AgencyCreate,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    res = await client.table("agencies").insert(body.model_dump(exclude_none=True)).execute()
+    created = res.data[0]
+    await ghost_audit(client, ghost_ctx, "create_agency", "agency", created["id"], None, body.model_dump(exclude_none=True))
+    return created
+
+
+@router.patch("/agencies/{agency_id}")
+async def admin_update_agency(
+    agency_id: str,
+    body: AgencyUpdate,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    before_res = await client.table("agencies").select("*").eq("id", agency_id).limit(1).execute()
+    if not before_res.data:
+        raise HTTPException(status_code=404, detail="Agency not found")
+    before = before_res.data[0]
+
+    update = body.model_dump(exclude_unset=True)
+    if not update:
+        return before
+
+    res = await client.table("agencies").update(update).eq("id", agency_id).execute()
+    after = res.data[0] if res.data else before
+    await ghost_audit(
+        client, ghost_ctx, "update_agency", "agency", agency_id,
+        {k: before.get(k) for k in update.keys()}, update,
+    )
+    return after
 
 
 # ─── Audit Log ────────────────────────────────────────────────────────────────

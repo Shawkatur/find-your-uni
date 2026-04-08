@@ -146,6 +146,15 @@ class AgencyCreate(BaseModel):
     website: str | None = None
 
 
+class AgencyUpdate(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=200)
+    license_no: str | None = None
+    address: str | None = None
+    city: str | None = None
+    website: str | None = None
+    is_active: bool | None = None
+
+
 class AdminAuditLog(BaseModel):
     id: str
     admin_user_id: str
