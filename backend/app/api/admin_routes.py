@@ -512,6 +512,55 @@ async def admin_update_program(
     return after
 
 
+# ─── Deletes (universities / programs / agencies) ─────────────────────────────
+
+
+async def _safe_delete(client: AsyncClient, table: str, row_id: str, ghost_ctx: GhostContext, action: str, resource: str):
+    before_res = await client.table(table).select("*").eq("id", row_id).limit(1).execute()
+    if not before_res.data:
+        raise HTTPException(status_code=404, detail=f"{resource} not found")
+    before = before_res.data[0]
+    try:
+        await client.table(table).delete().eq("id", row_id).execute()
+    except Exception as e:
+        msg = str(e).lower()
+        if "foreign key" in msg or "violates" in msg or "23503" in msg:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete {resource}: it is referenced by other records. Deactivate it instead.",
+            )
+        raise
+    await ghost_audit(client, ghost_ctx, action, resource, row_id, before, None)
+    return None
+
+
+@router.delete("/universities/{university_id}", status_code=204)
+async def admin_delete_university(
+    university_id: str,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    return await _safe_delete(client, "universities", university_id, ghost_ctx, "delete_university", "university")
+
+
+@router.delete("/programs/{program_id}", status_code=204)
+async def admin_delete_program(
+    program_id: str,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    return await _safe_delete(client, "programs", program_id, ghost_ctx, "delete_program", "program")
+
+
+@router.delete("/agencies/{agency_id}", status_code=204)
+async def admin_delete_agency(
+    agency_id: str,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    return await _safe_delete(client, "agencies", agency_id, ghost_ctx, "delete_agency", "agency")
+
+
 # ─── Audit Log ────────────────────────────────────────────────────────────────
 
 @router.get("/audit-log")
