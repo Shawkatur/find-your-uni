@@ -349,6 +349,49 @@ async def admin_list_agencies(
     return {"items": res.data or [], "total": res.count or 0, "page": page, "page_size": page_size}
 
 
+@router.get("/agencies/{agency_id}/overview")
+async def admin_agency_overview(
+    agency_id: str,
+    client: AsyncClient = Depends(get_client),
+):
+    """Agency + its consultants, each with their assigned applications
+    (joined with student + program names)."""
+    a_res = await client.table("agencies").select("*").eq("id", agency_id).limit(1).execute()
+    if not a_res.data:
+        raise HTTPException(status_code=404, detail="Agency not found")
+
+    c_res = await (
+        client.table("consultants")
+        .select("*")
+        .eq("agency_id", agency_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    consultants = c_res.data or []
+
+    consultant_ids = [c["id"] for c in consultants]
+    apps_by_consultant: dict[str, list] = {cid: [] for cid in consultant_ids}
+    if consultant_ids:
+        apps_res = await (
+            client.table("applications")
+            .select(
+                "id, status, consultant_id, updated_at, "
+                "students(id, full_name, phone), "
+                "programs(name, degree_level, field)"
+            )
+            .in_("consultant_id", consultant_ids)
+            .order("updated_at", desc=True)
+            .execute()
+        )
+        for app in apps_res.data or []:
+            apps_by_consultant.setdefault(app["consultant_id"], []).append(app)
+
+    for c in consultants:
+        c["applications"] = apps_by_consultant.get(c["id"], [])
+
+    return {"agency": a_res.data[0], "consultants": consultants}
+
+
 @router.get("/agencies/{agency_id}")
 async def admin_get_agency(agency_id: str, client: AsyncClient = Depends(get_client)):
     res = await client.table("agencies").select("*").eq("id", agency_id).limit(1).execute()
