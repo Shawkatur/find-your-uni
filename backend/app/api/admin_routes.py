@@ -6,8 +6,12 @@ Admin-only API routes. All endpoints require:
 Ghost mode (X-Ghost-Mode: true) is available to super_admin users only.
 """
 from __future__ import annotations
+import csv
+import io
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File
+from fastapi.responses import Response
+from pydantic import ValidationError
 from supabase import AsyncClient
 
 from app.core.config import get_settings
@@ -15,7 +19,7 @@ from app.core.security import require_role, require_admin_secret, get_current_us
 from app.core.ghost import ghost_audit, ghost_notify_lead_assignment
 from app.db.client import get_client
 from app.models.application import ConsultantStatusUpdate, ReassignBody, MatchSettingsUpdate, AgencyCreate, AgencyUpdate
-from app.models.university import ProgramCreate, ProgramUpdate
+from app.models.university import ProgramCreate, ProgramUpdate, UniversityCreate
 
 router = APIRouter(
     prefix="/admin",
@@ -602,6 +606,280 @@ async def admin_delete_agency(
     client: AsyncClient = Depends(get_client),
 ):
     return await _safe_delete(client, "agencies", agency_id, ghost_ctx, "delete_agency", "agency")
+
+
+# ─── Bulk Import (universities + programs) ────────────────────────────────────
+
+BULK_IMPORT_MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+BULK_IMPORT_MAX_ROWS = 1000
+
+UNIVERSITY_BOOL_FIELDS = {"scholarships_available"}
+UNIVERSITY_INT_FIELDS = {
+    "ranking_qs", "ranking_the", "tuition_usd_per_year",
+    "min_toefl", "min_gpa_percentage", "max_scholarship_pct",
+}
+UNIVERSITY_FLOAT_FIELDS = {
+    "acceptance_rate_overall", "acceptance_rate_bd", "min_ielts",
+}
+UNIVERSITY_STR_FIELDS = {
+    "city", "website", "description", "logo_url",
+}
+
+PROGRAM_INT_FIELDS = {"program_tuition_usd_per_year"}
+PROGRAM_FLOAT_FIELDS = {"duration_years"}
+
+CSV_TEMPLATE = (
+    "university_name,country,city,website,tuition_usd_per_year,ranking_qs,"
+    "acceptance_rate_bd,scholarships_available,max_scholarship_pct,min_ielts,"
+    "min_gpa_percentage,program_name,degree_level,field,"
+    "program_tuition_usd_per_year,duration_years,application_deadline,intake_months\n"
+    "Example University,US,Boston,https://example.edu,45000,80,55.0,true,50,6.5,"
+    "70,MSc Computer Science,master,cs,,2,2026-12-01,1;9\n"
+    "Example University,US,Boston,https://example.edu,45000,80,55.0,true,50,6.5,"
+    "70,BSc Computer Science,bachelor,cs,,4,2026-12-01,9\n"
+)
+
+
+def _coerce(value: str | None, kind: str) -> object:
+    if value is None:
+        return None
+    v = value.strip()
+    if v == "":
+        return None
+    if kind == "int":
+        return int(float(v))
+    if kind == "float":
+        return float(v)
+    if kind == "bool":
+        return v.lower() in ("true", "1", "yes", "y", "t")
+    return v
+
+
+@router.get("/universities/import-template")
+async def admin_universities_import_template():
+    return Response(
+        content=CSV_TEMPLATE,
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="universities-template.csv"'},
+    )
+
+
+@router.post("/universities/bulk-import")
+async def admin_universities_bulk_import(
+    payload: dict = Body(...),
+    dry_run: bool = Query(False),
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    """Bulk-import universities and programs from a denormalized CSV.
+
+    Body: {"content_b64": "<base64 csv>"}
+    Each row = one program. Rows are grouped by (university_name, country) and
+    the parent university is upserted before its programs are inserted.
+    """
+    import base64
+    b64 = (payload or {}).get("content_b64") or ""
+    if not b64:
+        raise HTTPException(status_code=400, detail="content_b64 required")
+    try:
+        raw = base64.b64decode(b64, validate=True)
+    except Exception:
+        raise HTTPException(status_code=400, detail="content_b64 is not valid base64")
+    if len(raw) > BULK_IMPORT_MAX_BYTES:
+        raise HTTPException(status_code=413, detail=f"CSV exceeds {BULK_IMPORT_MAX_BYTES // 1024} KB")
+
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="CSV must be UTF-8 encoded")
+
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
+    if len(rows) > BULK_IMPORT_MAX_ROWS:
+        raise HTTPException(status_code=413, detail=f"Max {BULK_IMPORT_MAX_ROWS} rows per import")
+    if not rows:
+        raise HTTPException(status_code=400, detail="CSV has no data rows")
+
+    errors: list[dict] = []
+    groups: dict[tuple[str, str], list[tuple[int, dict]]] = {}
+
+    # ── Pass 1: parse + validate every row, group by university ──
+    for idx, row in enumerate(rows, start=2):  # start=2 → row 1 is header
+        try:
+            uni_name = (row.get("university_name") or "").strip()
+            country = (row.get("country") or "").strip().upper()
+            if not uni_name or not country:
+                errors.append({"row": idx, "field": "university_name/country", "message": "required"})
+                continue
+
+            uni_payload: dict = {"name": uni_name, "country": country}
+            for f in UNIVERSITY_STR_FIELDS:
+                v = _coerce(row.get(f), "str")
+                if v is not None:
+                    uni_payload[f] = v
+            for f in UNIVERSITY_INT_FIELDS:
+                v = _coerce(row.get(f), "int")
+                if v is not None:
+                    uni_payload[f] = v
+            for f in UNIVERSITY_FLOAT_FIELDS:
+                v = _coerce(row.get(f), "float")
+                if v is not None:
+                    uni_payload[f] = v
+            for f in UNIVERSITY_BOOL_FIELDS:
+                v = _coerce(row.get(f), "bool")
+                if v is not None:
+                    uni_payload[f] = v
+            if "tuition_usd_per_year" not in uni_payload:
+                uni_payload["tuition_usd_per_year"] = 0
+
+            # Validate via existing pydantic model (raises on bad values)
+            UniversityCreate(**uni_payload)
+
+            # ── Program payload ──
+            program_name = (row.get("program_name") or "").strip()
+            degree = (row.get("degree_level") or "").strip().lower()
+            field_ = (row.get("field") or "").strip()
+            if not program_name or not degree or not field_:
+                errors.append({"row": idx, "field": "program_name/degree_level/field", "message": "required"})
+                continue
+
+            min_req: dict = {}
+            ielts = _coerce(row.get("program_min_ielts") or row.get("min_ielts"), "float")
+            if ielts is not None:
+                min_req["ielts"] = ielts
+            gpa = _coerce(row.get("program_min_gpa_pct") or row.get("min_gpa_percentage"), "int")
+            if gpa is not None:
+                min_req["gpa_pct"] = gpa
+            toefl = _coerce(row.get("min_toefl"), "int")
+            if toefl is not None:
+                min_req["toefl"] = toefl
+
+            intake_raw = (row.get("intake_months") or "").strip()
+            intake_months = (
+                [int(x.strip()) for x in intake_raw.split(";") if x.strip().isdigit()]
+                if intake_raw
+                else None
+            )
+
+            program_payload: dict = {
+                "name": program_name,
+                "degree_level": degree,
+                "field": field_,
+                "tuition_usd_per_year": _coerce(row.get("program_tuition_usd_per_year"), "int"),
+                "duration_years": _coerce(row.get("duration_years"), "float"),
+                "application_deadline": _coerce(row.get("application_deadline"), "str"),
+                "intake_months": intake_months,
+                "min_requirements": min_req,
+                "is_active": True,
+            }
+            program_payload = {k: v for k, v in program_payload.items() if v is not None or k == "min_requirements"}
+            ProgramCreate(**program_payload)
+            # Re-stringify deadline to ISO via mode=json after validation
+            program_payload_json = ProgramCreate(**program_payload).model_dump(mode="json", exclude_none=True)
+
+            groups.setdefault((uni_name, country), []).append((idx, {
+                "uni": uni_payload,
+                "program": program_payload_json,
+            }))
+        except ValidationError as ve:
+            for e in ve.errors():
+                loc = ".".join(str(x) for x in e.get("loc", []))
+                errors.append({"row": idx, "field": loc, "message": e.get("msg", "invalid")})
+        except (ValueError, TypeError) as ex:
+            errors.append({"row": idx, "field": "row", "message": str(ex)})
+
+    summary = {
+        "dry_run": dry_run,
+        "universities_created": 0,
+        "universities_updated": 0,
+        "programs_created": 0,
+        "errors": errors,
+    }
+
+    if dry_run or not groups:
+        summary["universities_seen"] = len(groups)
+        if dry_run:
+            # Report what *would* be created vs updated
+            would_create = 0
+            would_update = 0
+            for (uni_name, country), _items in groups.items():
+                existing = await (
+                    client.table("universities")
+                    .select("id,name,country")
+                    .ilike("name", uni_name)
+                    .eq("country", country)
+                    .execute()
+                )
+                match = next(
+                    (r for r in (existing.data or [])
+                     if (r.get("name") or "").strip().lower() == uni_name.strip().lower()),
+                    None,
+                )
+                if match:
+                    would_update += 1
+                else:
+                    would_create += 1
+            summary["universities_created"] = would_create
+            summary["universities_updated"] = would_update
+            summary["programs_created"] = sum(len(items) for items in groups.values())
+        return summary
+
+    # ── Pass 2: upsert universities + insert programs ──
+    for (uni_name, country), items in groups.items():
+        try:
+            uni_payload = items[0][1]["uni"]
+            existing = await (
+                client.table("universities")
+                .select("id,name,country")
+                .ilike("name", uni_name)
+                .eq("country", country)
+                .execute()
+            )
+            # Tolerate whitespace/case differences in stored name
+            match = next(
+                (r for r in (existing.data or [])
+                 if (r.get("name") or "").strip().lower() == uni_name.strip().lower()
+                 and (r.get("country") or "").strip().upper() == country),
+                None,
+            )
+            if match:
+                existing = type("X", (), {"data": [match]})()
+            if existing.data:
+                university_id = existing.data[0]["id"]
+                update_payload = {k: v for k, v in uni_payload.items() if k not in ("name", "country")}
+                if update_payload:
+                    await client.table("universities").update(update_payload).eq("id", university_id).execute()
+                summary["universities_updated"] += 1
+                await ghost_audit(
+                    client, ghost_ctx, "bulk_update_university", "university",
+                    university_id, None, update_payload,
+                )
+            else:
+                ins = await client.table("universities").insert(uni_payload).execute()
+                university_id = ins.data[0]["id"]
+                summary["universities_created"] += 1
+                await ghost_audit(
+                    client, ghost_ctx, "bulk_create_university", "university",
+                    university_id, None, uni_payload,
+                )
+
+            for row_idx, payload in items:
+                try:
+                    program_payload = {**payload["program"], "university_id": university_id}
+                    p_ins = await client.table("programs").insert(program_payload).execute()
+                    summary["programs_created"] += 1
+                    if p_ins.data:
+                        await ghost_audit(
+                            client, ghost_ctx, "bulk_create_program", "program",
+                            p_ins.data[0]["id"], None, program_payload,
+                        )
+                except Exception as pe:
+                    errors.append({"row": row_idx, "field": "program", "message": str(pe)})
+        except Exception as ue:
+            for row_idx, _ in items:
+                errors.append({"row": row_idx, "field": "university", "message": str(ue)})
+
+    return summary
 
 
 # ─── Audit Log ────────────────────────────────────────────────────────────────
