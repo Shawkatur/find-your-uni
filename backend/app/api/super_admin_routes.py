@@ -22,6 +22,7 @@ from app.core.security import (
 )
 from app.core.ghost import ghost_audit, ghost_notify_lead_assignment, ghost_read
 from app.db.client import get_client
+from app.models.student import StudentUpdate
 
 router = APIRouter(
     prefix="/super-admin",
@@ -179,6 +180,36 @@ async def ghost_student_profile(
         "payments": payments_res.data or [],
         "match_cache": match_res.data[0] if match_res.data else None,
     }
+
+
+@router.patch("/students/{student_id}")
+async def update_student(
+    student_id: str,
+    body: StudentUpdate,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    """Super-admin edit of a student profile. Audited via ghost_audit."""
+    before_res = await client.table("students").select("*").eq("id", student_id).limit(1).execute()
+    if not before_res.data:
+        raise HTTPException(status_code=404, detail="Student not found")
+    before = before_res.data[0]
+
+    update = body.model_dump(exclude_unset=True)
+    if body.preferred_countries is not None:
+        update["preferred_countries"] = [c.upper() for c in body.preferred_countries]
+
+    if not update:
+        return before
+
+    res = await client.table("students").update(update).eq("id", student_id).execute()
+    after = res.data[0] if res.data else before
+
+    await ghost_audit(
+        client, ghost_ctx, "update_student", "student", student_id,
+        {k: before.get(k) for k in update.keys()}, update,
+    )
+    return after
 
 
 @router.get("/applications/{application_id}/ghost")
