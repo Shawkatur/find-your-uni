@@ -74,6 +74,37 @@ async def list_consultants(
     return {"items": res.data, "total": res.count or 0, "page": page, "page_size": page_size}
 
 
+@router.get("/consultants/{consultant_id}")
+async def get_consultant_detail(
+    consultant_id: str,
+    client: AsyncClient = Depends(get_client),
+):
+    """Consultant detail with their assigned applications, including student
+    name, program, and status history."""
+    c_res = await (
+        client.table("consultants")
+        .select("*, agencies(name)")
+        .eq("id", consultant_id)
+        .limit(1)
+        .execute()
+    )
+    if not c_res.data:
+        raise HTTPException(status_code=404, detail="Consultant not found")
+
+    apps_res = await (
+        client.table("applications")
+        .select(
+            "id, status, status_history, notes, created_at, updated_at, "
+            "student_id, students(id, full_name, phone, preferred_countries, preferred_degree), "
+            "programs(name, degree_level, field, university_id)"
+        )
+        .eq("consultant_id", consultant_id)
+        .order("updated_at", desc=True)
+        .execute()
+    )
+    return {"consultant": c_res.data[0], "applications": apps_res.data or []}
+
+
 @router.patch("/consultants/{consultant_id}/status")
 async def update_consultant_status(
     consultant_id: str,
