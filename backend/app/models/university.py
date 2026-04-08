@@ -79,6 +79,30 @@ class UniversityUpdate(BaseModel):
     logo_url: str | None = None
 
 
+class ProgramCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=200)
+    degree_level: DegreeLevel
+    field: str = Field(min_length=2, max_length=100)
+    tuition_usd_per_year: int | None = Field(None, ge=0)
+    duration_years: float | None = Field(None, gt=0, le=10)
+    application_deadline: date | None = None
+    intake_months: list[int] | None = None
+    min_requirements: dict = Field(default_factory=dict)
+    is_active: bool = True
+
+
+class ProgramUpdate(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=200)
+    degree_level: DegreeLevel | None = None
+    field: str | None = Field(None, min_length=2, max_length=100)
+    tuition_usd_per_year: int | None = Field(None, ge=0)
+    duration_years: float | None = Field(None, gt=0, le=10)
+    application_deadline: date | None = None
+    intake_months: list[int] | None = None
+    min_requirements: dict | None = None
+    is_active: bool | None = None
+
+
 class UniversityFilter(BaseModel):
     country: str | None = None
     degree_level: DegreeLevel | None = None

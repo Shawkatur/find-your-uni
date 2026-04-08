@@ -15,6 +15,7 @@ from app.core.security import require_role, require_admin_secret, get_current_us
 from app.core.ghost import ghost_audit, ghost_notify_lead_assignment
 from app.db.client import get_client
 from app.models.application import ConsultantStatusUpdate, ReassignBody, MatchSettingsUpdate, AgencyCreate, AgencyUpdate
+from app.models.university import ProgramCreate, ProgramUpdate
 
 router = APIRouter(
     prefix="/admin",
@@ -388,6 +389,68 @@ async def admin_update_agency(
     after = res.data[0] if res.data else before
     await ghost_audit(
         client, ghost_ctx, "update_agency", "agency", agency_id,
+        {k: before.get(k) for k in update.keys()}, update,
+    )
+    return after
+
+
+# ─── Programs (under universities) ────────────────────────────────────────────
+
+@router.get("/universities/{university_id}/programs")
+async def admin_list_programs(
+    university_id: str,
+    client: AsyncClient = Depends(get_client),
+):
+    """List all programs for a university (includes inactive)."""
+    res = await (
+        client.table("programs")
+        .select("*")
+        .eq("university_id", university_id)
+        .order("name")
+        .execute()
+    )
+    return res.data or []
+
+
+@router.post("/universities/{university_id}/programs", status_code=201)
+async def admin_create_program(
+    university_id: str,
+    body: ProgramCreate,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    uni_res = await client.table("universities").select("id").eq("id", university_id).limit(1).execute()
+    if not uni_res.data:
+        raise HTTPException(status_code=404, detail="University not found")
+
+    payload = body.model_dump(mode="json", exclude_none=True)
+    payload["university_id"] = university_id
+    res = await client.table("programs").insert(payload).execute()
+    created = res.data[0]
+    await ghost_audit(client, ghost_ctx, "create_program", "program", created["id"], None, payload)
+    return created
+
+
+@router.patch("/programs/{program_id}")
+async def admin_update_program(
+    program_id: str,
+    body: ProgramUpdate,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    before_res = await client.table("programs").select("*").eq("id", program_id).limit(1).execute()
+    if not before_res.data:
+        raise HTTPException(status_code=404, detail="Program not found")
+    before = before_res.data[0]
+
+    update = body.model_dump(mode="json", exclude_unset=True)
+    if not update:
+        return before
+
+    res = await client.table("programs").update(update).eq("id", program_id).execute()
+    after = res.data[0] if res.data else before
+    await ghost_audit(
+        client, ghost_ctx, "update_program", "program", program_id,
         {k: before.get(k) for k in update.keys()}, update,
     )
     return after
