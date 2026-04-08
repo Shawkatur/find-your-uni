@@ -29,6 +29,7 @@ router = APIRouter(prefix="/dossier", tags=["dossier"])
 
 BUCKET = "documents"
 MAX_STUDENTS = 10
+MAX_ZIP_BYTES = 50 * 1024 * 1024  # 50 MB hard cap to prevent OOM
 
 
 # ─── Request Model ───────────────────────────────────────────────────────────
@@ -40,8 +41,14 @@ class DossierRequest(BaseModel):
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def _sanitize_filename(name: str) -> str:
-    """Remove characters unsafe for ZIP paths."""
-    return re.sub(r'[^\w\s\-]', '', name).strip().replace(' ', '_') or "student"
+    """Remove characters unsafe for ZIP paths.
+
+    Uses re.UNICODE so non-ASCII names (e.g. "李小明", "José") are preserved
+    instead of being stripped to an empty string. Collisions are still
+    prevented downstream by appending the student id suffix to the folder.
+    """
+    cleaned = re.sub(r'[^\w\s\-]', '', name, flags=re.UNICODE).strip().replace(' ', '_')
+    return cleaned or "student"
 
 
 def _format_profile_summary(student: dict) -> str:
@@ -156,8 +163,19 @@ async def _build_zip(student_ids: list[str], client: AsyncClient) -> io.BytesIO:
                     )
 
     total_size = buf.tell()
-    if total_size > 50 * 1024 * 1024:
-        logger.warning("Large dossier ZIP generated: %.1f MB", total_size / (1024 * 1024))
+    if total_size > MAX_ZIP_BYTES:
+        logger.warning(
+            "Dossier ZIP exceeded cap: %.1f MB (limit %.1f MB)",
+            total_size / (1024 * 1024),
+            MAX_ZIP_BYTES / (1024 * 1024),
+        )
+        raise HTTPException(
+            status_code=413,
+            detail=(
+                f"Dossier exceeds {MAX_ZIP_BYTES // (1024 * 1024)} MB limit. "
+                "Reduce the number of students or remove large attachments."
+            ),
+        )
 
     buf.seek(0)
     return buf
