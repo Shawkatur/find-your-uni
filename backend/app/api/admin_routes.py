@@ -394,6 +394,62 @@ async def admin_update_agency(
     return after
 
 
+# ─── Student Documents ────────────────────────────────────────────────────────
+
+DOCS_BUCKET = "documents"
+
+
+async def _admin_signed_url(client: AsyncClient, key: str) -> str | None:
+    try:
+        res = await client.storage.from_(DOCS_BUCKET).create_signed_url(key, 3600)
+        return res.get("signedURL")
+    except Exception:
+        return None
+
+
+@router.get("/students/{student_id}/documents")
+async def admin_list_student_documents(
+    student_id: str,
+    client: AsyncClient = Depends(get_client),
+):
+    """List a student's uploaded documents with 1-hour signed download URLs."""
+    res = await (
+        client.table("documents")
+        .select("*")
+        .eq("student_id", student_id)
+        .order("uploaded_at", desc=True)
+        .execute()
+    )
+    docs = res.data or []
+    for d in docs:
+        d["signed_url"] = await _admin_signed_url(client, d.get("storage_url", ""))
+    return docs
+
+
+@router.delete("/documents/{document_id}", status_code=204)
+async def admin_delete_document(
+    document_id: str,
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    """Delete a student document (storage object + DB row). Audited."""
+    before_res = await client.table("documents").select("*").eq("id", document_id).limit(1).execute()
+    if not before_res.data:
+        raise HTTPException(status_code=404, detail="Document not found")
+    before = before_res.data[0]
+
+    storage_url = before.get("storage_url")
+    if storage_url:
+        try:
+            await client.storage.from_(DOCS_BUCKET).remove([storage_url])
+        except Exception:
+            pass  # storage object may already be gone; still remove DB row
+
+    await client.table("documents").delete().eq("id", document_id).execute()
+    await ghost_audit(client, ghost_ctx, "delete_document", "document", document_id, before, None)
+    return None
+
+
 # ─── Programs (under universities) ────────────────────────────────────────────
 
 @router.get("/universities/{university_id}/programs")
