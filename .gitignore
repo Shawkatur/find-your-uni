@@ -41,3 +41,13 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Claude Code
+.claude/
+backend/.claude/
+
+# Supabase local
+supabase/.temp/
+
+# Nested admin-dashboard clone (tracked separately in find-your-uni-admin repo)
+admin-dashboard/
