@@ -882,6 +882,173 @@ async def admin_universities_bulk_import(
     return summary
 
 
+# ─── Bulk Import: Students ───────────────────────────────────────────────────
+
+STUDENT_CSV_TEMPLATE = (
+    "full_name,email,phone,budget_usd_per_year,preferred_countries,"
+    "preferred_degree,preferred_fields,ielts,gpa_percentage\n"
+    "Jane Doe,jane.doe@example.com,+8801712345678,30000,US;CA,master,cs;data_science,7.0,85\n"
+    "John Smith,john.smith@example.com,+8801898765432,20000,GB;DE,bachelor,engineering,6.5,78\n"
+)
+
+
+@router.get("/students/import-template")
+async def admin_students_import_template():
+    """Return a CSV template for bulk student import."""
+    return Response(
+        content=STUDENT_CSV_TEMPLATE,
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="students-template.csv"'},
+    )
+
+
+@router.post("/students/bulk-import")
+async def admin_students_bulk_import(
+    payload: dict = Body(...),
+    dry_run: bool = Query(False),
+    ghost_ctx: GhostContext = Depends(get_ghost_context),
+    client: AsyncClient = Depends(get_client),
+):
+    """Bulk-create students from a CSV.
+
+    Each row creates an auth user (random password), a students row, and an
+    unassigned lead application — same shape as a normal admin-source signup.
+    Body: {"content_b64": "<base64 csv>"}
+    """
+    import base64
+    import secrets
+
+    b64 = (payload or {}).get("content_b64") or ""
+    if not b64:
+        raise HTTPException(status_code=400, detail="content_b64 required")
+    try:
+        raw = base64.b64decode(b64, validate=True)
+    except Exception:
+        raise HTTPException(status_code=400, detail="content_b64 is not valid base64")
+    if len(raw) > BULK_IMPORT_MAX_BYTES:
+        raise HTTPException(status_code=413, detail=f"CSV exceeds {BULK_IMPORT_MAX_BYTES // 1024} KB")
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="CSV must be UTF-8 encoded")
+
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
+    if len(rows) > BULK_IMPORT_MAX_ROWS:
+        raise HTTPException(status_code=413, detail=f"Max {BULK_IMPORT_MAX_ROWS} rows per import")
+    if not rows:
+        raise HTTPException(status_code=400, detail="CSV has no data rows")
+
+    errors: list[dict] = []
+    parsed: list[tuple[int, dict, str]] = []  # (row_idx, student_payload, email)
+
+    # ── Pass 1: validate every row ──
+    for idx, row in enumerate(rows, start=2):
+        try:
+            full_name = (row.get("full_name") or "").strip()
+            email = (row.get("email") or "").strip().lower()
+            if not full_name or not email:
+                errors.append({"row": idx, "field": "full_name/email", "message": "required"})
+                continue
+            if "@" not in email or "." not in email.split("@")[-1]:
+                errors.append({"row": idx, "field": "email", "message": "invalid email"})
+                continue
+
+            phone = _coerce(row.get("phone"), "str")
+            budget = _coerce(row.get("budget_usd_per_year"), "int") or 0
+            countries_raw = (row.get("preferred_countries") or "").strip()
+            countries = [c.strip().upper() for c in countries_raw.split(";") if c.strip()] if countries_raw else []
+            degree = (row.get("preferred_degree") or "").strip().lower() or None
+            fields_raw = (row.get("preferred_fields") or "").strip()
+            fields = [f.strip() for f in fields_raw.split(";") if f.strip()] if fields_raw else []
+            ielts = _coerce(row.get("ielts"), "float")
+            gpa_pct = _coerce(row.get("gpa_percentage"), "int")
+
+            # Validate via existing pydantic model
+            from app.models.student import StudentCreate
+            StudentCreate(
+                full_name=full_name,
+                phone=phone,
+                academic_history={"gpa_percentage": gpa_pct} if gpa_pct is not None else {},
+                test_scores={"ielts": ielts} if ielts is not None else {},
+                budget_usd_per_year=budget,
+                preferred_countries=countries,
+                preferred_degree=degree,
+                preferred_fields=fields,
+            )
+
+            student_payload = {
+                "full_name": full_name,
+                "phone": phone,
+                "academic_history": {"gpa_percentage": gpa_pct} if gpa_pct is not None else {},
+                "test_scores": {"ielts": ielts} if ielts is not None else {},
+                "budget_usd_per_year": budget,
+                "preferred_countries": countries,
+                "preferred_degree": degree,
+                "preferred_fields": fields,
+                "referral_source": "admin",
+            }
+            parsed.append((idx, student_payload, email))
+        except ValidationError as ve:
+            for e in ve.errors():
+                loc = ".".join(str(x) for x in e.get("loc", []))
+                errors.append({"row": idx, "field": loc, "message": e.get("msg", "invalid")})
+        except (ValueError, TypeError) as ex:
+            errors.append({"row": idx, "field": "row", "message": str(ex)})
+
+    summary = {
+        "dry_run": dry_run,
+        "students_created": 0,
+        "leads_created": 0,
+        "errors": errors,
+    }
+
+    if dry_run:
+        summary["students_created"] = len(parsed)
+        summary["leads_created"] = len(parsed)
+        return summary
+
+    # ── Pass 2: create auth user → student row → lead application ──
+    for row_idx, student_payload, email in parsed:
+        try:
+            # 1) Create auth user with a random password
+            password = secrets.token_urlsafe(16)
+            auth_res = await client.auth.admin.create_user({
+                "email": email,
+                "password": password,
+                "email_confirm": True,
+                "app_metadata": {"role": "student"},
+            })
+            user_id = auth_res.user.id
+
+            # 2) Insert student row
+            student_payload["user_id"] = user_id
+            ins = await client.table("students").insert(student_payload).execute()
+            if not ins.data:
+                raise RuntimeError("student insert returned no data")
+            student_id = ins.data[0]["id"]
+            summary["students_created"] += 1
+
+            # 3) Unassigned lead application
+            try:
+                await client.table("applications").insert({
+                    "student_id": student_id,
+                    "status": "lead",
+                }).execute()
+                summary["leads_created"] += 1
+            except Exception as le:
+                errors.append({"row": row_idx, "field": "lead", "message": str(le)})
+
+            await ghost_audit(
+                client, ghost_ctx, "bulk_create_student", "student",
+                student_id, None, {"email": email, **student_payload},
+            )
+        except Exception as ue:
+            errors.append({"row": row_idx, "field": "student", "message": str(ue)})
+
+    return summary
+
+
 # ─── Audit Log ────────────────────────────────────────────────────────────────
 
 @router.get("/audit-log")
