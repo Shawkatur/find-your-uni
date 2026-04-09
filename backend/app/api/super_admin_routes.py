@@ -8,6 +8,7 @@ All endpoints require:
   2. X-Admin-Secret header (via require_admin_secret)
 """
 from __future__ import annotations
+import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -48,38 +49,41 @@ class BulkAssignBody(BaseModel):
 @router.get("/analytics/overview")
 async def analytics_overview(client: AsyncClient = Depends(get_client)):
     """Global platform overview with counts and conversion funnel."""
-    # Counts
-    students_res = await client.table("students").select("id", count="exact").execute()
-    consultants_res = await client.table("consultants").select("id", count="exact").execute()
-    agencies_res = await client.table("agencies").select("id", count="exact").execute()
-    apps_res = await client.table("applications").select("id", count="exact").execute()
-
-    # Application status breakdown (conversion funnel) — count per status
-    funnel: dict[str, int] = {}
-    for st in ["lead", "pre_evaluation", "docs_collection", "applied",
-               "offer_received", "conditional_offer", "visa_stage",
-               "enrolled", "rejected", "withdrawn"]:
-        st_res = await client.table("applications").select("id", count="exact").eq("status", st).execute()
-        count = st_res.count or 0
-        if count > 0:
-            funnel[st] = count
-
-    # Unassigned leads
-    leads_res = await (
+    # Run all independent queries in parallel.
+    # The funnel is computed from a single fetch of `applications.status`
+    # instead of one count query per status (was 10 sequential round-trips).
+    (
+        students_res,
+        consultants_res,
+        agencies_res,
+        apps_res,
+        all_apps_res,
+        leads_res,
+        pending_res,
+    ) = await asyncio.gather(
+        client.table("students").select("id", count="exact").execute(),
+        client.table("consultants").select("id", count="exact").execute(),
+        client.table("agencies").select("id", count="exact").execute(),
+        client.table("applications").select("id", count="exact").execute(),
+        client.table("applications").select("status").execute(),
         client.table("applications")
-        .select("id", count="exact")
-        .is_("consultant_id", "null")
-        .eq("status", "lead")
-        .execute()
+            .select("id", count="exact")
+            .is_("consultant_id", "null")
+            .eq("status", "lead")
+            .execute(),
+        client.table("consultants")
+            .select("id", count="exact")
+            .eq("status", "pending")
+            .execute(),
     )
 
-    # Pending consultant approvals
-    pending_res = await (
-        client.table("consultants")
-        .select("id", count="exact")
-        .eq("status", "pending")
-        .execute()
-    )
+    # Group statuses in Python
+    funnel: dict[str, int] = {}
+    for row in (all_apps_res.data or []):
+        s = row.get("status")
+        if not s:
+            continue
+        funnel[s] = funnel.get(s, 0) + 1
 
     return {
         "total_students": students_res.count or 0,
