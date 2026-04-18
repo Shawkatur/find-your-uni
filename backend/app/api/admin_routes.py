@@ -6,6 +6,7 @@ Admin-only API routes. All endpoints require:
 Ghost mode (X-Ghost-Mode: true) is available to super_admin users only.
 """
 from __future__ import annotations
+import asyncio
 import csv
 import io
 from datetime import datetime, timezone
@@ -468,8 +469,11 @@ async def admin_list_student_documents(
         .execute()
     )
     docs = res.data or []
-    for d in docs:
-        d["signed_url"] = await _admin_signed_url(client, d.get("storage_url", ""))
+    urls = await asyncio.gather(
+        *[_admin_signed_url(client, d.get("storage_url", "")) for d in docs]
+    )
+    for d, url in zip(docs, urls):
+        d["signed_url"] = url
     return docs
 
 

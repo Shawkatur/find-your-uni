@@ -45,13 +45,14 @@ async def _ensure_bucket(client: AsyncClient) -> None:
         pass  # bucket already exists
 
 
-async def _signed_url(client: AsyncClient, key: str, settings) -> str:
-    """Return a 1-hour signed download URL; fall back to public URL on error."""
+async def _signed_url(client: AsyncClient, key: str, settings) -> str | None:
+    """Return a 1-hour signed download URL, or None if signing fails."""
     try:
         res = await client.storage.from_(BUCKET).create_signed_url(key, 3600)
         return res["signedURL"]
     except Exception:
-        return f"{settings.SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{key}"
+        logger.warning("Failed to generate signed URL for key: %s", key)
+        return None
 
 
 @router.post("/upload", status_code=201)
@@ -100,7 +101,8 @@ async def upload_document(
             key, content, {"contentType": content_type}
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Storage upload failed: {exc}")
+        logger.error("Storage upload failed for student %s: %s", student['id'], exc)
+        raise HTTPException(status_code=500, detail="Storage upload failed")
 
     url = await _signed_url(client, key, settings)
 

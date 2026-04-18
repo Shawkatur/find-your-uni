@@ -60,6 +60,8 @@ def _score_program(row: dict, budget: int, weights: dict) -> tuple[float, dict]:
         + ce_score    * weights["weight_cost_efficiency"]
         + bd_acc      * weights["weight_bd_acceptance"]
     )
+    # Clamp to [0, 1] in case weights don't sum to exactly 1.0
+    total = max(0.0, min(1.0, total))
     breakdown = {
         "ranking":        round(ranking_score, 4),
         "cost_efficiency": round(ce_score, 4),

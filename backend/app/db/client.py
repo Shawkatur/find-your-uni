@@ -12,14 +12,22 @@ from supabase import AsyncClient, acreate_client
 from app.core.config import get_settings
 
 _client: AsyncClient | None = None
-_client_lock = asyncio.Lock()
+_client_lock: asyncio.Lock | None = None
+
+
+def _get_lock() -> asyncio.Lock:
+    """Lazily create the lock inside the running event loop."""
+    global _client_lock
+    if _client_lock is None:
+        _client_lock = asyncio.Lock()
+    return _client_lock
 
 
 async def get_client() -> AsyncClient:
     """Return (and lazily initialise) the global Supabase async client."""
     global _client
     if _client is None:
-        async with _client_lock:
+        async with _get_lock():
             if _client is None:
                 settings = get_settings()
                 _client = await acreate_client(

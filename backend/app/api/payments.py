@@ -13,6 +13,7 @@ from supabase import AsyncClient
 from app.core.security import get_current_user, get_current_student_dep
 from app.core.config import get_settings
 from app.db.client import get_client
+from app.db.queries import get_student_by_user_id
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 get_student = get_current_student_dep()
@@ -64,6 +65,7 @@ async def initiate_payment(
         "cancel_url":    f"{base_url}/payments/verify/{payment_id}?status=cancel",
         "ipn_url":       f"{base_url}/payments/ipn",
         "cus_name":      student["full_name"],
+        "cus_email":     user.get("email", "noreply@findyouruni.com"),
         "cus_phone":     student.get("phone", "01700000000"),
         "cus_add1":      "Dhaka",
         "cus_city":      "Dhaka",
@@ -110,11 +112,16 @@ async def verify_payment(
     On failure/cancel, marks as failed. On success, marks as pending_validation
     until IPN confirms.
     """
-    # Look up the payment to confirm it exists and belongs to the user
+    # Look up the payment and verify it belongs to the authenticated user
+    student = await get_student_by_user_id(client, user["sub"])
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
     existing = await (
         client.table("payments")
         .select("id, status, student_id")
         .eq("id", payment_id)
+        .eq("student_id", student["id"])
         .limit(1)
         .execute()
     )

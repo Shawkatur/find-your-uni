@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 AppStatus = Literal[
@@ -136,6 +136,16 @@ class MatchSettingsUpdate(BaseModel):
     weight_bd_acceptance: float | None = Field(None, ge=0, le=1)
     ai_top_n: int | None = Field(None, ge=1, le=20)
     filter_budget_buffer: float | None = Field(None, ge=0, le=1)
+
+    @model_validator(mode="after")
+    def _check_weight_sum(self):
+        weights = [self.weight_ranking, self.weight_cost_efficiency, self.weight_bd_acceptance]
+        provided = [w for w in weights if w is not None]
+        if provided and len(provided) == 3:
+            total = sum(provided)
+            if not (0.99 <= total <= 1.01):
+                raise ValueError(f"Weights must sum to 1.0, got {total:.4f}")
+        return self
 
 
 class AgencyCreate(BaseModel):

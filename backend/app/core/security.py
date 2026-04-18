@@ -54,7 +54,7 @@ def verify_token(token: str) -> dict:
     try:
         header = jwt.get_unverified_header(token)
         alg = header.get("alg", "unknown")
-        logger.info("JWT header alg=%s", alg)
+        logger.debug("JWT header alg=%s", alg)
     except Exception:
         alg = "unknown"
 

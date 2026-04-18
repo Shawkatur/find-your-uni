@@ -168,6 +168,9 @@ async def update_student_profile(
     if body.onboarding_completed is not None:
         update["onboarding_completed"] = body.onboarding_completed
 
+    if not update:
+        raise HTTPException(status_code=422, detail="No valid fields to update")
+
     res = await client.table("students").update(update).eq("id", student["id"]).execute()
 
     # Backfill: if this student has no application row at all, create an

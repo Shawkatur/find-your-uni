@@ -105,9 +105,9 @@ async def filter_programs(
         reqs: dict = row.get("min_requirements") or {}
         min_ielts = reqs.get("ielts")
         min_gpa   = reqs.get("gpa_pct")
-        if min_ielts and ielts is not None and ielts < min_ielts:
+        if min_ielts is not None and ielts is not None and ielts < min_ielts:
             continue
-        if min_gpa and gpa_pct is not None and gpa_pct < min_gpa:
+        if min_gpa is not None and gpa_pct is not None and gpa_pct < min_gpa:
             continue
         filtered.append(row)
 
