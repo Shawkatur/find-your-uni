@@ -29,16 +29,16 @@ function ShortlistSummaryCard({ studentId }: { studentId: string }) {
   return (
     <GlassCard>
       <div className="flex items-center gap-2 mb-3">
-        <Bookmark size={15} className="text-blue-400" />
-        <h3 className="text-white font-semibold">Shortlist</h3>
+        <Bookmark size={15} className="text-emerald-600" />
+        <h3 className="text-[#1E293B] font-semibold">Shortlist</h3>
       </div>
-      <p className="text-slate-400 text-sm mb-3">
+      <p className="text-[#64748B] text-sm mb-3">
         {items.length > 0
           ? `${items.length} universit${items.length === 1 ? "y" : "ies"} saved`
           : "No universities saved yet"}
       </p>
       <Link href={`/consultant/students/${studentId}/shortlist`}>
-        <Button variant="outline" size="sm" className="w-full border-white/10 text-slate-300 hover:bg-white/8">
+        <Button variant="outline" size="sm" className="w-full border-slate-200 text-[#64748B] hover:bg-slate-50">
           {items.length > 0 ? "View Shortlist" : "Add Universities"}
         </Button>
       </Link>
@@ -116,7 +116,7 @@ export default function ConsultantApplicationDetailPage() {
   });
 
   if (isLoading) return <LoadingSpinner size="lg" className="mt-20" />;
-  if (!app) return <div className="text-slate-400 text-center mt-20">Not found.</div>;
+  if (!app) return <div className="text-[#64748B] text-center mt-20">Not found.</div>;
 
   const student = app.student;
   const whatsapp = student?.phone
@@ -133,7 +133,7 @@ export default function ConsultantApplicationDetailPage() {
           {/* Student Profile Summary */}
           {student && (
             <GlassCard>
-              <h3 className="text-white font-semibold mb-4">Student Profile</h3>
+              <h3 className="text-[#1E293B] font-semibold mb-4">Student Profile</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 {[
                   { label: "Name", value: student.full_name },
@@ -147,8 +147,8 @@ export default function ConsultantApplicationDetailPage() {
                   { label: "GRE", value: student.gre_score ?? "—" },
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <div className="text-slate-500 text-xs">{label}</div>
-                    <div className="text-white font-medium">{String(value)}</div>
+                    <div className="text-[#64748B] text-xs">{label}</div>
+                    <div className="text-[#1E293B] font-medium">{String(value)}</div>
                   </div>
                 ))}
               </div>
@@ -158,14 +158,14 @@ export default function ConsultantApplicationDetailPage() {
           {/* Status Update */}
           {nextStatuses.length > 0 && (
             <GlassCard>
-              <h3 className="text-white font-semibold mb-4">Update Status</h3>
+              <h3 className="text-[#1E293B] font-semibold mb-4">Update Status</h3>
               <div className="mb-3">
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Add a note (optional)..."
                   rows={2}
-                  className="w-full bg-white/8 border border-white/10 text-white placeholder:text-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full bg-slate-50 border border-slate-200 text-[#1E293B] placeholder:text-[#64748B] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 resize-none"
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -176,7 +176,7 @@ export default function ConsultantApplicationDetailPage() {
                     onClick={() => updateStatus.mutate({ status: s, note })}
                     disabled={updateStatus.isPending}
                     variant="outline"
-                    className="border-white/10 text-slate-300 hover:bg-white/8 capitalize"
+                    className="border-slate-200 text-[#64748B] hover:bg-slate-50 capitalize"
                   >
                     → {s.replace(/_/g, " ")}
                   </Button>
@@ -189,20 +189,20 @@ export default function ConsultantApplicationDetailPage() {
           {app.status_history && app.status_history.length > 0 && (
             <GlassCard>
               <div className="flex items-center gap-2 mb-4">
-                <Clock size={16} className="text-slate-400" />
-                <h3 className="text-white font-semibold">Status History</h3>
+                <Clock size={16} className="text-[#64748B]" />
+                <h3 className="text-[#1E293B] font-semibold">Status History</h3>
               </div>
               <div className="space-y-4">
                 {app.status_history.map((entry, i) => (
                   <div key={i} className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className={`w-3 h-3 rounded-full mt-1 ${i === 0 ? "bg-blue-500" : "bg-white/20"}`} />
-                      {i < app.status_history!.length - 1 && <div className="w-px flex-1 bg-white/10 mt-1" />}
+                      <div className={`w-3 h-3 rounded-full mt-1 ${i === 0 ? "bg-emerald-500" : "bg-slate-200"}`} />
+                      {i < app.status_history!.length - 1 && <div className="w-px flex-1 bg-slate-200 mt-1" />}
                     </div>
                     <div className="pb-4">
                       <StatusBadge status={entry.status} />
-                      {entry.note && <p className="text-slate-400 text-xs mt-1">{entry.note}</p>}
-                      <p className="text-slate-500 text-xs mt-1">{new Date(entry.changed_at).toLocaleString()}</p>
+                      {entry.note && <p className="text-[#64748B] text-xs mt-1">{entry.note}</p>}
+                      <p className="text-[#64748B] text-xs mt-1">{new Date(entry.changed_at).toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
@@ -214,19 +214,19 @@ export default function ConsultantApplicationDetailPage() {
           {app.documents && app.documents.length > 0 && (
             <GlassCard>
               <div className="flex items-center gap-2 mb-4">
-                <FileText size={16} className="text-slate-400" />
-                <h3 className="text-white font-semibold">Student Documents</h3>
+                <FileText size={16} className="text-[#64748B]" />
+                <h3 className="text-[#1E293B] font-semibold">Student Documents</h3>
               </div>
               <div className="space-y-2">
                 {app.documents.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-3 bg-white/4 rounded-lg">
+                  <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div>
-                      <div className="text-white text-sm capitalize">{doc.doc_type.replace(/_/g, " ")}</div>
-                      <div className="text-slate-500 text-xs">{doc.filename}</div>
+                      <div className="text-[#1E293B] text-sm capitalize">{doc.doc_type.replace(/_/g, " ")}</div>
+                      <div className="text-[#64748B] text-xs">{doc.filename}</div>
                     </div>
                     {doc.url && (
                       <a href={doc.url} target="_blank" rel="noopener noreferrer"
-                        className="text-blue-400 text-xs hover:text-blue-300">View</a>
+                        className="text-emerald-600 text-xs hover:text-emerald-700">View</a>
                     )}
                   </div>
                 ))}
@@ -239,14 +239,14 @@ export default function ConsultantApplicationDetailPage() {
         <div className="space-y-6">
           <GlassCard>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-white font-semibold">Current Status</h3>
+              <h3 className="text-[#1E293B] font-semibold">Current Status</h3>
             </div>
             <StatusBadge status={app.status} />
           </GlassCard>
 
           {whatsapp && (
             <GlassCard>
-              <h3 className="text-white font-semibold mb-3">Contact Student</h3>
+              <h3 className="text-[#1E293B] font-semibold mb-3">Contact Student</h3>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer">
                 <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
                   <MessageCircle size={15} className="mr-2" /> WhatsApp
@@ -256,10 +256,10 @@ export default function ConsultantApplicationDetailPage() {
           )}
 
           <GlassCard>
-            <h3 className="text-white font-semibold mb-3">University</h3>
-            <div className="text-white font-medium text-sm">{app.university?.name}</div>
-            <div className="text-slate-400 text-xs">{app.program?.name}</div>
-            <div className="text-slate-500 text-xs">{app.university?.country}</div>
+            <h3 className="text-[#1E293B] font-semibold mb-3">University</h3>
+            <div className="text-[#1E293B] font-medium text-sm">{app.university?.name}</div>
+            <div className="text-[#64748B] text-xs">{app.program?.name}</div>
+            <div className="text-[#64748B] text-xs">{app.university?.country}</div>
           </GlassCard>
 
           {app.student_id && (
@@ -268,16 +268,16 @@ export default function ConsultantApplicationDetailPage() {
 
           {colleagues.length > 0 && (
             <GlassCard>
-              <h3 className="text-white font-semibold mb-3">Team</h3>
+              <h3 className="text-[#1E293B] font-semibold mb-3">Team</h3>
               <Dialog open={forwardOpen} onOpenChange={setForwardOpen}>
                 <DialogTrigger>
-                  <Button variant="outline" className="w-full border-white/10 text-slate-300 hover:bg-white/8">
+                  <Button variant="outline" className="w-full border-slate-200 text-[#64748B] hover:bg-slate-50">
                     <UserRoundCog size={15} className="mr-2" /> Forward to Team
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-[#0F172A] border border-white/10 text-white">
+                <DialogContent className="bg-white border border-slate-200 text-[#1E293B]">
                   <DialogHeader>
-                    <DialogTitle className="text-white">Forward Application</DialogTitle>
+                    <DialogTitle className="text-[#1E293B]">Forward Application</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-2 py-2">
                     {colleagues.map((c) => (
@@ -286,12 +286,12 @@ export default function ConsultantApplicationDetailPage() {
                         onClick={() => setSelectedColleagueId(c.id)}
                         className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
                           selectedColleagueId === c.id
-                            ? "border-blue-500 bg-blue-500/10 text-white"
-                            : "border-white/10 bg-white/4 text-slate-300 hover:border-white/20"
+                            ? "border-blue-500 bg-blue-50 text-[#1E293B]"
+                            : "border-slate-200 bg-slate-50 text-[#64748B] hover:border-slate-300"
                         }`}
                       >
                         <div className="font-medium text-sm">{c.full_name}</div>
-                        <div className="text-xs text-slate-500 capitalize">{c.role}</div>
+                        <div className="text-xs text-[#64748B] capitalize">{c.role}</div>
                       </button>
                     ))}
                   </div>

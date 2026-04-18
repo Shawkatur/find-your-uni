@@ -32,10 +32,10 @@ export default function ConsultantDashboard() {
   };
 
   const statCards = [
-    { label: "Total", value: stats.total, icon: FileText, color: "text-blue-400 bg-blue-600/10" },
-    { label: "Active", value: stats.active, icon: TrendingUp, color: "text-yellow-400 bg-yellow-600/10" },
-    { label: "Offers", value: stats.offers, icon: CheckCircle, color: "text-green-400 bg-green-600/10" },
-    { label: "Enrolled", value: stats.enrolled, icon: Users, color: "text-purple-400 bg-purple-600/10" },
+    { label: "Total", value: stats.total, icon: FileText, color: "text-blue-600 bg-blue-50" },
+    { label: "Active", value: stats.active, icon: TrendingUp, color: "text-amber-600 bg-amber-50" },
+    { label: "Offers", value: stats.offers, icon: CheckCircle, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Enrolled", value: stats.enrolled, icon: Users, color: "text-purple-600 bg-purple-50" },
   ];
 
   const statusOrder = ["lead", "pre_evaluation", "docs_collection", "applied", "offer_received", "conditional_offer", "visa_stage", "enrolled", "rejected"];
@@ -55,8 +55,8 @@ export default function ConsultantDashboard() {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${card.color}`}>
                 <Icon size={18} />
               </div>
-              <div className="text-2xl font-bold text-white">{card.value}</div>
-              <div className="text-slate-400 text-xs mt-1">{card.label}</div>
+              <div className="text-2xl font-bold text-[#1E293B]">{card.value}</div>
+              <div className="text-[#64748B] text-xs mt-1">{card.label}</div>
             </GlassCard>
           );
         })}
@@ -65,20 +65,20 @@ export default function ConsultantDashboard() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Pipeline */}
         <GlassCard>
-          <h2 className="text-white font-semibold mb-4">Application Pipeline</h2>
+          <h2 className="text-[#1E293B] font-semibold mb-4">Application Pipeline</h2>
           {isLoading ? <LoadingSpinner size="sm" /> : (
             <div className="space-y-3">
               {statusOrder.map((status) => (
                 statusCounts[status] > 0 && (
                   <div key={status} className="flex items-center gap-3">
                     <StatusBadge status={status} />
-                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 rounded-full"
+                        className="h-full bg-emerald-500 rounded-full"
                         style={{ width: `${(statusCounts[status] / Math.max(applications.length, 1)) * 100}%` }}
                       />
                     </div>
-                    <span className="text-white font-semibold text-sm w-6 text-right">{statusCounts[status]}</span>
+                    <span className="text-[#1E293B] font-semibold text-sm w-6 text-right">{statusCounts[status]}</span>
                   </div>
                 )
               ))}
@@ -90,10 +90,10 @@ export default function ConsultantDashboard() {
         <GlassCard className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-slate-400" />
-              <h2 className="text-white font-semibold">Recent Applications</h2>
+              <Clock size={16} className="text-[#64748B]" />
+              <h2 className="text-[#1E293B] font-semibold">Recent Applications</h2>
             </div>
-            <Link href="/consultant/applications" className="text-blue-400 text-sm hover:text-blue-300">
+            <Link href="/consultant/applications" className="text-emerald-600 text-sm font-medium hover:text-emerald-700">
               View all →
             </Link>
           </div>
@@ -103,10 +103,10 @@ export default function ConsultantDashboard() {
             <div className="space-y-2">
               {applications.slice(0, 8).map((app) => (
                 <Link key={app.id} href={`/consultant/applications/${app.id}`}>
-                  <div className="flex items-center justify-between p-3 rounded-lg hover:bg-white/6 transition-colors">
+                  <div className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors">
                     <div>
-                      <div className="text-white text-sm font-medium">{app.student?.full_name ?? "Student"}</div>
-                      <div className="text-slate-400 text-xs">{app.university?.name}</div>
+                      <div className="text-[#1E293B] text-sm font-medium">{app.student?.full_name ?? "Student"}</div>
+                      <div className="text-[#64748B] text-xs mt-0.5">{app.university?.name}</div>
                     </div>
                     <StatusBadge status={app.status} />
                   </div>

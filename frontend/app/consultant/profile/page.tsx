@@ -61,7 +61,7 @@ export default function ConsultantProfilePage() {
     onError: () => toast.error("Failed to save."),
   });
 
-  const inputClass = "bg-white/8 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500";
+  const inputClass = "bg-slate-50 border-slate-200 text-[#1E293B] placeholder:text-[#64748B] focus:border-blue-500";
 
   return (
     <PageWrapper
@@ -81,22 +81,22 @@ export default function ConsultantProfilePage() {
       <GlassCard className="max-w-lg">
         <div className="space-y-5">
           <div>
-            <Label className="text-slate-300 mb-1.5 block">Full Name</Label>
+            <Label className="text-[#64748B] mb-1.5 block">Full Name</Label>
             <Input {...register("full_name")} placeholder="Your name" className={inputClass} />
             {errors.full_name && <p className="text-red-400 text-xs mt-1">{errors.full_name.message}</p>}
           </div>
           <div>
-            <Label className="text-slate-300 mb-1.5 block">Phone</Label>
+            <Label className="text-[#64748B] mb-1.5 block">Phone</Label>
             <Input {...register("phone")} type="tel" placeholder="+880 17..." className={inputClass} />
           </div>
           <div>
-            <Label className="text-slate-300 mb-1.5 block">Role / Title</Label>
+            <Label className="text-[#64748B] mb-1.5 block">Role / Title</Label>
             <Input {...register("role_title")} placeholder="e.g. Senior Consultant" className={inputClass} />
           </div>
           <div>
-            <Label className="text-slate-300 mb-1.5 block">WhatsApp Number</Label>
+            <Label className="text-[#64748B] mb-1.5 block">WhatsApp Number</Label>
             <Input {...register("whatsapp")} placeholder="+8801712345678" className={inputClass} />
-            <p className="text-slate-500 text-xs mt-1">Students will contact you via WhatsApp deep link.</p>
+            <p className="text-[#64748B] text-xs mt-1">Students will contact you via WhatsApp deep link.</p>
           </div>
         </div>
       </GlassCard>

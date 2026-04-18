@@ -35,23 +35,23 @@ export default function ConsultantAgenciesPage() {
           <GlassCard>
             {agencyData ? (
               <>
-                <h2 className="text-white font-bold text-lg mb-1">{agencyData.name}</h2>
+                <h2 className="text-[#1E293B] font-bold text-lg mb-1">{agencyData.name}</h2>
                 {agencyData.city && (
-                  <p className="text-slate-400 text-sm mb-4">{agencyData.city}</p>
+                  <p className="text-[#64748B] text-sm mb-4">{agencyData.city}</p>
                 )}
 
                 {(agencyData.avg_rating ?? 0) > 0 && (
                   <div className="flex items-center gap-2 mb-2">
                     <Star size={14} className="text-yellow-400" fill="currentColor" />
-                    <span className="text-white font-semibold">{agencyData.avg_rating!.toFixed(1)}</span>
+                    <span className="text-[#1E293B] font-semibold">{agencyData.avg_rating!.toFixed(1)}</span>
                     {(agencyData.review_count ?? 0) > 0 && (
-                      <span className="text-slate-400 text-sm">({agencyData.review_count} reviews)</span>
+                      <span className="text-[#64748B] text-sm">({agencyData.review_count} reviews)</span>
                     )}
                   </div>
                 )}
 
                 {agencyData.license_no && (
-                  <p className="text-slate-500 text-xs">License: {agencyData.license_no}</p>
+                  <p className="text-[#64748B] text-xs">License: {agencyData.license_no}</p>
                 )}
 
                 {agencyData.website && (
@@ -59,14 +59,14 @@ export default function ConsultantAgenciesPage() {
                     href={agencyData.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm mt-3 transition-colors"
+                    className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-sm mt-3 transition-colors"
                   >
                     <ExternalLink size={13} /> Website
                   </a>
                 )}
               </>
             ) : (
-              <div className="text-slate-400 text-sm">No agency assigned. Contact your administrator.</div>
+              <div className="text-[#64748B] text-sm">No agency assigned. Contact your administrator.</div>
             )}
           </GlassCard>
         </div>
@@ -74,30 +74,30 @@ export default function ConsultantAgenciesPage() {
         {/* Colleagues */}
         <div className="lg:col-span-2">
           <GlassCard>
-            <h2 className="text-white font-semibold mb-4">Team Members</h2>
+            <h2 className="text-[#1E293B] font-semibold mb-4">Team Members</h2>
             {colleaguesLoading ? (
               <LoadingSpinner size="sm" />
             ) : colleagues.length === 0 ? (
-              <p className="text-slate-400 text-sm">No other consultants in this agency.</p>
+              <p className="text-[#64748B] text-sm">No other consultants in this agency.</p>
             ) : (
               <div className="space-y-3">
                 {colleagues.map((c) => (
-                  <div key={c.id} className="flex items-center gap-3 p-3 bg-white/4 rounded-lg">
-                    <div className="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center shrink-0">
-                      <span className="text-purple-400 font-semibold text-sm">
+                  <div key={c.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                    <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
+                      <span className="text-purple-600 font-semibold text-sm">
                         {c.full_name.slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1">
-                      <div className="text-white font-medium text-sm">{c.full_name}</div>
-                      <div className="text-slate-400 text-xs">{c.role_title ?? "Consultant"}</div>
+                      <div className="text-[#1E293B] font-medium text-sm">{c.full_name}</div>
+                      <div className="text-[#64748B] text-xs">{c.role_title ?? "Consultant"}</div>
                     </div>
                     {c.whatsapp && (
                       <a
                         href={`https://wa.me/${c.whatsapp.replace(/\D/g, "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-400 hover:text-green-300 text-xs"
+                        className="text-emerald-600 hover:text-emerald-700 text-xs"
                       >
                         WhatsApp
                       </a>

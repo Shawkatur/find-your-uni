@@ -109,21 +109,21 @@ function ConsultantStudentShortlistContent() {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#0F172A]">
+    <div className="flex min-h-screen bg-white">
       <Sidebar role="consultant" />
       <main className="flex-1 md:ml-64 p-6 max-w-5xl">
         {/* Header */}
         <div className="mb-6">
           <Link
             href="/consultant/applications"
-            className="inline-flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-[#64748B] hover:text-[#1E293B] text-sm transition-colors mb-4"
           >
             <ArrowLeft size={14} /> Back to Applications
           </Link>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Bookmark size={20} className="text-blue-400" />
-              <h1 className="text-2xl font-bold text-white">Student Shortlist</h1>
+              <Bookmark size={20} className="text-emerald-600" />
+              <h1 className="text-2xl font-bold text-[#1E293B]">Student Shortlist</h1>
             </div>
             <Button
               size="sm"
@@ -133,7 +133,7 @@ function ConsultantStudentShortlistContent() {
               <Plus size={14} className="mr-1.5" /> Add University
             </Button>
           </div>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[#64748B] text-sm mt-1">
             {items.length > 0
               ? `${items.length} saved universit${items.length === 1 ? "y" : "ies"}`
               : "No universities saved for this student yet"}
@@ -144,21 +144,21 @@ function ConsultantStudentShortlistContent() {
         {showAddModal && (
           <GlassCard className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Search & Add University</h3>
+              <h3 className="text-[#1E293B] font-semibold">Search & Add University</h3>
               <button
                 onClick={() => { setShowAddModal(false); setSearch(""); }}
-                className="text-slate-500 hover:text-white"
+                className="text-[#64748B] hover:text-[#1E293B]"
               >
                 <X size={16} />
               </button>
             </div>
             <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
               <Input
                 placeholder="Search universities..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 bg-white/8 border-white/10 text-white placeholder:text-slate-500"
+                className="pl-8 bg-slate-50 border-slate-200 text-[#1E293B] placeholder:text-[#64748B]"
                 autoFocus
               />
             </div>
@@ -167,11 +167,11 @@ function ConsultantStudentShortlistContent() {
                 {searchResults.map((uni) => (
                   <div
                     key={uni.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/4 hover:bg-white/7 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                   >
                     <div>
-                      <div className="text-white text-sm font-medium">{uni.name}</div>
-                      <div className="text-slate-400 text-xs">
+                      <div className="text-[#1E293B] text-sm font-medium">{uni.name}</div>
+                      <div className="text-[#64748B] text-xs">
                         {uni.city ? `${uni.city}, ` : ""}
                         {uni.country}
                         {uni.ranking_qs ? ` · QS #${uni.ranking_qs}` : ""}
@@ -182,7 +182,7 @@ function ConsultantStudentShortlistContent() {
                       variant="outline"
                       onClick={() => addMutation.mutate(uni.id)}
                       disabled={addMutation.isPending}
-                      className="border-white/10 text-slate-300 hover:bg-blue-600/20 hover:text-blue-400"
+                      className="border-slate-200 text-[#64748B] hover:bg-blue-50 hover:text-blue-600"
                     >
                       <Plus size={13} className="mr-1" /> Add
                     </Button>
@@ -191,7 +191,7 @@ function ConsultantStudentShortlistContent() {
               </div>
             )}
             {search.length >= 2 && searchResults.length === 0 && (
-              <p className="text-slate-500 text-sm text-center py-4">No universities found</p>
+              <p className="text-[#64748B] text-sm text-center py-4">No universities found</p>
             )}
           </GlassCard>
         )}
@@ -204,7 +204,7 @@ function ConsultantStudentShortlistContent() {
         ) : items.length === 0 ? (
           <GlassCard className="text-center py-16">
             <Bookmark size={40} className="text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-sm mb-4">No universities saved yet</p>
+            <p className="text-[#64748B] text-sm mb-4">No universities saved yet</p>
             <Button
               size="sm"
               onClick={() => setShowAddModal(true)}
@@ -223,7 +223,7 @@ function ConsultantStudentShortlistContent() {
                   <button
                     onClick={() => removeMutation.mutate(item.university_id)}
                     disabled={removeMutation.isPending}
-                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-slate-500 hover:bg-red-600/20 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-[#64748B] hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
                     title="Remove from shortlist"
                   >
                     <X size={14} />
@@ -231,14 +231,14 @@ function ConsultantStudentShortlistContent() {
 
                   <Link href={`/universities/${uni.id}`} className="block">
                     <div className="flex items-start gap-3 mb-3 pr-8">
-                      <div className="w-10 h-10 bg-blue-600/10 rounded-xl flex items-center justify-center shrink-0">
-                        <Building2 size={18} className="text-blue-400" />
+                      <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                        <Building2 size={18} className="text-blue-600" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">
+                        <h3 className="text-[#1E293B] font-semibold text-sm leading-snug line-clamp-2">
                           {uni.name}
                         </h3>
-                        <p className="text-slate-400 text-xs mt-0.5">
+                        <p className="text-[#64748B] text-xs mt-0.5">
                           {uni.city ? `${uni.city}, ` : ""}
                           {uni.country}
                         </p>
@@ -247,48 +247,48 @@ function ConsultantStudentShortlistContent() {
 
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {uni.ranking_qs && (
-                        <Badge variant="outline" className="border-yellow-500/30 text-yellow-400 bg-yellow-500/10 text-[10px]">
+                        <Badge variant="outline" className="border-amber-200 text-amber-600 bg-amber-50 text-[10px]">
                           <Star size={9} className="mr-1" /> QS #{uni.ranking_qs}
                         </Badge>
                       )}
                       {uni.scholarships_available && (
-                        <Badge variant="outline" className="border-green-500/30 text-green-400 bg-green-500/10 text-[10px]">
+                        <Badge variant="outline" className="border-emerald-200 text-emerald-600 bg-emerald-50 text-[10px]">
                           <BadgeCheck size={9} className="mr-1" />
                           Scholarships
                           {uni.max_scholarship_pct ? ` up to ${uni.max_scholarship_pct}%` : ""}
                         </Badge>
                       )}
                       {item.added_by_role === "consultant" && (
-                        <Badge variant="outline" className="border-indigo-500/30 text-indigo-400 bg-indigo-500/10 text-[10px]">
+                        <Badge variant="outline" className="border-indigo-200 text-indigo-600 bg-indigo-50 text-[10px]">
                           <UserCheck size={9} className="mr-1" /> By Consultant
                         </Badge>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs border-t border-white/8 pt-3">
+                    <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-200 pt-3">
                       {uni.tuition_usd_per_year ? (
-                        <div className="flex items-center gap-1 text-slate-400">
-                          <DollarSign size={11} className="text-slate-500" />
+                        <div className="flex items-center gap-1 text-[#64748B]">
+                          <DollarSign size={11} className="text-[#64748B]" />
                           ${uni.tuition_usd_per_year.toLocaleString()}/yr
                         </div>
                       ) : <span />}
                       {uni.min_ielts && (
-                        <div className="text-slate-400">
-                          IELTS: <span className="text-white font-medium">{uni.min_ielts}+</span>
+                        <div className="text-[#64748B]">
+                          IELTS: <span className="text-[#1E293B] font-medium">{uni.min_ielts}+</span>
                         </div>
                       )}
                       {uni.min_gpa_percentage && (
-                        <div className="text-slate-400">
-                          GPA: <span className="text-white font-medium">{uni.min_gpa_percentage}%+</span>
+                        <div className="text-[#64748B]">
+                          GPA: <span className="text-[#1E293B] font-medium">{uni.min_gpa_percentage}%+</span>
                         </div>
                       )}
                       {uni.acceptance_rate_bd && (
-                        <div className="text-green-400">{uni.acceptance_rate_bd}% BD accept</div>
+                        <div className="text-emerald-600">{uni.acceptance_rate_bd}% BD accept</div>
                       )}
                     </div>
 
                     {item.note && (
-                      <p className="text-slate-500 text-xs mt-2 italic border-l-2 border-white/10 pl-2">
+                      <p className="text-[#64748B] text-xs mt-2 italic border-l-2 border-slate-200 pl-2">
                         {item.note}
                       </p>
                     )}

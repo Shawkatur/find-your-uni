@@ -52,25 +52,25 @@ const COLUMN_LABELS: Record<string, string> = {
 };
 
 const COLUMN_HEADER_COLORS: Record<string, string> = {
-  lead:              "text-slate-400 bg-slate-500/10 border-slate-500/20",
-  pre_evaluation:    "text-blue-400 bg-blue-500/10 border-blue-500/20",
-  docs_collection:   "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
-  applied:           "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
-  offer_received:    "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-  visa_stage:        "text-purple-400 bg-purple-500/10 border-purple-500/20",
-  enrolled:          "text-green-400 bg-green-500/10 border-green-500/20",
-  rejected:          "text-red-400 bg-red-500/10 border-red-500/20",
+  lead:              "text-slate-600 bg-slate-50 border-slate-200",
+  pre_evaluation:    "text-blue-600 bg-blue-50 border-blue-200",
+  docs_collection:   "text-amber-600 bg-amber-50 border-amber-200",
+  applied:           "text-indigo-600 bg-indigo-50 border-indigo-200",
+  offer_received:    "text-emerald-600 bg-emerald-50 border-emerald-200",
+  visa_stage:        "text-purple-600 bg-purple-50 border-purple-200",
+  enrolled:          "text-green-600 bg-green-50 border-green-200",
+  rejected:          "text-red-600 bg-red-50 border-red-200",
 };
 
 const COLUMN_BG: Record<string, string> = {
-  lead:              "bg-slate-800/30 border-slate-500/15",
-  pre_evaluation:    "bg-slate-800/30 border-blue-500/15",
-  docs_collection:   "bg-slate-800/30 border-yellow-500/15",
-  applied:           "bg-slate-800/30 border-indigo-500/15",
-  offer_received:    "bg-slate-800/30 border-emerald-500/15",
-  visa_stage:        "bg-slate-800/30 border-purple-500/15",
-  enrolled:          "bg-slate-800/30 border-green-500/15",
-  rejected:          "bg-slate-800/30 border-red-500/15",
+  lead:              "bg-slate-50 border-slate-200",
+  pre_evaluation:    "bg-slate-50 border-blue-200",
+  docs_collection:   "bg-slate-50 border-amber-200",
+  applied:           "bg-slate-50 border-indigo-200",
+  offer_received:    "bg-slate-50 border-emerald-200",
+  visa_stage:        "bg-slate-50 border-purple-200",
+  enrolled:          "bg-slate-50 border-green-200",
+  rejected:          "bg-slate-50 border-red-200",
 };
 
 function ApplicationCard({ app, onStatusChange }: {
@@ -86,9 +86,9 @@ function ApplicationCard({ app, onStatusChange }: {
   return (
     <div className="glass-card p-4 mb-2 glass-card-hover">
       <Link href={`/consultant/applications/${app.id}`} className="block mb-3">
-        <div className="text-white font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
-        <div className="text-slate-400 text-xs font-medium mt-0.5">{app.university?.name}</div>
-        <div className="text-slate-500 text-xs">{app.program?.name}</div>
+        <div className="text-[#1E293B] font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
+        <div className="text-[#64748B] text-xs font-medium mt-0.5">{app.university?.name}</div>
+        <div className="text-[#64748B] text-xs">{app.program?.name}</div>
       </Link>
 
       <div className="flex items-center gap-2">
@@ -104,17 +104,17 @@ function ApplicationCard({ app, onStatusChange }: {
           <div className="relative flex-1">
             <button
               onClick={() => setOpen(!open)}
-              className="w-full text-xs text-slate-400 hover:text-white flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-blue-500/30 bg-slate-900/40 transition-colors"
+              className="w-full text-xs text-[#64748B] hover:text-[#1E293B] flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-500/30 bg-white transition-colors"
             >
               Move to... <ChevronDown size={11} />
             </button>
             {open && (
-              <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-slate-800 border border-white/15 rounded-xl overflow-hidden shadow-2xl shadow-black/40">
+              <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl shadow-black/10">
                 {next.map((s) => (
                   <button
                     key={s}
                     onClick={() => { onStatusChange(app.id, s); setOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs text-slate-300 hover:bg-white/8 hover:text-white transition-colors font-medium capitalize"
+                    className="w-full text-left px-3 py-2.5 text-xs text-[#64748B] hover:bg-slate-50 hover:text-[#1E293B] transition-colors font-medium capitalize"
                   >
                     → {s.replace(/_/g, " ")}
                   </button>
@@ -215,16 +215,16 @@ export default function ConsultantApplicationsPage() {
       subtitle={`${applications.length} total applications`}
       actions={
         <div className="flex items-center gap-3">
-          <div className="flex border border-white/10 rounded-xl overflow-hidden bg-slate-900/40">
+          <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white">
             <button
               onClick={() => setView("list")}
-              className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "list" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white hover:bg-white/8"}`}
+              className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "list" ? "bg-blue-600 text-white" : "text-[#64748B] hover:text-[#1E293B] hover:bg-slate-50"}`}
             >
               <List size={14} /> List
             </button>
             <button
               onClick={() => setView("kanban")}
-              className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "kanban" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white hover:bg-white/8"}`}
+              className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "kanban" ? "bg-blue-600 text-white" : "text-[#64748B] hover:text-[#1E293B] hover:bg-slate-50"}`}
             >
               <Columns size={14} /> Kanban
             </button>
@@ -276,9 +276,9 @@ export default function ConsultantApplicationsPage() {
                 type="checkbox"
                 checked={allStudentsSelected}
                 onChange={(e) => toggleAllStudents(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 accent-blue-500"
+                className="w-4 h-4 rounded border-slate-200 accent-blue-500"
               />
-              <span className="text-xs text-slate-400">Select all students</span>
+              <span className="text-xs text-[#64748B]">Select all students</span>
             </div>
           )}
           {applications.map((app) => (
@@ -289,11 +289,11 @@ export default function ConsultantApplicationsPage() {
                     type="checkbox"
                     checked={selectedStudentIds.has(app.student_id)}
                     onChange={(e) => toggleStudentSelection(app.student_id, e.target.checked)}
-                    className="w-4 h-4 shrink-0 rounded border-white/20 accent-blue-500"
+                    className="w-4 h-4 shrink-0 rounded border-slate-200 accent-blue-500"
                   />
                   <Link href={`/consultant/applications/${app.id}`} className="flex-1 min-w-0">
-                    <div className="text-white font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
-                    <div className="text-slate-400 text-xs font-medium">{app.university?.name} · {app.program?.name}</div>
+                    <div className="text-[#1E293B] font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
+                    <div className="text-[#64748B] text-xs font-medium">{app.university?.name} · {app.program?.name}</div>
                     <div className="text-slate-600 text-xs">{new Date(app.updated_at).toLocaleDateString()}</div>
                   </Link>
                 </div>
@@ -304,12 +304,12 @@ export default function ConsultantApplicationsPage() {
                       <Button size="sm" variant="outline">
                         Update <ChevronDown size={11} className="ml-1" />
                       </Button>
-                      <div className="absolute right-0 top-full mt-1 z-20 hidden group-hover:block bg-slate-800 border border-white/15 rounded-xl overflow-hidden shadow-2xl shadow-black/40 min-w-[160px]">
+                      <div className="absolute right-0 top-full mt-1 z-20 hidden group-hover:block bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl shadow-black/10 min-w-[160px]">
                         {NEXT_STATUSES[app.status].map((s) => (
                           <button
                             key={s}
                             onClick={() => handleStatusChange(app.id, s)}
-                            className="w-full text-left px-3 py-2.5 text-xs text-slate-300 hover:bg-white/8 hover:text-white transition-colors font-medium capitalize"
+                            className="w-full text-left px-3 py-2.5 text-xs text-[#64748B] hover:bg-slate-50 hover:text-[#1E293B] transition-colors font-medium capitalize"
                           >
                             → {s.replace(/_/g, " ")}
                           </button>
@@ -343,7 +343,7 @@ export default function ConsultantApplicationsPage() {
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-widest ${COLUMN_HEADER_COLORS[status]}`}>
                     {COLUMN_LABELS[status]}
                   </div>
-                  <span className="text-xs text-slate-500 bg-white/8 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs text-[#64748B] bg-slate-100 px-2 py-0.5 rounded-full font-bold">
                     {col.length}
                   </span>
                 </div>
