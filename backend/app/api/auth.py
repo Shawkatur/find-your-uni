@@ -198,7 +198,10 @@ async def get_me(
     role = (user.get("app_metadata") or {}).get("role", "student")
 
     if role == "consultant":
-        res = await client.table("consultants").select("*, agencies(*)").eq("user_id", user_id).single().execute()
+        res = await client.table("consultants").select(
+            "id, user_id, agency_id, role, full_name, phone, role_title, whatsapp, status, created_at, "
+            "agencies(id, name, license_no, address, city, website, avg_rating, review_count, is_active, created_at)"
+        ).eq("user_id", user_id).single().execute()
         return {"role": "consultant", "profile": res.data}
     else:
         student = await get_student_by_user_id(client, user_id)

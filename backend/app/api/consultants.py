@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from app.core.security import get_current_user, require_role
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
-from app.models.application import ReviewCreate, ReviewOut, AgencyOut, AgencyCreate, ConsultantOut
+from app.models.application import ReviewCreate, ReviewOut, AgencyOut, AgencyCreate, ConsultantOut, ConsultantMeOut, ConsultantPublicOut
 
 
 class ConsultantProfileUpdate(BaseModel):
@@ -28,14 +28,17 @@ router = APIRouter(tags=["consultants"])
 
 # ─── Consultants /me — must be registered before /{consultant_id} ─────────────
 
-@router.get("/consultants/me", response_model=dict)
+@router.get("/consultants/me", response_model=ConsultantMeOut)
 async def get_my_profile(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
 ):
     res = await (
         client.table("consultants")
-        .select("*, agencies(name, avg_rating, review_count)")
+        .select(
+            "id, user_id, agency_id, role, full_name, phone, role_title, whatsapp, status, created_at, "
+            "agencies(id, name, license_no, address, city, website, avg_rating, review_count, is_active, created_at)"
+        )
         .eq("user_id", user["sub"])
         .limit(1)
         .execute()
@@ -45,7 +48,7 @@ async def get_my_profile(
     return res.data[0]
 
 
-@router.patch("/consultants/me", response_model=dict)
+@router.patch("/consultants/me", response_model=ConsultantMeOut)
 async def update_my_profile(
     body: ConsultantProfileUpdate,
     user: dict = Depends(get_current_user),
@@ -82,7 +85,7 @@ async def get_my_agency(
     agency_id = c_res.data[0]["agency_id"]
     a_res = await (
         client.table("agencies")
-        .select("*")
+        .select("id, name, license_no, address, city, website, avg_rating, review_count, is_active, created_at")
         .eq("id", agency_id)
         .limit(1)
         .execute()
@@ -92,7 +95,7 @@ async def get_my_agency(
     return a_res.data[0]
 
 
-@router.get("/consultants/me/colleagues", response_model=list[dict])
+@router.get("/consultants/me/colleagues", response_model=list[ConsultantPublicOut])
 async def get_my_colleagues(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -110,7 +113,7 @@ async def get_my_colleagues(
     agency_id = c_res.data[0]["agency_id"]
     res = await (
         client.table("consultants")
-        .select("*")
+        .select("id, full_name, role_title, agency_id, status, created_at")
         .eq("agency_id", agency_id)
         .eq("status", "active")
         .neq("id", my_id)
@@ -172,7 +175,7 @@ async def list_agencies(
     offset = (page - 1) * page_size
     res = await (
         client.table("agencies")
-        .select("*")
+        .select("id, name, license_no, address, city, website, avg_rating, review_count, is_active, created_at")
         .eq("is_active", True)
         .order("avg_rating", desc=True)
         .range(offset, offset + page_size - 1)
@@ -257,7 +260,7 @@ async def get_agency_reviews(
     offset = (page - 1) * page_size
     res = await (
         client.table("reviews")
-        .select("*")
+        .select("id, student_id, agency_id, consultant_id, rating, comment, is_verified, created_at")
         .eq("agency_id", agency_id)
         .order("created_at", desc=True)
         .range(offset, offset + page_size - 1)

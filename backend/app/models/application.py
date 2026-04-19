@@ -165,6 +165,73 @@ class AgencyUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class ConsultantPublicOut(BaseModel):
+    """Public-facing consultant profile — no user_id, no internal fields."""
+    id: str
+    full_name: str
+    role_title: str | None = None
+    agency_id: str
+    status: str = "pending"
+    created_at: datetime
+
+
+class ConsultantMeOut(BaseModel):
+    """Consultant's own profile with agency info."""
+    id: str
+    user_id: str
+    agency_id: str
+    role: str
+    full_name: str
+    phone: str | None = None
+    role_title: str | None = None
+    whatsapp: str | None = None
+    status: str = "pending"
+    created_at: datetime
+    agencies: AgencyOut | None = None
+
+
+class DocumentOut(BaseModel):
+    """Student-facing document response."""
+    id: str
+    student_id: str
+    doc_type: str
+    storage_url: str
+    application_id: str | None = None
+    uploaded_at: datetime
+    url: str | None = None
+    filename: str | None = None
+
+
+class PaymentOut(BaseModel):
+    """Student-facing payment record."""
+    id: str
+    student_id: str
+    application_id: str | None = None
+    amount_bdt: int
+    product: str
+    gateway: str
+    status: str
+    transaction_id: str | None = None
+    created_at: datetime
+
+
+class ScholarshipOut(BaseModel):
+    """Public scholarship listing."""
+    id: str
+    name: str
+    country: str | None = None
+    university_name: str | None = None
+    degree_levels: list[str] = []
+    fields: list[str] = []
+    amount_description: str | None = None
+    is_fully_funded: bool = False
+    bd_eligible: bool = False
+    deadline: str | None = None
+    url: str | None = None
+    description: str | None = None
+    is_active: bool = True
+
+
 class AdminAuditLog(BaseModel):
     id: str
     admin_user_id: str

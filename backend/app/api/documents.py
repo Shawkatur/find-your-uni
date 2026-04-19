@@ -133,7 +133,9 @@ async def list_documents(
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
 
-    query = client.table("documents").select("*").eq("student_id", student["id"])
+    query = client.table("documents").select(
+        "id, student_id, doc_type, storage_url, application_id, uploaded_at"
+    ).eq("student_id", student["id"])
     if application_id:
         query = query.eq("application_id", application_id)
 

@@ -35,7 +35,7 @@ async def list_tracking_links(
 ):
     res = await (
         client.table("tracking_links")
-        .select("*")
+        .select("id, consultant_id, agency_id, code, name, clicks, created_at")
         .eq("consultant_id", consultant["id"])
         .order("created_at", desc=True)
         .execute()
@@ -90,7 +90,7 @@ async def intake_info(
 
     res = await (
         client.table("tracking_links")
-        .select("*, consultants(full_name), agencies(name)")
+        .select("id, code, consultants(full_name), agencies(name)")
         .eq("code", code)
         .limit(1)
         .execute()

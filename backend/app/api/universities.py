@@ -135,7 +135,7 @@ async def get_university_programs(
     offset = (page - 1) * page_size
     query = (
         client.table("programs")
-        .select("*")
+        .select("id, university_id, name, degree_level, field, tuition_usd_per_year, duration_years, min_requirements, application_deadline, intake_months, is_active")
         .eq("university_id", university_id)
         .eq("is_active", True)
     )

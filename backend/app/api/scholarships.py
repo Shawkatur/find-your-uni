@@ -28,7 +28,10 @@ async def list_scholarships(
     client: AsyncClient = Depends(get_client),
 ):
     offset = (page - 1) * page_size
-    query = client.table("scholarships").select("*").eq("is_active", True)
+    query = client.table("scholarships").select(
+        "id, name, country, university_name, degree_levels, fields, "
+        "amount_description, is_fully_funded, bd_eligible, deadline, url, description, is_active"
+    ).eq("is_active", True)
 
     if country:
         query = query.eq("country", country.upper())
@@ -79,7 +82,10 @@ async def get_scholarship(
 ):
     res = await (
         client.table("scholarships")
-        .select("*")
+        .select(
+            "id, name, country, university_name, degree_levels, fields, "
+            "amount_description, is_fully_funded, bd_eligible, deadline, url, description, is_active"
+        )
         .eq("id", scholarship_id)
         .single()
         .execute()

@@ -231,7 +231,7 @@ async def payment_history(
 
     res = await (
         client.table("payments")
-        .select("*")
+        .select("id, student_id, application_id, amount_bdt, product, gateway, status, transaction_id, created_at")
         .eq("student_id", student["id"])
         .order("created_at", desc=True)
         .execute()
