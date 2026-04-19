@@ -31,7 +31,11 @@ async def list_universities(
 ):
     offset = (page - 1) * page_size
     query = client.table("universities").select(
-        "*, programs(id, name, degree_level, field, tuition_usd_per_year, is_active)",
+        "id, name, country, city, ranking_qs, ranking_the, tuition_usd_per_year, "
+        "acceptance_rate_overall, acceptance_rate_bd, min_ielts, min_toefl, min_gpa_percentage, "
+        "scholarships_available, max_scholarship_pct, website, data_source, last_updated, "
+        "created_at, intl_student_pct, bd_students_known, logo_url, description, "
+        "programs(id, name, degree_level, field, tuition_usd_per_year, is_active)",
         count="exact",
     )
 
@@ -102,7 +106,13 @@ async def get_university(
 ):
     res = await (
         client.table("universities")
-        .select("*, programs(*)")
+        .select(
+            "id, name, country, city, ranking_qs, ranking_the, tuition_usd_per_year, "
+            "acceptance_rate_overall, acceptance_rate_bd, min_ielts, min_toefl, min_gpa_percentage, "
+            "scholarships_available, max_scholarship_pct, website, data_source, last_updated, "
+            "created_at, intl_student_pct, bd_students_known, logo_url, description, "
+            "programs(*)"
+        )
         .eq("id", university_id)
         .single()
         .execute()
