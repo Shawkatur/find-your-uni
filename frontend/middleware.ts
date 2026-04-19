@@ -1,7 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED_PREFIXES = ["/student", "/consultant"];
+// ─── Route protection config ────────────────────────────────────────────────
+// Maps route prefixes to the role(s) allowed to access them.
+// Any prefix listed here requires authentication + matching role.
+const ROLE_ROUTES: Record<string, string[]> = {
+  "/student":    ["student"],
+  "/consultant": ["consultant"],
+  "/admin":      ["super_admin"],
+};
+
+const PROTECTED_PREFIXES = Object.keys(ROLE_ROUTES);
 const AUTH_PAGES = ["/auth/login", "/auth/register"];
 
 export async function middleware(request: NextRequest) {
@@ -25,38 +34,35 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Redirect unauthenticated users away from protected pages
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
-  if (isProtected && !user) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/auth/login";
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
+  // ─── 1. Protected routes: require auth + correct role ─────────────────────
+  const matchedPrefix = PROTECTED_PREFIXES.find((p) => pathname.startsWith(p));
 
-  // Enforce role-based access: students can't access /consultant/*, consultants can't access /student/*
-  if (isProtected && user) {
+  if (matchedPrefix) {
+    // Not logged in → redirect to login with ?next= for post-login redirect
+    if (!user) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/auth/login";
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Logged in but wrong role → forbidden
     const role = user.app_metadata?.role ?? "student";
-    const isStudentRoute = pathname.startsWith("/student");
-    const isConsultantRoute = pathname.startsWith("/consultant");
-
-    if ((isStudentRoute && role !== "student") || (isConsultantRoute && role !== "consultant")) {
+    const allowedRoles = ROLE_ROUTES[matchedPrefix];
+    if (!allowedRoles.includes(role)) {
       const forbiddenUrl = request.nextUrl.clone();
       forbiddenUrl.pathname = "/auth/login";
-      forbiddenUrl.searchParams.set("error", "forbidden");
+      forbiddenUrl.searchParams.set("error", "unauthorized");
       return NextResponse.redirect(forbiddenUrl);
     }
   }
 
-  // Redirect authenticated users away from auth pages.
-  // Only student/consultant dashboards exist in this app — admin/super_admin
-  // live in the separate admin-dashboard project, so don't redirect them here.
+  // ─── 2. Auth pages: redirect already-authenticated users to dashboard ─────
   const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
   if (isAuthPage && user) {
     const role = user.app_metadata?.role ?? "student";
 
-    // If the user is visiting a login page for a different role, sign them out
-    // so they can log in with different credentials.
+    // Visiting a login page for a different role → sign out so they can switch
     const isLoginForDifferentRole =
       (pathname.startsWith("/auth/login/consultant") && role !== "consultant") ||
       (pathname.startsWith("/auth/login/student") && role !== "student");
@@ -66,6 +72,7 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
+    // Redirect to role-specific dashboard
     if (role === "student" || role === "consultant") {
       const dashUrl = request.nextUrl.clone();
       dashUrl.pathname = `/${role}/dashboard`;
@@ -76,6 +83,8 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
+// ─── Matcher: skip static files, images, and internal Next.js routes ────────
+// This prevents the middleware from running on every asset request.
 export const config = {
-  matcher: ["/student/:path*", "/consultant/:path*", "/auth/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

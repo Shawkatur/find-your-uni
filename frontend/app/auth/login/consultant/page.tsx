@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Briefcase, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
@@ -22,6 +22,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function ConsultantLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,7 +55,7 @@ export default function ConsultantLoginPage() {
       toast.error("This login is for consultants only.");
       return;
     }
-    router.push("/consultant/dashboard");
+    router.push(searchParams.get("next") || "/consultant/dashboard");
   };
 
   return (
