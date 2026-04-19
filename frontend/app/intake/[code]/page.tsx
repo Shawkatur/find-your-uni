@@ -94,13 +94,14 @@ export default function IntakePage() {
             <div className="border-t border-slate-100 my-6" />
 
             {/* Value props */}
-            <ul className="space-y-2.5 mb-7">
+            <ul className="space-y-3 mb-7">
               {[
-                "AI-powered university matching",
-                "Tailored to Bangladeshi students",
-                "Free — no hidden costs",
+                "Personalized, data-driven university matching",
+                "Personalized university recommendations",
+                "Instant, accurate program matching",
+                "Expert-level university shortlisting",
               ].map((point) => (
-                <li key={point} className="flex items-center gap-2.5 text-sm text-slate-600">
+                <li key={point} className="flex items-center gap-3 text-sm text-slate-600">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
                   {point}
                 </li>
