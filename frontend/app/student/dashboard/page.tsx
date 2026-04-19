@@ -45,8 +45,8 @@ const CHECKLIST_STEPS: ChecklistStep[] = [
   },
   {
     key: "match",
-    title: "Run AI Matching",
-    desc: "Let our AI rank the best-fit universities based on your complete profile.",
+    title: "Run Matching",
+    desc: "Let us rank the best-fit universities based on your complete profile.",
     cta: "Find Matches",
     href: "/student/match",
     icon: Sparkles,
@@ -262,9 +262,17 @@ export default function StudentDashboard() {
   const { completed, applications, matchResults, statusCounts, offerCount } = useOnboardingState();
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
+
+  // "lead" is an internal admin/consultant status — hide it from students
+  const HIDDEN_STATUSES = ["lead"];
+  const visibleApplications = applications.filter((a) => !HIDDEN_STATUSES.includes(a.status));
+  const visibleStatusCounts = Object.fromEntries(
+    Object.entries(statusCounts).filter(([s]) => !HIDDEN_STATUSES.includes(s))
+  );
+
   const activeCount =
-    (statusCounts["lead"] ?? 0) + (statusCounts["pre_evaluation"] ?? 0) +
-    (statusCounts["docs_collection"] ?? 0) + (statusCounts["applied"] ?? 0);
+    (visibleStatusCounts["pre_evaluation"] ?? 0) +
+    (visibleStatusCounts["docs_collection"] ?? 0) + (visibleStatusCounts["applied"] ?? 0);
   const topMatches = matchResults.slice(0, 3);
 
   return (
@@ -291,7 +299,7 @@ export default function StudentDashboard() {
             </div>
             <span className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Applied</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900">{applications.length}</div>
+          <div className="text-2xl font-bold text-slate-900">{visibleApplications.length}</div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
@@ -330,7 +338,7 @@ export default function StudentDashboard() {
             </div>
             <h2 className="text-slate-900 font-bold text-sm">Applications</h2>
           </div>
-          {applications.length === 0 ? (
+          {visibleApplications.length === 0 ? (
             <EmptyState
               icon={CircleDashed}
               title="No applications yet"
@@ -340,7 +348,7 @@ export default function StudentDashboard() {
             />
           ) : (
             <div className="space-y-2">
-              {Object.entries(statusCounts).map(([status, count]) => (
+              {Object.entries(visibleStatusCounts).map(([status, count]) => (
                 <div key={status} className="flex items-center justify-between py-1">
                   <StatusBadge status={status} />
                   <span className="text-slate-900 font-bold text-sm">{count}</span>
@@ -431,7 +439,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Recent Activity */}
-      {applications.length > 0 && (
+      {visibleApplications.length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mt-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -448,7 +456,7 @@ export default function StudentDashboard() {
             </Link>
           </div>
           <div className="space-y-1">
-            {applications.slice(0, 5).map((app) => (
+            {visibleApplications.slice(0, 5).map((app) => (
               <Link key={app.id} href={`/student/applications/${app.id}`}>
                 <div className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group">
                   <div>

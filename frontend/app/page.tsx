@@ -21,7 +21,7 @@ const steps = [
   {
     icon: Sparkles,
     title: "See your top picks",
-    description: "We rank unis by fit using QS rankings, cost, and BD acceptance rates.",
+    description: "We rank universities by fit using QS rankings, cost, and BD acceptance rates.",
   },
   {
     icon: Building2,
@@ -118,7 +118,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-xl text-[#64748B] max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-            We crunch your grades, scores, and budget against 1,200+ unis worldwide.
+            We crunch your grades, scores, and budget against 1,200+ universities worldwide.
             Get ranked results and apply — all in one place.
           </p>
 
