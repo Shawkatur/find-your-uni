@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { GraduationCap, Sparkles, FileText, Building2, Users, Star, ArrowRight, CheckCircle, Check, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -146,14 +147,14 @@ export default function LandingPage() {
             {/* Glow blob */}
             <div className="absolute -inset-8 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
             <div className="relative rounded-xl border border-slate-200/50 bg-white shadow-2xl overflow-hidden">
-              <div className="aspect-video bg-slate-100 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-100">
-                    <GraduationCap size={24} className="text-emerald-600" />
-                  </div>
-                  <p className="text-slate-400 text-sm font-medium">Student Dashboard Preview</p>
-                </div>
-              </div>
+              <Image
+                src="/dashboard-preview.png"
+                alt="Student Portal Overview"
+                width={1920}
+                height={900}
+                className="w-full h-auto"
+                priority
+              />
             </div>
           </div>
         </div>
