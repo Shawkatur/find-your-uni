@@ -31,7 +31,7 @@ const steps = [
 ];
 
 const features = [
-  "Smart uni matching that actually works",
+  "Smart program matching that actually works",
   "Real QS rankings & BD acceptance data",
   "One-click application tracking",
   "Verified consultant network",
@@ -109,11 +109,11 @@ export default function LandingPage() {
             Built for Bangladeshi students
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-slate-900 leading-none mb-6">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter text-slate-900 leading-tight mb-6">
             Find your
             <br />
             <span className="text-emerald-600">
-              perfect uni
+              perfect university
             </span>
           </h1>
 
@@ -130,7 +130,7 @@ export default function LandingPage() {
             </Link>
             <Link href="/universities">
               <Button variant="outline" size="lg" className="px-8">
-                Browse Unis
+                Explore Programs
               </Button>
             </Link>
           </div>
@@ -278,9 +278,9 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="glass-card p-16 text-center border-[rgba(16,185,129,0.15)] relative overflow-hidden bg-[rgba(16,185,129,0.02)]">
           <div className="relative">
-            <h2 className="text-4xl font-black tracking-tight text-[#333] mb-4">Ready to find your uni?</h2>
+            <h2 className="text-4xl font-black tracking-tight text-[#333] mb-4">Ready to find your program?</h2>
             <p className="text-[#64748B] mb-10 max-w-md mx-auto font-normal leading-relaxed">
-              Join hundreds of Bangladeshi students who found their perfect uni match.
+              Join hundreds of Bangladeshi students who found their perfect program match.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/register/student">
