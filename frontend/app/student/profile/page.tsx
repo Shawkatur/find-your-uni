@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { User, GraduationCap, Languages, Target, CheckCircle2, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import type { Student } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
-import { GlassCard } from "@/components/layout/GlassCard";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,8 +35,41 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+// Fields that count toward profile completion
+const COMPLETION_FIELDS: (keyof FormData)[] = [
+  "full_name", "phone", "nationality",
+  "ssc_gpa", "hsc_gpa", "bachelor_gpa", "bachelor_institution", "bachelor_field",
+  "ielts_score",
+  "target_degree", "budget_usd", "target_countries_str", "target_fields_str",
+];
+
+function computeCompletion(data: FormData): number {
+  let filled = 0;
+  for (const key of COMPLETION_FIELDS) {
+    const v = data[key];
+    if (v !== undefined && v !== null && v !== "" && v !== 0) filled++;
+  }
+  return Math.round((filled / COMPLETION_FIELDS.length) * 100);
+}
+
+function getCompletionMessage(pct: number): string {
+  if (pct >= 100) return "Your profile is complete! You're ready for the best matches.";
+  if (pct >= 75) return "Almost there! Fill in a few more details to unlock better matches.";
+  if (pct >= 50) return "Good progress! Add your test scores and preferences for more accurate results.";
+  return "Complete your profile to unlock personalized university matches!";
+}
+
+const tabConfig = [
+  { value: "personal", label: "Personal", icon: User },
+  { value: "academics", label: "Academics", icon: GraduationCap },
+  { value: "scores", label: "Test Scores", icon: Languages },
+  { value: "preferences", label: "Preferences", icon: Target },
+];
+
 export default function StudentProfilePage() {
   const qc = useQueryClient();
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: student } = useQuery<Student>({
     queryKey: ["student-me"],
@@ -64,10 +95,13 @@ export default function StudentProfilePage() {
     },
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema) as any,
   });
+
+  const watchedValues = watch();
+  const completion = computeCompletion(watchedValues);
 
   useEffect(() => {
     if (student) {
@@ -117,19 +151,47 @@ export default function StudentProfilePage() {
       });
     },
     onSuccess: () => {
-      toast.success("Profile saved!");
+      setSaveStatus("saved");
       qc.invalidateQueries({ queryKey: ["student-me"] });
+      setTimeout(() => setSaveStatus("idle"), 2000);
     },
-    onError: () => toast.error("Failed to save profile."),
+    onError: () => {
+      setSaveStatus("idle");
+      toast.error("Failed to save profile.");
+    },
   });
+
+  const debouncedSave = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSaveStatus("saving");
+      handleSubmit((data) => saveMutation.mutate(data as FormData))();
+    }, 1500);
+  }, [handleSubmit, saveMutation]);
+
+  // Auto-save on field changes (skip initial load)
+  const isInitialized = useRef(false);
+  useEffect(() => {
+    if (!student) return;
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      return;
+    }
+    debouncedSave();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(watchedValues)]);
 
   const renderField = (label: string, name: keyof FormData, type = "text", placeholder?: string) => (
     <div key={name}>
-      <Label className="text-[#475569] mb-1.5 block text-sm">{label}</Label>
+      <Label className="text-slate-600 mb-1.5 block text-sm font-medium">{label}</Label>
       <Input
         {...register(name)}
         type={type}
         placeholder={placeholder}
+        className="bg-slate-50 border-slate-200 focus-visible:bg-white focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20 rounded-xl h-11"
       />
       {errors[name] && <p className="text-red-500 text-xs mt-1">{String(errors[name]?.message)}</p>}
     </div>
@@ -139,41 +201,71 @@ export default function StudentProfilePage() {
     <PageWrapper
       title="My Profile"
       subtitle="Update your info so we can find better matches."
-      actions={
-        <Button
-          onClick={handleSubmit((data) => saveMutation.mutate(data as FormData))}
-          disabled={saveMutation.isPending}
-        >
-          <Save size={15} className="mr-2" />
-          {saveMutation.isPending ? "Saving..." : "Save Changes"}
-        </Button>
-      }
     >
+      {/* Profile Completion Bar */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-900">Profile Completion</span>
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+              {completion}%
+            </span>
+          </div>
+          {/* Auto-save indicator */}
+          <div className="flex items-center gap-1.5 text-xs">
+            {saveStatus === "saving" && (
+              <>
+                <Loader2 size={12} className="animate-spin text-slate-400" />
+                <span className="text-slate-400">Saving...</span>
+              </>
+            )}
+            {saveStatus === "saved" && (
+              <>
+                <CheckCircle2 size={12} className="text-emerald-500" />
+                <span className="text-emerald-600">Saved</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${completion}%` }}
+          />
+        </div>
+        <p className="text-xs text-slate-500 mt-2">{getCompletionMessage(completion)}</p>
+      </div>
+
+      {/* Tabs */}
       <Tabs defaultValue="personal">
-        <TabsList className="bg-[#F1F5F9] border border-[#E2E8F0] mb-6 flex-wrap">
-          {["personal", "academics", "scores", "preferences"].map((tab) => (
-            <TabsTrigger
-              key={tab}
-              value={tab}
-              className="data-[state=active]:bg-[#10B981] data-[state=active]:text-white text-[#64748B] capitalize"
-            >
-              {tab}
-            </TabsTrigger>
-          ))}
+        <TabsList className="bg-slate-100 border border-slate-200 mb-6 flex-wrap rounded-xl p-1 gap-1">
+          {tabConfig.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-500 rounded-lg gap-1.5 px-3"
+              >
+                <Icon size={14} />
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="personal">
-          <GlassCard>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {renderField("Full Name", "full_name", "text", "Your full name")}
               {renderField("Phone", "phone", "tel", "+880 17...")}
               {renderField("Nationality", "nationality", "text", "e.g. Bangladeshi")}
             </div>
-          </GlassCard>
+          </div>
         </TabsContent>
 
         <TabsContent value="academics">
-          <GlassCard>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {renderField("SSC GPA (out of 5.0)", "ssc_gpa", "number", "4.50")}
               {renderField("HSC GPA (out of 5.0)", "hsc_gpa", "number", "5.00")}
@@ -181,29 +273,29 @@ export default function StudentProfilePage() {
               {renderField("Bachelor Institution", "bachelor_institution", "text", "e.g. BUET")}
               {renderField("Field of Study", "bachelor_field", "text", "e.g. Computer Science")}
             </div>
-          </GlassCard>
+          </div>
         </TabsContent>
 
         <TabsContent value="scores">
-          <GlassCard>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {renderField("IELTS Score (0–9)", "ielts_score", "number", "7.0")}
               {renderField("TOEFL Score (0–120)", "toefl_score", "number", "95")}
               {renderField("GRE Score (260–340)", "gre_score", "number", "320")}
               {renderField("GMAT Score (200–800)", "gmat_score", "number", "680")}
             </div>
-            <p className="text-[#64748B] text-xs mt-4">Leave blank if not applicable.</p>
-          </GlassCard>
+            <p className="text-slate-400 text-xs mt-4">Leave blank if not applicable.</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="preferences">
-          <GlassCard>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="space-y-5">
               <div>
-                <Label className="text-[#475569] mb-1.5 block text-sm">Target Degree</Label>
+                <Label className="text-slate-600 mb-1.5 block text-sm font-medium">Target Degree</Label>
                 <select
                   {...register("target_degree")}
-                  className="w-full bg-white border border-[#CBD5E1] text-[#333] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 >
                   <option value="bachelor">Bachelor&apos;s</option>
                   <option value="master">Master&apos;s</option>
@@ -215,7 +307,7 @@ export default function StudentProfilePage() {
               {renderField("Target Countries (comma-separated)", "target_countries_str", "text", "USA, UK, Canada")}
               {renderField("Fields of Interest (comma-separated)", "target_fields_str", "text", "Computer Science, Data Science")}
             </div>
-          </GlassCard>
+          </div>
         </TabsContent>
       </Tabs>
     </PageWrapper>

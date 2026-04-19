@@ -17,23 +17,21 @@ export function EmptyState({ icon: Icon, title, description, action, className }
   return (
     <div
       className={cn(
-        "glass-card-dashed flex flex-col items-center justify-center py-16 px-8 text-center",
+        "bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center py-20 px-8 text-center",
         className
       )}
     >
       {Icon && (
-        <div className="relative mb-5">
-          <div className="relative w-16 h-16 rounded-2xl bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.2)] flex items-center justify-center">
-            <Icon size={28} className="text-[#10B981]" />
-          </div>
+        <div className="mb-6">
+          <Icon size={64} strokeWidth={1} className="text-slate-200" />
         </div>
       )}
-      <h3 className="text-lg font-black tracking-tight text-[#333] mb-2">{title}</h3>
+      <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
       {description && (
-        <p className="text-[#64748B] text-sm max-w-xs mb-6 font-normal leading-relaxed">{description}</p>
+        <p className="text-slate-500 text-sm max-w-xs mb-8 leading-relaxed">{description}</p>
       )}
       {action && (
-        <Button onClick={action.onClick}>
+        <Button onClick={action.onClick} size="lg" className="rounded-xl">
           {action.label}
         </Button>
       )}
