@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { GraduationCap, Sparkles, FileText, Building2, Users, Star, ArrowRight, CheckCircle, Menu, X } from "lucide-react";
+import { GraduationCap, Sparkles, FileText, Building2, Users, Star, ArrowRight, CheckCircle, Check, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const stats = [
@@ -59,14 +59,14 @@ export default function LandingPage() {
             <Link href="/universities" className="text-[#64748B] hover:text-[#333] text-sm transition-colors font-medium">
               Universities
             </Link>
-            <Link href="/agencies" className="text-[#64748B] hover:text-[#333] text-sm transition-colors font-medium">
-              Agencies
-            </Link>
             <Link href="/auth/login">
               <Button variant="outline" size="sm">Sign In</Button>
             </Link>
             <Link href="/auth/register/student">
               <Button size="sm">Get Started</Button>
+            </Link>
+            <Link href="/auth/login/consultant" className="text-[#94A3B8] hover:text-[#64748B] text-xs transition-colors">
+              Consultants
             </Link>
           </div>
 
@@ -86,9 +86,6 @@ export default function LandingPage() {
             <Link href="/universities" onClick={() => setMenuOpen(false)} className="text-[#475569] hover:text-[#333] text-sm font-medium transition-colors">
               Universities
             </Link>
-            <Link href="/agencies" onClick={() => setMenuOpen(false)} className="text-[#475569] hover:text-[#333] text-sm font-medium transition-colors">
-              Agencies
-            </Link>
             <div className="flex gap-3 pt-1">
               <Link href="/auth/login" className="flex-1" onClick={() => setMenuOpen(false)}>
                 <Button variant="outline" size="lg" className="w-full">Sign In</Button>
@@ -97,6 +94,9 @@ export default function LandingPage() {
                 <Button size="lg" className="w-full">Get Started</Button>
               </Link>
             </div>
+            <Link href="/auth/login/consultant" onClick={() => setMenuOpen(false)} className="text-[#94A3B8] text-xs text-center transition-colors">
+              Are you a consultant?
+            </Link>
           </div>
         )}
       </nav>
@@ -109,10 +109,10 @@ export default function LandingPage() {
             Built for Bangladeshi students
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-[#333] leading-none mb-6">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-slate-900 leading-none mb-6">
             Find your
             <br />
-            <span className="text-[#10B981]">
+            <span className="text-emerald-600">
               perfect uni
             </span>
           </h1>
@@ -134,18 +134,42 @@ export default function LandingPage() {
               </Button>
             </Link>
           </div>
+
+          {/* Micro-copy */}
+          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mt-4">
+            <Check size={13} className="text-emerald-500" />
+            No credit card required
+          </div>
+
+          {/* App Mockup */}
+          <div className="relative mx-auto mt-16 max-w-5xl">
+            {/* Glow blob */}
+            <div className="absolute -inset-8 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+            <div className="relative rounded-xl border border-slate-200/50 bg-white shadow-2xl overflow-hidden">
+              <div className="aspect-video bg-slate-100 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-emerald-100">
+                    <GraduationCap size={24} className="text-emerald-600" />
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium">Student Dashboard Preview</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="glass-card p-6 text-center hover:border-[#10B981]/20 transition-colors">
-              <div className="text-3xl font-black tracking-tight text-[#333] mb-1">{stat.value}</div>
-              <div className="text-[#64748B] text-sm font-medium">{stat.label}</div>
-            </div>
-          ))}
+      <section className="bg-slate-50 border-y border-slate-100 py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-3xl font-black tracking-tight text-slate-900 mb-1">{stat.value}</div>
+                <div className="text-slate-500 text-sm font-medium">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -285,8 +309,8 @@ export default function LandingPage() {
           </div>
           <div className="flex gap-6 text-sm text-[#64748B]">
             <Link href="/universities" className="hover:text-[#333] transition-colors font-medium">Universities</Link>
-            <Link href="/agencies" className="hover:text-[#333] transition-colors font-medium">Agencies</Link>
             <Link href="/auth/login" className="hover:text-[#333] transition-colors font-medium">Sign In</Link>
+            <Link href="/auth/login/consultant" className="hover:text-[#333] transition-colors font-medium">Consultants</Link>
           </div>
         </div>
       </footer>
