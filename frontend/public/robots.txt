@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /student/
+Disallow: /consultant/
+Disallow: /admin/
+Disallow: /auth/
+
+Sitemap: https://findyouruni.com/sitemap.xml

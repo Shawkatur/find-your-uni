@@ -27,14 +27,10 @@ export default function StudentLoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit, setValue: setFormValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const fillDemo = () => {
-    setFormValue("email", "arif.hossain@seed.test");
-    setFormValue("password", "Seed@12345");
-  };
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -114,16 +110,6 @@ export default function StudentLoginPage() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={fillDemo}
-              className="w-full text-xs text-[#64748B] hover:text-[#10B981] border border-dashed border-[#CBD5E1] rounded-md py-2 transition-colors"
-            >
-              Fill demo credentials (student)
-            </button>
-          </div>
 
           <div className="mt-6 pt-6 border-t border-[#E2E8F0] text-center">
             <p className="text-[#64748B] text-sm">

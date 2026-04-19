@@ -12,7 +12,23 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Find Your University",
-  description: "Smart uni matching that actually works — for Bangladeshi students",
+  description: "Smart university matching for Bangladeshi students. Get ranked results based on your grades, scores, and budget — and apply in one place.",
+  metadataBase: new URL("https://findyouruni.com"),
+  openGraph: {
+    title: "Find Your University",
+    description: "Smart university matching for Bangladeshi students. Get ranked results and apply — all in one place.",
+    siteName: "Find Your Uni",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Find Your University",
+    description: "Smart university matching for Bangladeshi students.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
