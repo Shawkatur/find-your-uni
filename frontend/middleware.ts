@@ -40,6 +40,18 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
   if (isAuthPage && user) {
     const role = user.app_metadata?.role ?? "student";
+
+    // If the user is visiting a login page for a different role, sign them out
+    // so they can log in with different credentials.
+    const isLoginForDifferentRole =
+      (pathname.startsWith("/auth/login/consultant") && role !== "consultant") ||
+      (pathname.startsWith("/auth/login/student") && role !== "student");
+
+    if (isLoginForDifferentRole) {
+      await supabase.auth.signOut();
+      return response;
+    }
+
     if (role === "student" || role === "consultant") {
       const dashUrl = request.nextUrl.clone();
       dashUrl.pathname = `/${role}/dashboard`;

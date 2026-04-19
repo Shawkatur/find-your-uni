@@ -86,10 +86,28 @@ const stepFields: FieldDef[][] = [
   ],
 ];
 
+const REF_STORAGE_KEY = "findyouruni_ref_code";
+
+function usePersistedRef(): string | undefined {
+  const searchParams = useSearchParams();
+  const paramRef = searchParams.get("ref") ?? undefined;
+
+  // If a ref is in the URL, persist it to sessionStorage
+  if (paramRef && typeof window !== "undefined") {
+    sessionStorage.setItem(REF_STORAGE_KEY, paramRef);
+  }
+
+  // Return URL param first, then fall back to stored value
+  if (paramRef) return paramRef;
+  if (typeof window !== "undefined") {
+    return sessionStorage.getItem(REF_STORAGE_KEY) ?? undefined;
+  }
+  return undefined;
+}
+
 function StudentRegisterForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const refCode = searchParams.get("ref") ?? undefined;
+  const refCode = usePersistedRef();
   const supabase = createClient();
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<FormValues>({ target_degree: "master" });
@@ -159,6 +177,8 @@ function StudentRegisterForm() {
         ref_code:            refCode,
       });
 
+      // Clear persisted referral code after successful registration
+      sessionStorage.removeItem(REF_STORAGE_KEY);
       toast.success("You're in! Let's go.");
       router.push("/student/dashboard");
     } catch (err: unknown) {

@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FileText, CheckCircle, Users, Clock, Inbox } from "lucide-react";
+import { FileText, CheckCircle, Users, Clock, Inbox, ClipboardCopy, Check, Link2 } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
-import type { Application, ApplicationApiResponse } from "@/types";
+import type { Application, ApplicationApiResponse, TrackingLink } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +37,110 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: "Rejected",
   withdrawn: "Withdrawn",
 };
+
+const APP_URL =
+  (typeof window !== "undefined" ? window.location.origin : "") ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "";
+
+function ShareInviteLink() {
+  const [copied, setCopied] = useState(false);
+
+  const { data: links, isLoading } = useQuery<TrackingLink[]>({
+    queryKey: ["tracking-links"],
+    queryFn: () => api.get("/tracking-links").then((r) => r.data),
+  });
+
+  const firstLink = links?.[0];
+  const inviteUrl = firstLink
+    ? `${APP_URL}/intake/${firstLink.code}`
+    : null;
+
+  const handleCopy = () => {
+    if (!inviteUrl) return;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      setCopied(true);
+      toast.success("Invite link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+        <Skeleton className="h-5 w-40 mb-3" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  if (!inviteUrl) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+        <div className="flex items-center gap-2 mb-2">
+          <Link2 size={16} className="text-emerald-600" />
+          <h3 className="text-sm font-semibold text-slate-900">Share Invite Link</h3>
+        </div>
+        <p className="text-slate-500 text-sm mb-3">
+          Create a tracking link to start inviting students.
+        </p>
+        <Link
+          href="/consultant/tracking"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+        >
+          Go to Tracking Links &rarr;
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+      <div className="flex items-center gap-2 mb-3">
+        <Link2 size={16} className="text-emerald-600" />
+        <h3 className="text-sm font-semibold text-slate-900">Share Invite Link</h3>
+      </div>
+      <p className="text-slate-500 text-xs mb-3">
+        Send this link to students — they&apos;ll be automatically assigned to you when they register.
+      </p>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          readOnly
+          value={inviteUrl}
+          className="flex-1 bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-mono truncate focus:outline-none"
+        />
+        <button
+          onClick={handleCopy}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors shrink-0"
+        >
+          {copied ? (
+            <>
+              <Check size={14} />
+              Copied!
+            </>
+          ) : (
+            <>
+              <ClipboardCopy size={14} />
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-slate-400 text-xs">
+          {firstLink?.name ? `Campaign: ${firstLink.name}` : `Code: ${firstLink?.code}`} · {firstLink?.clicks ?? 0} clicks
+        </span>
+        <Link
+          href="/consultant/tracking"
+          className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+        >
+          Manage links
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export default function ConsultantDashboard() {
   const router = useRouter();
@@ -98,6 +204,9 @@ export default function ConsultantDashboard() {
 
   return (
     <PageWrapper title="Consultant Dashboard" subtitle="Manage your students' applications.">
+      {/* Share Invite Link */}
+      <ShareInviteLink />
+
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((card) => {
