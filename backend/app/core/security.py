@@ -103,7 +103,7 @@ def get_current_user(
     settings = get_settings()
     if settings.BYPASS_AUTH:
         if settings.APP_ENV == "production":
-            logger.critical("BYPASS_AUTH is enabled in production! Ignoring.")
+            logger.critical("BYPASS_AUTH is enabled in production! Refusing to bypass.")
         else:
             return TEST_USER
     if not credentials:
@@ -196,8 +196,10 @@ async def require_admin_secret(request: Request) -> None:
     """
     settings = get_settings()
     secret = settings.ADMIN_SECRET
+    if not secret:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin secret not configured")
     provided = request.headers.get("X-Admin-Secret", "")
-    if secret and not hmac.compare_digest(provided, secret):
+    if not hmac.compare_digest(provided, secret):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
 
@@ -233,7 +235,7 @@ def get_active_consultant_dep():
         client: AsyncClient = Depends(get_client),
     ) -> dict:
         settings = get_settings()
-        if settings.BYPASS_AUTH:
+        if settings.BYPASS_AUTH and settings.APP_ENV != "production":
             return {
                 "id": "00000000-0000-0000-0000-000000000002",
                 "user_id": user["sub"],

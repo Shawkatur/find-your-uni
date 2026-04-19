@@ -34,6 +34,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Enforce role-based access: students can't access /consultant/*, consultants can't access /student/*
+  if (isProtected && user) {
+    const role = user.app_metadata?.role ?? "student";
+    const isStudentRoute = pathname.startsWith("/student");
+    const isConsultantRoute = pathname.startsWith("/consultant");
+
+    if ((isStudentRoute && role !== "student") || (isConsultantRoute && role !== "consultant")) {
+      const forbiddenUrl = request.nextUrl.clone();
+      forbiddenUrl.pathname = "/auth/login";
+      forbiddenUrl.searchParams.set("error", "forbidden");
+      return NextResponse.redirect(forbiddenUrl);
+    }
+  }
+
   // Redirect authenticated users away from auth pages.
   // Only student/consultant dashboards exist in this app — admin/super_admin
   // live in the separate admin-dashboard project, so don't redirect them here.

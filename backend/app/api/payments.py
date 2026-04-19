@@ -65,7 +65,7 @@ async def initiate_payment(
         "cancel_url":    f"{base_url}/payments/verify/{payment_id}?status=cancel",
         "ipn_url":       f"{base_url}/payments/ipn",
         "cus_name":      student["full_name"],
-        "cus_email":     user.get("email", "noreply@findyouruni.com"),
+        "cus_email":     student.get("email", "noreply@findyouruni.com"),
         "cus_phone":     student.get("phone", "01700000000"),
         "cus_add1":      "Dhaka",
         "cus_city":      "Dhaka",
