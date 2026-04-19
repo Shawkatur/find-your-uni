@@ -4,33 +4,93 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Sparkles, FileText, Upload, ArrowRight,
+  Sparkles, FileText, ArrowRight,
   TrendingUp, CheckCircle2, Clock, Send, Trophy,
-  User, Plane, Stamp,
+  User, Upload, CircleDashed,
 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { Application, ApplicationApiResponse, MatchResultItem } from "@/types";
+import type { Application, ApplicationApiResponse, MatchResultItem, Document as DocType, Student } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
-import { GlassCard } from "@/components/layout/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-export default function StudentDashboard() {
-  const router = useRouter();
-  const { profile } = useAuth();
+// ─── Onboarding Checklist Config ─────────────────────────────────────────────
+interface ChecklistStep {
+  key: string;
+  title: string;
+  desc: string;
+  cta: string;
+  href: string;
+  icon: typeof User;
+}
 
-  const { data: applications = [], isLoading: appsLoading } = useQuery<Application[]>({
-    queryKey: ["student-applications"],
+const CHECKLIST_STEPS: ChecklistStep[] = [
+  {
+    key: "profile",
+    title: "Complete Your Profile",
+    desc: "Add your academic background, test scores, and preferences for accurate matching.",
+    cta: "Complete Profile",
+    href: "/student/profile",
+    icon: User,
+  },
+  {
+    key: "documents",
+    title: "Upload Documents",
+    desc: "Upload your passport, transcripts, SOP, and other required documents.",
+    cta: "Upload Documents",
+    href: "/student/documents",
+    icon: Upload,
+  },
+  {
+    key: "match",
+    title: "Run AI Matching",
+    desc: "Let our AI rank the best-fit universities based on your complete profile.",
+    cta: "Find Matches",
+    href: "/student/match",
+    icon: Sparkles,
+  },
+  {
+    key: "shortlist",
+    title: "Save Universities",
+    desc: "Browse your matches and shortlist the ones you're most interested in.",
+    cta: "Browse Universities",
+    href: "/universities",
+    icon: TrendingUp,
+  },
+  {
+    key: "apply",
+    title: "Apply to Universities",
+    desc: "Start applications to your shortlisted universities and track progress.",
+    cta: "View Applications",
+    href: "/student/applications",
+    icon: Send,
+  },
+  {
+    key: "offer",
+    title: "Get Your Offer",
+    desc: "Receive offers and work with your consultant on visa and enrollment.",
+    cta: "View Applications",
+    href: "/student/applications",
+    icon: Trophy,
+  },
+];
+
+function useOnboardingState() {
+  const { data: student } = useQuery<Student>({
+    queryKey: ["student-me"],
     queryFn: async () => {
-      const res = await api.get("/applications?page_size=20");
-      return (res.data || []).map((app: ApplicationApiResponse): Application => ({
-        ...app,
-        student: app.students ?? app.student,
-        program: app.programs ?? app.program,
-        university: app.programs?.universities ?? app.university,
-      }));
+      const res = await api.get("/auth/me");
+      return res.data?.profile ?? res.data;
+    },
+  });
+
+  const { data: documents = [] } = useQuery<DocType[]>({
+    queryKey: ["student-documents"],
+    queryFn: async () => {
+      const res = await api.get("/documents");
+      return res.data?.items ?? res.data ?? [];
     },
   });
 
@@ -46,245 +106,268 @@ export default function StudentDashboard() {
     },
   });
 
+  const { data: applications = [] } = useQuery<Application[]>({
+    queryKey: ["student-applications"],
+    queryFn: async () => {
+      const res = await api.get("/applications?page_size=20");
+      return (res.data || []).map((app: ApplicationApiResponse): Application => ({
+        ...app,
+        student: app.students ?? app.student,
+        program: app.programs ?? app.program,
+        university: app.programs?.universities ?? app.university,
+      }));
+    },
+  });
+
+  // Determine completion of each step
+  const hasProfile = !!(
+    student?.full_name &&
+    (student as unknown as Record<string, unknown>)?.academic_history
+  );
+
+  const requiredDocTypes = ["passport", "transcript", "sop", "lor", "cv"];
+  const uploadedTypes = new Set(documents.map((d) => d.doc_type));
+  const hasDocs = requiredDocTypes.every((t) => uploadedTypes.has(t as DocType["doc_type" & string]));
+
+  const hasMatches = matchResults.length > 0;
+  const hasApplications = applications.length > 0;
+
   const statusCounts = applications.reduce<Record<string, number>>((acc, app) => {
     acc[app.status] = (acc[app.status] ?? 0) + 1;
     return acc;
   }, {});
-
-  const topMatches = matchResults.slice(0, 3);
-  const firstName = profile?.full_name?.split(" ")[0] ?? "there";
-
   const offerCount = (statusCounts["offer_received"] ?? 0) + (statusCounts["conditional_offer"] ?? 0);
+  const hasOffer = offerCount > 0;
+
+  const completed: Record<string, boolean> = {
+    profile: hasProfile,
+    documents: hasDocs,
+    match: hasMatches,
+    shortlist: hasMatches, // if they ran matching, shortlisting is available
+    apply: hasApplications,
+    offer: hasOffer,
+  };
+
+  return { completed, applications, matchResults, statusCounts, offerCount, documents };
+}
+
+function OnboardingChecklist({ completed }: { completed: Record<string, boolean> }) {
+  const completedCount = Object.values(completed).filter(Boolean).length;
+  const progressPct = Math.round((completedCount / CHECKLIST_STEPS.length) * 100);
+
+  // Find first incomplete step
+  const nextStepKey = CHECKLIST_STEPS.find((s) => !completed[s.key])?.key;
+
+  return (
+    <div className="mb-8">
+      {/* Checklist header */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-slate-900 font-bold text-base">Your Progress</h2>
+          <p className="text-slate-500 text-xs mt-0.5">
+            {completedCount}/{CHECKLIST_STEPS.length} steps completed
+          </p>
+        </div>
+        <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${
+          progressPct === 100
+            ? "bg-emerald-50 text-emerald-600"
+            : "bg-slate-100 text-slate-600"
+        }`}>
+          {progressPct}%
+        </span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-5">
+        <div
+          className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
+
+      {/* Checklist grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {CHECKLIST_STEPS.map((step) => {
+          const Icon = step.icon;
+          const isDone = completed[step.key];
+          const isNext = step.key === nextStepKey;
+
+          return (
+            <Link
+              key={step.key}
+              href={step.href}
+              className={`
+                group flex items-start gap-3 p-4 rounded-2xl border transition-all duration-200
+                ${isDone
+                  ? "bg-slate-50/50 border-slate-200 opacity-70"
+                  : isNext
+                    ? "bg-white border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-300"
+                    : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                }
+              `}
+            >
+              {/* Step icon */}
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                isDone
+                  ? "bg-emerald-50"
+                  : isNext
+                    ? "bg-emerald-50"
+                    : "bg-slate-50"
+              }`}>
+                {isDone ? (
+                  <CheckCircle2 size={16} className="text-emerald-500" />
+                ) : (
+                  <Icon size={16} className={isNext ? "text-emerald-600" : "text-slate-400"} />
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className={`text-sm font-semibold ${
+                    isDone
+                      ? "text-slate-500 line-through decoration-slate-300"
+                      : "text-slate-900"
+                  }`}>
+                    {step.title}
+                  </h3>
+                  {isNext && (
+                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">
+                      Next
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-400 text-xs mt-0.5 leading-relaxed">{step.desc}</p>
+
+                {!isDone && (
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold mt-2 ${
+                    isNext ? "text-emerald-600" : "text-slate-500"
+                  } group-hover:text-emerald-600 transition-colors`}>
+                    {step.cta}
+                    <ArrowRight size={11} />
+                  </span>
+                )}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default function StudentDashboard() {
+  const router = useRouter();
+  const { profile } = useAuth();
+
+  const { completed, applications, matchResults, statusCounts, offerCount } = useOnboardingState();
+
+  const firstName = profile?.full_name?.split(" ")[0] ?? "there";
   const activeCount =
     (statusCounts["lead"] ?? 0) + (statusCounts["pre_evaluation"] ?? 0) +
     (statusCounts["docs_collection"] ?? 0) + (statusCounts["applied"] ?? 0);
-  const topMatchPct = matchResults[0] ? Math.round(matchResults[0].score * 100) : null;
+  const topMatches = matchResults.slice(0, 3);
 
   return (
     <PageWrapper>
-      {/* Welcome Hero */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-[#64748B] text-sm font-semibold uppercase tracking-widest mb-1">
-              Student Portal
-            </p>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-none">
-              <span className="text-[#333]">Hey {firstName},</span>
-              <br />
-              <span className="text-[#10B981]">
-                let&apos;s find your uni
-              </span>
-            </h1>
-            <p className="text-[#64748B] mt-2 font-normal text-sm">
-              Your journey to the right uni starts here.
-            </p>
-          </div>
-          {topMatchPct && (
-            <div className="hidden lg:flex flex-col items-center px-5 py-4 rounded-2xl bg-[rgba(16,185,129,0.06)] border border-[rgba(16,185,129,0.15)]">
-              <span className="text-4xl font-black text-[#10B981]">{topMatchPct}%</span>
-              <span className="text-xs text-[#64748B] font-semibold mt-1">Top Match</span>
-            </div>
-          )}
-        </div>
+      {/* Welcome */}
+      <div className="mb-6">
+        <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">
+          Student Portal
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          Hey {firstName}, <span className="text-emerald-500">let&apos;s find your uni</span>
+        </h1>
+        <p className="text-slate-500 mt-1 text-sm">
+          Your journey to the right university starts here.
+        </p>
       </div>
 
-      {/* How It Works — shown up top so new students see it immediately */}
-      <div className="mb-10">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#333]">How It Works</h2>
-          <p className="text-[#64748B] text-sm mt-1">Follow these simple steps to study abroad through Find Your Uni.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              n: 1,
-              title: "Create Your Profile",
-              desc: "Fill out your academic background, preferred countries, and contact info so we can match you better.",
-              href: "/student/profile",
-              icon: User,
-            },
-            {
-              n: 2,
-              title: "Upload Documents",
-              desc: "Easily upload required documents like transcripts, passports, and English test scores.",
-              href: "/student/documents",
-              icon: Upload,
-            },
-            {
-              n: 3,
-              title: "Get Matched",
-              desc: "Our AI reviews your profile and ranks the best-fit universities based on your goals.",
-              href: "/student/match",
-              icon: Sparkles,
-            },
-            {
-              n: 4,
-              title: "Apply to Universities",
-              desc: "Apply to your shortlisted universities and track every application status from one place.",
-              href: "/student/applications",
-              icon: Send,
-            },
-            {
-              n: 5,
-              title: "Prepare for Visa",
-              desc: "Once you get an offer, you'll be guided step-by-step through your visa application.",
-              href: "/student/applications",
-              icon: Stamp,
-            },
-            {
-              n: 6,
-              title: "Fly to Your Dream University",
-              desc: "Book your flight, attend a pre-departure session, and begin your international journey.",
-              href: "/student/applications",
-              icon: Plane,
-            },
-          ].map((step) => {
-            const Icon = step.icon;
-            return (
-              <Link
-                key={step.n}
-                href={step.href}
-                className="group relative flex items-start gap-4 p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#10B981]/40 hover:shadow-sm transition-all overflow-hidden"
-              >
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#10B981]" />
-                <div className="text-5xl font-black text-[#E2E8F0] leading-none shrink-0 select-none w-10 text-center">
-                  {step.n}
-                </div>
-                <div className="flex-1 min-w-0 pl-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon size={15} className="text-[#10B981]" />
-                    <h3 className="text-[#333] font-black text-sm tracking-tight group-hover:text-[#10B981] transition-colors">
-                      {step.title}
-                    </h3>
-                  </div>
-                  <p className="text-[#64748B] text-xs leading-relaxed">{step.desc}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="glass-card p-4">
+      {/* Stats Row — first thing returning students see */}
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
-              <Send size={13} className="text-[#10B981]" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <Send size={13} className="text-emerald-600" />
             </div>
-            <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wide">Applied</span>
+            <span className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Applied</span>
           </div>
-          <div className="text-3xl font-black text-[#333] tracking-tight">{applications.length}</div>
-          <div className="text-[#64748B] text-xs mt-0.5">unis total</div>
+          <div className="text-2xl font-bold text-slate-900">{applications.length}</div>
         </div>
 
-        <div className="glass-card p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)] flex items-center justify-center">
-              <Clock size={13} className="text-[#3B82F6]" />
+            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+              <Clock size={13} className="text-blue-600" />
             </div>
-            <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wide">In Review</span>
+            <span className="text-slate-500 text-xs font-semibold uppercase tracking-wide">In Review</span>
           </div>
-          <div className="text-3xl font-black text-[#333] tracking-tight">{activeCount}</div>
-          <div className="text-[#64748B] text-xs mt-0.5">active apps</div>
+          <div className="text-2xl font-bold text-slate-900">{activeCount}</div>
         </div>
 
-        <div className="glass-card p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
-              <Trophy size={13} className="text-[#10B981]" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <Trophy size={13} className="text-emerald-600" />
             </div>
-            <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wide">Offers</span>
+            <span className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Offers</span>
           </div>
-          <div className={`text-3xl font-black tracking-tight ${offerCount > 0 ? "text-[#10B981]" : "text-[#333]"}`}>
+          <div className={`text-2xl font-bold ${offerCount > 0 ? "text-emerald-600" : "text-slate-900"}`}>
             {offerCount}
           </div>
-          <div className="text-[#64748B] text-xs mt-0.5">offer letters</div>
         </div>
       </div>
 
-      {/* Quick Actions — mirrors the 6-step "How It Works" flow */}
-      <div className="mb-8">
-        <p className="text-[#64748B] text-xs font-bold uppercase tracking-widest mb-3">Jump to a step</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {[
-            { n: 1, label: "Profile", href: "/student/profile", icon: User },
-            { n: 2, label: "Documents", href: "/student/documents", icon: Upload },
-            { n: 3, label: "Match", href: "/student/match", icon: Sparkles },
-            { n: 4, label: "Applications", href: "/student/applications", icon: Send },
-            { n: 5, label: "Visa", href: "/student/applications", icon: Stamp },
-            { n: 6, label: "Fly", href: "/student/applications", icon: Plane },
-          ].map((s) => {
-            const Icon = s.icon;
-            return (
-              <Link
-                key={s.n}
-                href={s.href}
-                className="group flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#10B981]/40 hover:bg-[rgba(16,185,129,0.04)] transition-all"
-              >
-                <span className="w-6 h-6 rounded-md bg-[#F1F5F9] group-hover:bg-[#10B981]/10 flex items-center justify-center text-[10px] font-black text-[#64748B] group-hover:text-[#10B981] transition-colors shrink-0">
-                  {s.n}
-                </span>
-                <Icon size={14} className="text-[#10B981] shrink-0" />
-                <span className="text-[#333] font-bold text-xs truncate">{s.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+      {/* Dynamic Onboarding Checklist */}
+      <OnboardingChecklist completed={completed} />
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Application Status */}
-        <GlassCard>
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
-              <FileText size={15} className="text-[#10B981]" />
+      {/* Bottom grid: Applications + Top Matches */}
+      <div className="grid lg:grid-cols-3 gap-5">
+        {/* Application Summary */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <FileText size={15} className="text-emerald-600" />
             </div>
-            <h2 className="text-[#333] font-black tracking-tight">Applications</h2>
+            <h2 className="text-slate-900 font-bold text-sm">Applications</h2>
           </div>
-          {appsLoading ? (
-            <LoadingSpinner size="sm" />
-          ) : applications.length === 0 ? (
-            <div className="py-4">
-              <EmptyState
-                icon={FileText}
-                title="Nothing here yet"
-                description="Find your top unis and start applying."
-                action={{ label: "Find Matches", onClick: () => router.push("/student/match") }}
-                className="py-8"
-              />
-            </div>
+          {applications.length === 0 ? (
+            <EmptyState
+              icon={CircleDashed}
+              title="No applications yet"
+              description="Start applying to track your progress here."
+              action={{ label: "Find Matches", onClick: () => router.push("/student/match") }}
+              className="py-6 border-0"
+            />
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {Object.entries(statusCounts).map(([status, count]) => (
                 <div key={status} className="flex items-center justify-between py-1">
                   <StatusBadge status={status} />
-                  <span className="text-[#333] font-black text-sm">{count}</span>
+                  <span className="text-slate-900 font-bold text-sm">{count}</span>
                 </div>
               ))}
               <Link
                 href="/student/applications"
-                className="flex items-center gap-1 text-[#10B981] hover:text-[#059669] text-xs font-bold pt-2 transition-colors"
+                className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-xs font-semibold pt-2 transition-colors"
               >
                 View all <ArrowRight size={12} />
               </Link>
             </div>
           )}
-        </GlassCard>
+        </div>
 
         {/* Top Match Results */}
-        <GlassCard className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.2)] flex items-center justify-center">
-                <TrendingUp size={15} className="text-[#F59E0B]" />
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                <TrendingUp size={15} className="text-amber-600" />
               </div>
-              <h2 className="text-[#333] font-black tracking-tight">Top Matches</h2>
+              <h2 className="text-slate-900 font-bold text-sm">Top Matches</h2>
             </div>
             <Link
               href="/student/match"
-              className="text-[#10B981] text-xs hover:text-[#059669] font-bold flex items-center gap-1 transition-colors"
+              className="text-emerald-600 text-xs hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors"
             >
               View all <ArrowRight size={12} />
             </Link>
@@ -293,54 +376,48 @@ export default function StudentDashboard() {
             <EmptyState
               icon={Sparkles}
               title="No matches yet"
-              description="Run matching to see your top unis ranked by fit."
-              action={{ label: "Show me my matches", onClick: () => router.push("/student/match") }}
-              className="py-8"
+              description="Run matching to see your top universities ranked by fit."
+              action={{ label: "Find Matches", onClick: () => router.push("/student/match") }}
+              className="py-6 border-0"
             />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {topMatches.map((result) => {
                 const pct = Math.round(result.score * 100);
                 const isHigh = pct >= 80;
                 return (
                   <div
                     key={`${result.university_id}-${result.program_id}`}
-                    className="flex items-center gap-4 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#10B981]/25 hover:bg-[rgba(16,185,129,0.03)] transition-all duration-200"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all"
                   >
-                    <div className="relative shrink-0">
-                      <div
-                        className={`relative w-13 h-13 rounded-xl border flex flex-col items-center justify-center z-10 ${
-                          isHigh
-                            ? "bg-[#ECFDF5] border-[rgba(16,185,129,0.3)]"
-                            : "bg-[#EFF6FF] border-[rgba(59,130,246,0.3)]"
-                        }`}
-                        style={{ width: 52, height: 52 }}
-                      >
-                        <span
-                          className={`font-black text-base tracking-tight leading-none ${
-                            isHigh ? "text-[#059669]" : "text-[#2563EB]"
-                          }`}
-                        >
-                          {pct}%
-                        </span>
-                        <span className="text-[8px] text-[#64748B] uppercase tracking-widest font-bold">fit</span>
-                      </div>
+                    <div
+                      className={`w-12 h-12 rounded-xl border flex flex-col items-center justify-center shrink-0 ${
+                        isHigh
+                          ? "bg-emerald-50 border-emerald-200"
+                          : "bg-blue-50 border-blue-200"
+                      }`}
+                    >
+                      <span className={`font-bold text-sm leading-none ${
+                        isHigh ? "text-emerald-600" : "text-blue-600"
+                      }`}>
+                        {pct}%
+                      </span>
+                      <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold">fit</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[#333] font-black tracking-tight text-sm truncate">
+                      <div className="text-slate-900 font-semibold text-sm truncate">
                         {result.university_name}
                       </div>
-                      <div className="text-[#64748B] text-xs font-medium mt-0.5">
-                        {result.program_name} · {result.country}
+                      <div className="text-slate-500 text-xs mt-0.5">
+                        {result.program_name} &middot; {result.country}
                       </div>
                     </div>
-                    {/* Mini bar */}
-                    <div className="w-16 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden shrink-0">
+                    <div className="w-14 h-1.5 bg-slate-100 rounded-full overflow-hidden shrink-0">
                       <div
                         className={`h-full rounded-full ${
                           isHigh
-                            ? "bg-gradient-to-r from-[#10B981] to-[#34D399]"
-                            : "bg-gradient-to-r from-[#3B82F6] to-[#60A5FA]"
+                            ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
+                            : "bg-gradient-to-r from-blue-400 to-blue-500"
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -350,22 +427,22 @@ export default function StudentDashboard() {
               })}
             </div>
           )}
-        </GlassCard>
+        </div>
       </div>
 
-      {/* Recent Applications */}
+      {/* Recent Activity */}
       {applications.length > 0 && (
-        <GlassCard className="mt-6">
-          <div className="flex items-center justify-between mb-5">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mt-5">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] flex items-center justify-center">
-                <CheckCircle2 size={15} className="text-[#64748B]" />
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                <CheckCircle2 size={15} className="text-slate-500" />
               </div>
-              <h2 className="text-[#333] font-black tracking-tight">Recent Activity</h2>
+              <h2 className="text-slate-900 font-bold text-sm">Recent Activity</h2>
             </div>
             <Link
               href="/student/applications"
-              className="text-[#10B981] text-xs hover:text-[#059669] font-bold flex items-center gap-1 transition-colors"
+              className="text-emerald-600 text-xs hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors"
             >
               View all <ArrowRight size={12} />
             </Link>
@@ -373,24 +450,23 @@ export default function StudentDashboard() {
           <div className="space-y-1">
             {applications.slice(0, 5).map((app) => (
               <Link key={app.id} href={`/student/applications/${app.id}`}>
-                <div className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-[#F8FAFC] transition-colors group">
+                <div className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group">
                   <div>
-                    <div className="text-[#333] text-sm font-bold group-hover:text-[#10B981] transition-colors">
+                    <div className="text-slate-900 text-sm font-semibold group-hover:text-emerald-600 transition-colors">
                       {app.university?.name ?? "University"}
                     </div>
-                    <div className="text-[#64748B] text-xs font-medium">{app.program?.name}</div>
+                    <div className="text-slate-500 text-xs">{app.program?.name}</div>
                   </div>
                   <div className="flex items-center gap-3">
                     <StatusBadge status={app.status} />
-                    <ArrowRight size={13} className="text-[#94A3B8] group-hover:text-[#10B981] transition-colors" />
+                    <ArrowRight size={13} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
                   </div>
                 </div>
               </Link>
             ))}
           </div>
-        </GlassCard>
+        </div>
       )}
-
     </PageWrapper>
   );
 }
