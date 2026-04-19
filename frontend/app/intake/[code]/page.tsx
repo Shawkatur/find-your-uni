@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { GraduationCap, Building2, AlertCircle, ArrowRight } from "lucide-react";
+import { GraduationCap, AlertCircle, ArrowRight } from "lucide-react";
 import api from "@/lib/api";
 import type { IntakeInfo } from "@/types";
+
+const REF_STORAGE_KEY = "findyouruni_ref_code";
 
 export default function IntakePage() {
   const params = useParams<{ code: string }>();
@@ -14,6 +16,7 @@ export default function IntakePage() {
   const [info, setInfo] = useState<IntakeInfo | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     api
@@ -23,8 +26,16 @@ export default function IntakePage() {
       .finally(() => setLoading(false));
   }, [code]);
 
-  const handleCTA = () => {
-    router.push(`/auth/register/student?ref=${code}`);
+  // Unified auth: the "Continue" button stores the ref code and email,
+  // then navigates to the registration page. The backend will handle
+  // routing to either Login or Signup based on whether the email exists.
+  const handleContinue = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(REF_STORAGE_KEY, code);
+    }
+    const params = new URLSearchParams({ ref: code });
+    if (email.trim()) params.set("email", email.trim());
+    router.push(`/auth/register/student?${params.toString()}`);
   };
 
   return (
@@ -63,20 +74,14 @@ export default function IntakePage() {
 
         {info && (
           <div className="glass-card p-8">
-            {/* Branding */}
+            {/* Branding — no icon, text-only header */}
             {info.is_admin ? (
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
-                  <GraduationCap size={30} className="text-blue-600" />
-                </div>
                 <h2 className="text-xl font-bold text-slate-900 mb-1">Find Your University</h2>
                 <p className="text-slate-500 text-sm">Official student intake portal</p>
               </div>
             ) : (
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                  <Building2 size={28} className="text-indigo-600" />
-                </div>
                 {info.agency_name && (
                   <p className="text-slate-500 text-xs uppercase tracking-widest mb-1 font-semibold">
                     {info.agency_name}
@@ -108,20 +113,25 @@ export default function IntakePage() {
               ))}
             </ul>
 
-            <button
-              onClick={handleCTA}
-              className="w-full flex items-center justify-center gap-2 btn-electric py-3 rounded-xl font-semibold text-sm"
-            >
-              Get Started Free
-              <ArrowRight size={16} />
-            </button>
-
-            <p className="text-center text-slate-500 text-xs mt-4">
-              Already have an account?{" "}
-              <a href="/auth/login" className="text-emerald-600 hover:text-emerald-700">
-                Sign in
-              </a>
-            </p>
+            {/* Unified auth: single email input + Continue CTA.
+                Backend will route to Login or Signup based on whether the email exists. */}
+            <div className="space-y-3">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email address"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && handleContinue()}
+              />
+              <button
+                onClick={handleContinue}
+                className="w-full flex items-center justify-center gap-2 btn-electric py-3 rounded-xl font-semibold text-sm"
+              >
+                Continue
+                <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         )}
       </div>
