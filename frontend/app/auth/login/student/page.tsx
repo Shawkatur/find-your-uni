@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,7 +20,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function StudentLoginPage() {
+function StudentLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -126,5 +126,13 @@ export default function StudentLoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function StudentLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <StudentLoginForm />
+    </Suspense>
   );
 }
