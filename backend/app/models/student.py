@@ -26,6 +26,7 @@ class TestScores(BaseModel):
 class StudentCreate(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     phone: str | None = None
+    nationality: str | None = None
     academic_history: AcademicHistory
     test_scores: TestScores = TestScores()
     budget_usd_per_year: int = Field(gt=0)
@@ -43,6 +44,7 @@ class StudentCreate(BaseModel):
 class StudentUpdate(BaseModel):
     full_name: str | None = None
     phone: str | None = None
+    nationality: str | None = None
     academic_history: AcademicHistory | None = None
     test_scores: TestScores | None = None
     budget_usd_per_year: int | None = Field(None, gt=0)
@@ -60,6 +62,7 @@ class StudentOut(BaseModel):
     user_id: str
     full_name: str
     phone: str | None
+    nationality: str | None = None
     academic_history: dict
     test_scores: dict
     budget_usd_per_year: int

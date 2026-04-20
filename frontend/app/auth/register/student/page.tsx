@@ -158,6 +158,7 @@ function StudentRegisterForm() {
       await api.post("/auth/student/register", {
         full_name: values.full_name,
         phone: values.phone || undefined,
+        nationality: values.nationality || undefined,
         academic_history: {
           ssc_gpa:          values.ssc_gpa          ? parseFloat(values.ssc_gpa)          : undefined,
           hsc_gpa:          values.hsc_gpa          ? parseFloat(values.hsc_gpa)          : undefined,

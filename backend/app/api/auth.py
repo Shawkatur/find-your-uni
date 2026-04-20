@@ -34,6 +34,7 @@ async def register_student(
         "user_id":             user_id,
         "full_name":           body.full_name,
         "phone":               body.phone,
+        "nationality":         body.nationality,
         "academic_history":    body.academic_history.model_dump(),
         "test_scores":         body.test_scores.model_dump(),
         "budget_usd_per_year": body.budget_usd_per_year,
@@ -146,7 +147,9 @@ async def update_student_profile(
     if body.full_name is not None:
         update["full_name"] = body.full_name
     if body.phone is not None:
-        update["phone"] = body.phone
+        update["phone"] = body.phone or None
+    if body.nationality is not None:
+        update["nationality"] = body.nationality or None
     if body.academic_history is not None:
         update["academic_history"] = body.academic_history.model_dump()
     if body.test_scores is not None:

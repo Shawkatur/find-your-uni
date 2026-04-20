@@ -14,21 +14,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// Coerce empty strings to undefined so blank number inputs don't produce NaN
+const optNum = z.preprocess(
+  (v) => (v === "" || v === null || v === undefined ? undefined : v),
+  z.coerce.number().optional(),
+);
+
 const schema = z.object({
   full_name: z.string().min(2),
   phone: z.string().nullable().optional(),
   nationality: z.string().nullable().optional(),
-  ssc_gpa: z.coerce.number().optional(),
-  hsc_gpa: z.coerce.number().optional(),
-  bachelor_gpa: z.coerce.number().optional(),
+  ssc_gpa: optNum,
+  hsc_gpa: optNum,
+  bachelor_gpa: optNum,
   bachelor_institution: z.string().nullable().optional(),
   bachelor_field: z.string().nullable().optional(),
-  ielts_score: z.coerce.number().optional(),
-  toefl_score: z.coerce.number().optional(),
-  gre_score: z.coerce.number().optional(),
-  gmat_score: z.coerce.number().optional(),
+  ielts_score: optNum,
+  toefl_score: optNum,
+  gre_score: optNum,
+  gmat_score: optNum,
   target_degree: z.enum(["bachelor", "master", "phd", "diploma"]).optional(),
-  budget_usd: z.coerce.number().optional(),
+  budget_usd: optNum,
   target_countries_str: z.string().nullable().optional(),
   target_fields_str: z.string().nullable().optional(),
 });
@@ -106,48 +112,53 @@ export default function StudentProfilePage() {
   useEffect(() => {
     if (student) {
       reset({
-        full_name: student.full_name,
-        phone: student.phone,
-        nationality: student.nationality,
-        ssc_gpa: student.ssc_gpa,
-        hsc_gpa: student.hsc_gpa,
-        bachelor_gpa: student.bachelor_gpa,
-        bachelor_institution: student.bachelor_institution,
-        bachelor_field: student.bachelor_field,
-        ielts_score: student.ielts_score,
-        toefl_score: student.toefl_score,
-        gre_score: student.gre_score,
-        gmat_score: student.gmat_score,
-        target_degree: student.target_degree,
-        budget_usd: student.budget_usd,
-        target_countries_str: student.target_countries?.join(", "),
-        target_fields_str: student.target_fields?.join(", "),
+        full_name: student.full_name ?? "",
+        phone: student.phone ?? "",
+        nationality: student.nationality ?? "",
+        ssc_gpa: student.ssc_gpa ?? undefined,
+        hsc_gpa: student.hsc_gpa ?? undefined,
+        bachelor_gpa: student.bachelor_gpa ?? undefined,
+        bachelor_institution: student.bachelor_institution ?? "",
+        bachelor_field: student.bachelor_field ?? "",
+        ielts_score: student.ielts_score ?? undefined,
+        toefl_score: student.toefl_score ?? undefined,
+        gre_score: student.gre_score ?? undefined,
+        gmat_score: student.gmat_score ?? undefined,
+        target_degree: student.target_degree ?? undefined,
+        budget_usd: student.budget_usd ?? undefined,
+        target_countries_str: student.target_countries?.join(", ") ?? "",
+        target_fields_str: student.target_fields?.join(", ") ?? "",
       });
     }
   }, [student, reset]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // Send null (not empty string) for cleared optional fields so the DB stores NULL
+      const str = (v: string | null | undefined) => (v && v.trim() ? v.trim() : null);
+      const num = (v: number | undefined) => (v != null && !isNaN(v) ? v : null);
+
       await api.patch("/auth/student/profile", {
         full_name: data.full_name,
-        phone: data.phone || undefined,
+        phone: str(data.phone),
+        nationality: str(data.nationality),
         academic_history: {
-          ssc_gpa:          data.ssc_gpa || undefined,
-          hsc_gpa:          data.hsc_gpa || undefined,
-          bachelor_cgpa:    data.bachelor_gpa || undefined,
-          bachelor_institution: data.bachelor_institution || undefined,
-          bachelor_subject: data.bachelor_field || undefined,
+          ssc_gpa:             num(data.ssc_gpa),
+          hsc_gpa:             num(data.hsc_gpa),
+          bachelor_cgpa:       num(data.bachelor_gpa),
+          bachelor_institution: str(data.bachelor_institution),
+          bachelor_subject:    str(data.bachelor_field),
         },
         test_scores: {
-          ielts: data.ielts_score || undefined,
-          toefl: data.toefl_score || undefined,
-          gre:   data.gre_score   || undefined,
-          gmat:  data.gmat_score  || undefined,
+          ielts: num(data.ielts_score),
+          toefl: num(data.toefl_score),
+          gre:   num(data.gre_score),
+          gmat:  num(data.gmat_score),
         },
-        preferred_degree:    data.target_degree,
-        budget_usd_per_year: data.budget_usd,
-        preferred_countries: data.target_countries_str?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean),
-        preferred_fields:    data.target_fields_str?.split(",").map((s) => s.trim()).filter(Boolean),
+        preferred_degree:    data.target_degree || null,
+        budget_usd_per_year: num(data.budget_usd),
+        preferred_countries: data.target_countries_str?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
+        preferred_fields:    data.target_fields_str?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
       });
     },
     onSuccess: () => {
