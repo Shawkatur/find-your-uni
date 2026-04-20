@@ -118,23 +118,28 @@ async def update_consultant_status(
     ghost_ctx: GhostContext = Depends(get_ghost_context),
     client: AsyncClient = Depends(get_client),
 ):
-    """Approve or ban a consultant."""
+    """Approve, reject, or ban a consultant."""
     old_res = await client.table("consultants").select("id, status").eq("id", consultant_id).limit(1).execute()
     if not old_res.data:
         raise HTTPException(status_code=404, detail="Consultant not found")
     old_status = old_res.data[0]["status"]
 
+    update_data: dict = {"status": body.status}
+    if body.admin_notes is not None:
+        update_data["admin_notes"] = body.admin_notes
+
     res = await (
         client.table("consultants")
-        .update({"status": body.status})
+        .update(update_data)
         .eq("id", consultant_id)
         .execute()
     )
     if not res.data:
         raise HTTPException(status_code=404, detail="Consultant not found")
 
-    action = "approve_consultant" if body.status == "active" else "ban_consultant" if body.status == "banned" else "update_consultant_status"
-    await ghost_audit(client, ghost_ctx, action, "consultant", consultant_id, {"status": old_status}, {"status": body.status})
+    action_map = {"active": "approve_consultant", "banned": "ban_consultant", "rejected": "reject_consultant"}
+    action = action_map.get(body.status, "update_consultant_status")
+    await ghost_audit(client, ghost_ctx, action, "consultant", consultant_id, {"status": old_status}, {"status": body.status, "admin_notes": body.admin_notes})
 
     return res.data[0]
 

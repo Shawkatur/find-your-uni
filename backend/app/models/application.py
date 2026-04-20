@@ -116,7 +116,8 @@ class ConsultantOut(BaseModel):
 
 
 class ConsultantStatusUpdate(BaseModel):
-    status: Literal["pending", "active", "banned"]
+    status: Literal["pending", "active", "banned", "rejected"]
+    admin_notes: str | None = None
 
 
 class ReassignBody(BaseModel):
