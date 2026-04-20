@@ -16,21 +16,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const schema = z.object({
   full_name: z.string().min(2),
-  phone: z.string().optional(),
-  nationality: z.string().optional(),
+  phone: z.string().nullable().optional(),
+  nationality: z.string().nullable().optional(),
   ssc_gpa: z.coerce.number().optional(),
   hsc_gpa: z.coerce.number().optional(),
   bachelor_gpa: z.coerce.number().optional(),
-  bachelor_institution: z.string().optional(),
-  bachelor_field: z.string().optional(),
+  bachelor_institution: z.string().nullable().optional(),
+  bachelor_field: z.string().nullable().optional(),
   ielts_score: z.coerce.number().optional(),
   toefl_score: z.coerce.number().optional(),
   gre_score: z.coerce.number().optional(),
   gmat_score: z.coerce.number().optional(),
   target_degree: z.enum(["bachelor", "master", "phd", "diploma"]).optional(),
   budget_usd: z.coerce.number().optional(),
-  target_countries_str: z.string().optional(),
-  target_fields_str: z.string().optional(),
+  target_countries_str: z.string().nullable().optional(),
+  target_fields_str: z.string().nullable().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
