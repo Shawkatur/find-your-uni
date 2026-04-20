@@ -104,55 +104,59 @@ export default function ConsultantRegisterPage() {
 
         <div className="glass-card p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="grid grid-cols-1 gap-5">
-              <div>
-                <Label className="text-slate-300 mb-1.5 block">Full Name</Label>
-                <Input {...register("full_name")} placeholder="Your name"
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
-                {errors.full_name && <p className="text-red-400 text-xs mt-1">{errors.full_name.message}</p>}
-              </div>
-              <div>
-                <Label className="text-slate-300 mb-1.5 block">Email</Label>
-                <Input {...register("email")} type="email" placeholder="consultant@agency.com"
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
-                {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
-              </div>
-              <div>
-                <Label className="text-slate-300 mb-1.5 block">Password</Label>
-                <Input {...register("password")} type="password" placeholder="Min. 8 characters"
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
-                {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
-              </div>
-              <div>
-                <Label className="text-slate-300 mb-1.5 block">Phone</Label>
-                <Input {...register("phone")} placeholder="+880 17..."
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
-              </div>
-              <div>
-                <Label className="text-slate-300 mb-1.5 block">Agency Name</Label>
-                <Input {...register("agency_name")} placeholder="Your agency name"
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
-                {errors.agency_name && <p className="text-red-400 text-xs mt-1">{errors.agency_name.message}</p>}
-              </div>
-              <div>
-                <Label className="text-slate-300 mb-1.5 block">Role / Title</Label>
-                <Input {...register("role_title")} placeholder="e.g. Senior Consultant"
-                  className="bg-white/8 border-white/10 text-white placeholder:text-slate-500" />
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-slate-900">Full Name</Label>
+              <Input {...register("full_name")} placeholder="Your name"
+                className="bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-blue-600" />
+              {errors.full_name && <p className="text-red-500 text-xs mt-1">{errors.full_name.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-slate-900">Email</Label>
+              <Input {...register("email")} type="email" placeholder="consultant@agency.com"
+                className="bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-blue-600" />
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-slate-900">Password</Label>
+              <Input {...register("password")} type="password" placeholder="Min. 8 characters"
+                className="bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-blue-600" />
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+              <p className="text-xs text-slate-500 mt-1">Must be at least 8 characters long</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-slate-900">Phone</Label>
+              <Input {...register("phone")} placeholder="+880 17..."
+                className="bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-blue-600" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-slate-900">Agency Name</Label>
+              <Input {...register("agency_name")} placeholder="Your agency name"
+                className="bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-blue-600" />
+              {errors.agency_name && <p className="text-red-500 text-xs mt-1">{errors.agency_name.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-slate-900">Role / Title</Label>
+              <Input {...register("role_title")} placeholder="e.g. Senior Consultant"
+                className="bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-blue-600" />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm transition-colors py-2.5"
             >
               {loading ? "Creating account..." : "Create Consultant Account"}
             </Button>
           </form>
 
-          <p className="text-center text-slate-400 text-sm mt-6">
+          <p className="text-center text-slate-500 text-sm mt-6">
             Already have an account?{" "}
-            <Link href="/auth/login/consultant" className="text-blue-400 hover:text-blue-300">Sign in</Link>
+            <Link href="/auth/login/consultant" className="text-blue-600 hover:text-blue-700 font-semibold">Sign in</Link>
           </p>
         </div>
       </div>
