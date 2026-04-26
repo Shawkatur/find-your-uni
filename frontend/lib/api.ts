@@ -6,22 +6,40 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach Supabase JWT (getUser() validates the token server-side first)
+// Attach Supabase JWT from the current session
 api.interceptors.request.use(async (config) => {
   try {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.access_token) {
-        config.headers.Authorization = `Bearer ${data.session.access_token}`;
-      }
+    const { data } = await supabase.auth.getSession();
+    if (data.session?.access_token) {
+      config.headers.Authorization = `Bearer ${data.session.access_token}`;
     }
   } catch {
     // no session — request goes through without auth header
   }
-
   return config;
 });
+
+// On 401, try refreshing the session once and retry the request
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+    if (error.response?.status === 401 && !original._retried) {
+      original._retried = true;
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.refreshSession();
+        if (data.session?.access_token) {
+          original.headers.Authorization = `Bearer ${data.session.access_token}`;
+          return api(original);
+        }
+      } catch {
+        // refresh failed — propagate original 401
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export default api;

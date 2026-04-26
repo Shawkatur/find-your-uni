@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { User, GraduationCap, Languages, Target, CheckCircle2, Loader2, Save } from "lucide-react";
 import api from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 import type { Student } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Input } from "@/components/ui/input";
@@ -102,6 +103,7 @@ function buildPayload(data: FormData) {
 }
 
 export default function StudentProfilePage() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [isDirty, setIsDirty] = useState(false);
@@ -130,6 +132,7 @@ export default function StudentProfilePage() {
         target_fields:        profile?.preferred_fields,
       };
     },
+    enabled: !!user,
   });
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({

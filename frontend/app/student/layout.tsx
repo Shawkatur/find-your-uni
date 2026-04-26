@@ -17,6 +17,13 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
   }));
 
+  // Refetch all queries when the user changes (e.g. re-login)
+  useEffect(() => {
+    if (user) {
+      queryClient.invalidateQueries();
+    }
+  }, [user, queryClient]);
+
   useEffect(() => {
     if (!loading && role !== "student") {
       router.replace("/auth/login?error=forbidden");

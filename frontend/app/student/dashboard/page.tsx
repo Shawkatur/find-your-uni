@@ -78,12 +78,15 @@ const CHECKLIST_STEPS: ChecklistStep[] = [
 ];
 
 function useOnboardingState() {
+  const { user } = useAuth();
+
   const { data: student } = useQuery<Student>({
     queryKey: ["student-me"],
     queryFn: async () => {
       const res = await api.get("/auth/me");
       return res.data?.profile ?? res.data;
     },
+    enabled: !!user,
   });
 
   const { data: documents = [] } = useQuery<DocType[]>({
@@ -92,6 +95,7 @@ function useOnboardingState() {
       const res = await api.get("/documents");
       return res.data?.items ?? res.data ?? [];
     },
+    enabled: !!user,
   });
 
   const { data: matchResults = [] } = useQuery<MatchResultItem[]>({
@@ -104,6 +108,7 @@ function useOnboardingState() {
         return [];
       }
     },
+    enabled: !!user,
   });
 
   const { data: applications = [] } = useQuery<Application[]>({
@@ -117,6 +122,7 @@ function useOnboardingState() {
         university: app.programs?.universities ?? app.university,
       }));
     },
+    enabled: !!user,
   });
 
   // Determine completion of each step
