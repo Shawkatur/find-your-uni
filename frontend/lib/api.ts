@@ -6,13 +6,16 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach Supabase JWT
+// Attach Supabase JWT (getUser() validates the token server-side first)
 api.interceptors.request.use(async (config) => {
   try {
     const supabase = createClient();
-    const { data } = await supabase.auth.getSession();
-    if (data.session?.access_token) {
-      config.headers.Authorization = `Bearer ${data.session.access_token}`;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        config.headers.Authorization = `Bearer ${data.session.access_token}`;
+      }
     }
   } catch {
     // no session — request goes through without auth header

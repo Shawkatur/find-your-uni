@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -81,7 +79,7 @@ export default function ConsultantLayout({ children }: { children: React.ReactNo
 
   useEffect(() => {
     if (!loading && role !== "consultant") {
-      router.replace("/login?error=forbidden");
+      router.replace("/auth/login?error=forbidden");
     }
   }, [loading, role, router]);
 
