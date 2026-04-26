@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link2, Plus, Copy, Check, X } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
 import type { TrackingLink } from "@/types";
 
@@ -42,6 +43,7 @@ function CreateLinkDialog({ onClose }: { onClose: () => void }) {
       qc.invalidateQueries({ queryKey: ["tracking-links"] });
       onClose();
     },
+    onError: () => toast.error("Failed to create tracking link"),
   });
 
   return (
