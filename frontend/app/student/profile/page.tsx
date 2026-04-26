@@ -6,12 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { User, GraduationCap, Languages, Target, CheckCircle2, Loader2 } from "lucide-react";
+import { User, GraduationCap, Languages, Target, CheckCircle2, Loader2, Save } from "lucide-react";
 import api from "@/lib/api";
 import type { Student } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Coerce empty strings to undefined so blank number inputs don't produce NaN
@@ -72,10 +73,41 @@ const tabConfig = [
   { value: "preferences", label: "Preferences", icon: Target },
 ];
 
+function buildPayload(data: FormData) {
+  const str = (v: string | null | undefined) => (v && v.trim() ? v.trim() : null);
+  const num = (v: number | undefined) => (v != null && !isNaN(v) ? v : null);
+
+  return {
+    full_name: data.full_name,
+    phone: str(data.phone),
+    nationality: str(data.nationality),
+    academic_history: {
+      ssc_gpa:             num(data.ssc_gpa),
+      hsc_gpa:             num(data.hsc_gpa),
+      bachelor_cgpa:       num(data.bachelor_gpa),
+      bachelor_institution: str(data.bachelor_institution),
+      bachelor_subject:    str(data.bachelor_field),
+    },
+    test_scores: {
+      ielts: num(data.ielts_score),
+      toefl: num(data.toefl_score),
+      gre:   num(data.gre_score),
+      gmat:  num(data.gmat_score),
+    },
+    preferred_degree:    data.target_degree || null,
+    budget_usd_per_year: num(data.budget_usd),
+    preferred_countries: data.target_countries_str?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
+    preferred_fields:    data.target_fields_str?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
+  };
+}
+
 export default function StudentProfilePage() {
   const qc = useQueryClient();
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [isDirty, setIsDirty] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedRef = useRef<string>("");
+  const savedFadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: student } = useQuery<Student>({
     queryKey: ["student-me"],
@@ -111,7 +143,7 @@ export default function StudentProfilePage() {
 
   useEffect(() => {
     if (student) {
-      reset({
+      const initial: FormData = {
         full_name: student.full_name ?? "",
         phone: student.phone ?? "",
         nationality: student.nationality ?? "",
@@ -128,59 +160,56 @@ export default function StudentProfilePage() {
         budget_usd: student.budget_usd ?? undefined,
         target_countries_str: student.target_countries?.join(", ") ?? "",
         target_fields_str: student.target_fields?.join(", ") ?? "",
-      });
+      };
+      reset(initial);
+      lastSavedRef.current = JSON.stringify(initial);
+      setIsDirty(false);
     }
   }, [student, reset]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      // Send null (not empty string) for cleared optional fields so the DB stores NULL
-      const str = (v: string | null | undefined) => (v && v.trim() ? v.trim() : null);
-      const num = (v: number | undefined) => (v != null && !isNaN(v) ? v : null);
-
-      await api.patch("/auth/student/profile", {
-        full_name: data.full_name,
-        phone: str(data.phone),
-        nationality: str(data.nationality),
-        academic_history: {
-          ssc_gpa:             num(data.ssc_gpa),
-          hsc_gpa:             num(data.hsc_gpa),
-          bachelor_cgpa:       num(data.bachelor_gpa),
-          bachelor_institution: str(data.bachelor_institution),
-          bachelor_subject:    str(data.bachelor_field),
-        },
-        test_scores: {
-          ielts: num(data.ielts_score),
-          toefl: num(data.toefl_score),
-          gre:   num(data.gre_score),
-          gmat:  num(data.gmat_score),
-        },
-        preferred_degree:    data.target_degree || null,
-        budget_usd_per_year: num(data.budget_usd),
-        preferred_countries: data.target_countries_str?.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean) ?? [],
-        preferred_fields:    data.target_fields_str?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
-      });
+      await api.patch("/auth/student/profile", buildPayload(data));
     },
-    onSuccess: () => {
+    onMutate: () => {
+      setSaveStatus("saving");
+    },
+    onSuccess: (_data, variables) => {
+      lastSavedRef.current = JSON.stringify(variables);
+      setIsDirty(false);
       setSaveStatus("saved");
       qc.invalidateQueries({ queryKey: ["student-me"] });
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      if (savedFadeRef.current) clearTimeout(savedFadeRef.current);
+      savedFadeRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
     },
-    onError: () => {
-      setSaveStatus("idle");
-      toast.error("Failed to save profile.");
+    onError: (_err, variables) => {
+      setSaveStatus("error");
+      // Roll back to last saved state on failure
+      try {
+        const lastSaved = JSON.parse(lastSavedRef.current) as FormData;
+        reset(lastSaved);
+        setIsDirty(false);
+      } catch {
+        // If parse fails, leave form as-is
+      }
+      toast.error("Failed to save profile. Your changes have been reverted.");
+      setTimeout(() => setSaveStatus("idle"), 3000);
     },
   });
 
+  const doSave = useCallback(() => {
+    handleSubmit((data) => saveMutation.mutate(data as FormData))();
+  }, [handleSubmit, saveMutation]);
+
+  // Debounced auto-save: triggers 1.5s after the user stops typing
   const debouncedSave = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      setSaveStatus("saving");
-      handleSubmit((data) => saveMutation.mutate(data as FormData))();
+      doSave();
     }, 1500);
-  }, [handleSubmit, saveMutation]);
+  }, [doSave]);
 
-  // Auto-save on field changes (skip initial load)
+  // Track dirty state + trigger debounced save on field changes (skip initial load)
   const isInitialized = useRef(false);
   useEffect(() => {
     if (!student) return;
@@ -188,12 +217,29 @@ export default function StudentProfilePage() {
       isInitialized.current = true;
       return;
     }
+    const currentJson = JSON.stringify(watchedValues);
+    if (currentJson === lastSavedRef.current) {
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(true);
     debouncedSave();
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(watchedValues)]);
+
+  // Save on page leave if dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   const renderField = (label: string, name: keyof FormData, type = "text", placeholder?: string) => (
     <div key={name}>
@@ -222,19 +268,30 @@ export default function StudentProfilePage() {
               {completion}%
             </span>
           </div>
-          {/* Auto-save indicator */}
+          {/* Save status indicator */}
           <div className="flex items-center gap-1.5 text-xs">
             {saveStatus === "saving" && (
-              <>
-                <Loader2 size={12} className="animate-spin text-slate-400" />
-                <span className="text-slate-400">Saving...</span>
-              </>
+              <span className="flex items-center gap-1.5 text-slate-400 animate-in fade-in duration-200">
+                <Loader2 size={12} className="animate-spin" />
+                Saving changes...
+              </span>
             )}
             {saveStatus === "saved" && (
-              <>
-                <CheckCircle2 size={12} className="text-emerald-500" />
-                <span className="text-emerald-600">Saved</span>
-              </>
+              <span className="flex items-center gap-1.5 text-emerald-600 animate-in fade-in duration-200">
+                <CheckCircle2 size={12} />
+                All changes saved
+              </span>
+            )}
+            {saveStatus === "error" && (
+              <span className="flex items-center gap-1.5 text-red-500 animate-in fade-in duration-200">
+                Save failed
+              </span>
+            )}
+            {saveStatus === "idle" && isDirty && (
+              <span className="flex items-center gap-1.5 text-amber-500 animate-in fade-in duration-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Unsaved changes
+              </span>
             )}
           </div>
         </div>
@@ -321,6 +378,33 @@ export default function StudentProfilePage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Sticky save bar — appears when form is dirty */}
+      {isDirty && (
+        <div className="fixed bottom-0 left-0 right-0 md:left-64 z-40 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-white/95 backdrop-blur-sm border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] px-6 py-3">
+            <div className="max-w-4xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                You have unsaved changes
+              </div>
+              <Button
+                size="sm"
+                onClick={doSave}
+                disabled={saveMutation.isPending}
+                className="px-5"
+              >
+                {saveMutation.isPending ? (
+                  <Loader2 size={14} className="animate-spin mr-1.5" />
+                ) : (
+                  <Save size={14} className="mr-1.5" />
+                )}
+                {saveMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageWrapper>
   );
 }
