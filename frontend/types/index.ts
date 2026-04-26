@@ -30,24 +30,26 @@ export interface Student {
   phone?: string;
   nationality?: string;
 
-  // Academic
-  ssc_gpa?: number;
-  hsc_gpa?: number;
-  bachelor_gpa?: number;
-  bachelor_institution?: string;
-  bachelor_field?: string;
-
-  // Test scores
-  ielts_score?: number;
-  toefl_score?: number;
-  gre_score?: number;
-  gmat_score?: number;
-
-  // Preferences
-  target_degree: "bachelor" | "master" | "phd" | "diploma";
-  target_fields: string[];
-  target_countries: string[];
-  budget_usd?: number;
+  // Raw JSONB columns from DB
+  academic_history?: {
+    ssc_gpa?: number;
+    hsc_gpa?: number;
+    bachelor_cgpa?: number;
+    bachelor_institution?: string;
+    bachelor_subject?: string;
+    gpa_percentage?: number;
+  };
+  test_scores?: {
+    ielts?: number;
+    toefl?: number;
+    gre?: number;
+    gmat?: number;
+    sat?: number;
+  };
+  preferred_degree?: "bachelor" | "master" | "phd" | "diploma";
+  preferred_countries?: string[];
+  preferred_fields?: string[];
+  budget_usd_per_year?: number;
 
   created_at: string;
   updated_at: string;

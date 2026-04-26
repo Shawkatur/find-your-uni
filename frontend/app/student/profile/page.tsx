@@ -114,23 +114,7 @@ export default function StudentProfilePage() {
     queryKey: ["student-me"],
     queryFn: async () => {
       const res = await api.get("/auth/me");
-      const profile = res.data?.profile ?? res.data;
-      return {
-        ...profile,
-        ssc_gpa:              profile?.academic_history?.ssc_gpa,
-        hsc_gpa:              profile?.academic_history?.hsc_gpa,
-        bachelor_gpa:         profile?.academic_history?.bachelor_cgpa,
-        bachelor_institution: profile?.academic_history?.bachelor_institution,
-        bachelor_field:       profile?.academic_history?.bachelor_subject,
-        ielts_score:          profile?.test_scores?.ielts,
-        toefl_score:          profile?.test_scores?.toefl,
-        gre_score:            profile?.test_scores?.gre,
-        gmat_score:           profile?.test_scores?.gmat,
-        target_degree:        profile?.preferred_degree,
-        budget_usd:           profile?.budget_usd_per_year,
-        target_countries:     profile?.preferred_countries,
-        target_fields:        profile?.preferred_fields,
-      };
+      return res.data?.profile ?? res.data;
     },
     enabled: !!user,
   });
@@ -145,23 +129,26 @@ export default function StudentProfilePage() {
 
   useEffect(() => {
     if (student) {
+      // Flatten nested JSONB fields from the raw profile into form fields
+      const ah = student.academic_history as Record<string, unknown> | undefined;
+      const ts = student.test_scores as Record<string, unknown> | undefined;
       const initial: FormData = {
         full_name: student.full_name ?? "",
         phone: student.phone ?? "",
         nationality: student.nationality ?? "",
-        ssc_gpa: student.ssc_gpa ?? undefined,
-        hsc_gpa: student.hsc_gpa ?? undefined,
-        bachelor_gpa: student.bachelor_gpa ?? undefined,
-        bachelor_institution: student.bachelor_institution ?? "",
-        bachelor_field: student.bachelor_field ?? "",
-        ielts_score: student.ielts_score ?? undefined,
-        toefl_score: student.toefl_score ?? undefined,
-        gre_score: student.gre_score ?? undefined,
-        gmat_score: student.gmat_score ?? undefined,
-        target_degree: student.target_degree ?? undefined,
-        budget_usd: student.budget_usd ?? undefined,
-        target_countries_str: student.target_countries?.join(", ") ?? "",
-        target_fields_str: student.target_fields?.join(", ") ?? "",
+        ssc_gpa: (ah?.ssc_gpa as number) ?? undefined,
+        hsc_gpa: (ah?.hsc_gpa as number) ?? undefined,
+        bachelor_gpa: (ah?.bachelor_cgpa as number) ?? undefined,
+        bachelor_institution: (ah?.bachelor_institution as string) ?? "",
+        bachelor_field: (ah?.bachelor_subject as string) ?? "",
+        ielts_score: (ts?.ielts as number) ?? undefined,
+        toefl_score: (ts?.toefl as number) ?? undefined,
+        gre_score: (ts?.gre as number) ?? undefined,
+        gmat_score: (ts?.gmat as number) ?? undefined,
+        target_degree: (student.preferred_degree as FormData["target_degree"]) ?? undefined,
+        budget_usd: student.budget_usd_per_year ?? undefined,
+        target_countries_str: student.preferred_countries?.join(", ") ?? "",
+        target_fields_str: student.preferred_fields?.join(", ") ?? "",
       };
       reset(initial);
       lastSavedRef.current = JSON.stringify(initial);

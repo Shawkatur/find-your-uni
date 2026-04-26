@@ -268,7 +268,7 @@ export default function ConsultantApplicationDetailPage() {
                     <Globe size={12} className="text-slate-400" />
                     <DataLabel>Field of Study</DataLabel>
                   </div>
-                  <DataValue value={student.bachelor_field} />
+                  <DataValue value={student.academic_history?.bachelor_subject} />
                 </div>
               </div>
 
@@ -283,31 +283,31 @@ export default function ConsultantApplicationDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div>
                   <DataLabel>SSC GPA</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.ssc_gpa} /></div>
+                  <div className="mt-0.5"><DataValue value={student.academic_history?.ssc_gpa} /></div>
                 </div>
                 <div>
                   <DataLabel>HSC GPA</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.hsc_gpa} /></div>
+                  <div className="mt-0.5"><DataValue value={student.academic_history?.hsc_gpa} /></div>
                 </div>
                 <div>
                   <DataLabel>Bachelor GPA</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.bachelor_gpa} /></div>
+                  <div className="mt-0.5"><DataValue value={student.academic_history?.bachelor_cgpa} /></div>
                 </div>
                 <div>
                   <DataLabel>IELTS</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.ielts_score} /></div>
+                  <div className="mt-0.5"><DataValue value={student.test_scores?.ielts} /></div>
                 </div>
                 <div>
                   <DataLabel>TOEFL</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.toefl_score} /></div>
+                  <div className="mt-0.5"><DataValue value={student.test_scores?.toefl} /></div>
                 </div>
                 <div>
                   <DataLabel>GRE</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.gre_score} /></div>
+                  <div className="mt-0.5"><DataValue value={student.test_scores?.gre} /></div>
                 </div>
                 <div>
                   <DataLabel>GMAT</DataLabel>
-                  <div className="mt-0.5"><DataValue value={student.gmat_score} /></div>
+                  <div className="mt-0.5"><DataValue value={student.test_scores?.gmat} /></div>
                 </div>
               </div>
             </div>

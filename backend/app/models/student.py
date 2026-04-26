@@ -11,6 +11,7 @@ class AcademicHistory(BaseModel):
     ssc_gpa: float | None = None
     hsc_gpa: float | None = None
     bachelor_cgpa: float | None = None
+    bachelor_institution: str | None = None
     bachelor_subject: str | None = None
     gpa_percentage: int | None = Field(None, ge=0, le=100)
 
