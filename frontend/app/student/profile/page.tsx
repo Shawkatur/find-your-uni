@@ -105,7 +105,6 @@ export default function StudentProfilePage() {
   const qc = useQueryClient();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [isDirty, setIsDirty] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef<string>("");
   const savedFadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -201,15 +200,7 @@ export default function StudentProfilePage() {
     handleSubmit((data) => saveMutation.mutate(data as FormData))();
   }, [handleSubmit, saveMutation]);
 
-  // Debounced auto-save: triggers 1.5s after the user stops typing
-  const debouncedSave = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      doSave();
-    }, 1500);
-  }, [doSave]);
-
-  // Track dirty state + trigger debounced save on field changes (skip initial load)
+  // Track dirty state on field changes (skip initial load)
   const isInitialized = useRef(false);
   useEffect(() => {
     if (!student) return;
@@ -218,17 +209,21 @@ export default function StudentProfilePage() {
       return;
     }
     const currentJson = JSON.stringify(watchedValues);
-    if (currentJson === lastSavedRef.current) {
-      setIsDirty(false);
-      return;
-    }
-    setIsDirty(true);
-    debouncedSave();
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    setIsDirty(currentJson !== lastSavedRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(watchedValues)]);
+
+  // Keyboard shortcut: Ctrl+S / Cmd+S to save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        if (isDirty && !saveMutation.isPending) doSave();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDirty, saveMutation.isPending, doSave]);
 
   // Save on page leave if dirty
   useEffect(() => {
