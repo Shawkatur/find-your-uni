@@ -11,6 +11,15 @@ export type AppStatus =
   | "rejected"
   | "withdrawn";
 
+// ─── Pipeline Status ─────────────────────────────────────────────────────────
+export type PipelineStatus =
+  | "invited"
+  | "onboarding"
+  | "gathering_docs"
+  | "ready_to_apply"
+  | "applied"
+  | "enrolled";
+
 // ─── User / Auth ─────────────────────────────────────────────────────────────
 export interface UserProfile {
   id: string;
@@ -113,12 +122,17 @@ export interface MatchResultItem {
 }
 
 // ─── Application ─────────────────────────────────────────────────────────────
+export type AssignedSource = "admin" | "manual" | "algorithm" | null;
+
 export interface Application {
   id: string;
   student_id: string;
   university_id: string;
   program_id: string;
   consultant_id?: string;
+  agency_id?: string;
+  assigned_source?: AssignedSource;
+  assigned_by?: string;
   status: AppStatus;
   notes?: string;
   created_at: string;
@@ -162,15 +176,19 @@ export type DocType =
   | "gmat"
   | "other";
 
+export type VerificationStatus = "pending_review" | "verified" | "rejected";
+
 export interface Document {
   id: string;
   student_id: string;
   application_id?: string;
   doc_type: DocType;
   filename: string;
-  r2_key: string;
+  storage_url: string;
   url?: string;
   uploaded_at: string;
+  verification_status?: VerificationStatus;
+  rejection_reason?: string;
 }
 
 // ─── Consultant ───────────────────────────────────────────────────────────────

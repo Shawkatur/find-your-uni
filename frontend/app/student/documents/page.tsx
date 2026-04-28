@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import {
   Upload, CheckCircle2, Trash2, ExternalLink, Shield,
-  FileText, Loader2,
+  FileText, Loader2, AlertCircle, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -126,33 +126,50 @@ function DocCard({
           {isDone ? (
             <div className="space-y-1.5 mt-1">
               {uploaded.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between gap-2 group/file">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <FileText size={11} className="text-slate-400 shrink-0" />
-                    <span className="text-slate-600 text-xs truncate">{doc.filename}</span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover/file:opacity-100 transition-opacity">
-                    {doc.url && (
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-emerald-500 hover:text-emerald-700"
+                <div key={doc.id}>
+                  <div className="flex items-center justify-between gap-2 group/file">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <FileText size={11} className="text-slate-400 shrink-0" />
+                      <span className="text-slate-600 text-xs truncate">{doc.filename}</span>
+                      {doc.verification_status === "verified" && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full shrink-0">
+                          <ShieldCheck size={9} /> Verified
+                        </span>
+                      )}
+                      {doc.verification_status === "rejected" && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full shrink-0">
+                          <AlertCircle size={9} /> Rejected
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover/file:opacity-100 transition-opacity">
+                      {doc.url && (
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-emerald-500 hover:text-emerald-700"
+                        >
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(doc.id);
+                        }}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
                       >
-                        <ExternalLink size={12} />
-                      </a>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(doc.id);
-                      }}
-                      className="text-slate-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                   </div>
+                  {doc.verification_status === "rejected" && doc.rejection_reason && (
+                    <p className="text-[11px] text-rose-500 mt-1 ml-5">
+                      {doc.rejection_reason}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

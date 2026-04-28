@@ -1,16 +1,21 @@
 """
-POST /documents/upload  — upload a document to Supabase Storage + record in DB
-GET  /documents         — list my documents (with signed download URLs)
-DELETE /documents/{id}  — delete a document
+POST  /documents/upload            — upload a document to Supabase Storage + record in DB
+GET   /documents                   — list my documents (with signed download URLs)
+DELETE /documents/{id}             — delete a document
+GET   /documents/verification-queue — consultant: pending docs for their students
+PATCH /documents/{id}/verify       — consultant: verify or reject a document
 """
 from __future__ import annotations
 import asyncio
 import uuid
+from datetime import datetime, timezone
+from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from pydantic import BaseModel
 
 from app.core.config import get_settings
 from app.core.logger import logger
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_active_consultant_dep
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
 from supabase import AsyncClient
@@ -134,7 +139,7 @@ async def list_documents(
         raise HTTPException(status_code=404, detail="Student profile not found")
 
     query = client.table("documents").select(
-        "id, student_id, doc_type, storage_url, application_id, uploaded_at"
+        "id, student_id, doc_type, storage_url, application_id, uploaded_at, verification_status, rejection_reason"
     ).eq("student_id", student["id"])
     if application_id:
         query = query.eq("application_id", application_id)
@@ -180,3 +185,109 @@ async def delete_document(
         await client.storage.from_(BUCKET).remove([res.data["storage_url"]])
     except Exception as exc:
         logger.error("Storage delete failed (non-fatal) for doc %s: %s", doc_id, exc)
+
+
+# ─── Consultant Document Verification ────────────────────────────────────────
+
+get_consultant = get_active_consultant_dep()
+
+
+class VerifyDocumentBody(BaseModel):
+    status: Literal["verified", "rejected"]
+    reason: str | None = None
+
+
+@router.get("/verification-queue", response_model=list[dict])
+async def list_verification_queue(
+    consultant: dict = Depends(get_consultant),
+    client: AsyncClient = Depends(get_client),
+):
+    """Return all pending-review documents for students assigned to this consultant."""
+    settings = get_settings()
+    consultant_id = consultant["id"]
+
+    apps_res = await (
+        client.table("applications")
+        .select("student_id")
+        .eq("consultant_id", consultant_id)
+        .execute()
+    )
+    if not apps_res.data:
+        return []
+
+    student_ids = list({a["student_id"] for a in apps_res.data})
+
+    docs_res = await (
+        client.table("documents")
+        .select("id, student_id, doc_type, storage_url, uploaded_at, verification_status, rejection_reason, students(full_name)")
+        .in_("student_id", student_ids)
+        .eq("verification_status", "pending_review")
+        .order("uploaded_at", desc=True)
+        .execute()
+    )
+    docs = docs_res.data or []
+
+    urls = await asyncio.gather(
+        *[_signed_url(client, doc["storage_url"], settings) for doc in docs]
+    )
+    for doc, url in zip(docs, urls):
+        doc["url"] = url
+        doc["filename"] = doc["storage_url"].split("/")[-1]
+        student_data = doc.pop("students", None) or {}
+        doc["student_name"] = student_data.get("full_name", "Unknown")
+
+    return docs
+
+
+@router.patch("/{doc_id}/verify", response_model=dict)
+async def verify_document(
+    doc_id: str,
+    body: VerifyDocumentBody,
+    consultant: dict = Depends(get_consultant),
+    client: AsyncClient = Depends(get_client),
+):
+    """Verify or reject a student document."""
+    consultant_id = consultant["id"]
+
+    doc_res = await (
+        client.table("documents")
+        .select("id, student_id, verification_status")
+        .eq("id", doc_id)
+        .limit(1)
+        .execute()
+    )
+    if not doc_res.data:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    doc = doc_res.data[0]
+
+    app_check = await (
+        client.table("applications")
+        .select("id")
+        .eq("consultant_id", consultant_id)
+        .eq("student_id", doc["student_id"])
+        .limit(1)
+        .execute()
+    )
+    if not app_check.data:
+        raise HTTPException(status_code=403, detail="Student is not assigned to you")
+
+    if body.status == "rejected" and not body.reason:
+        raise HTTPException(status_code=422, detail="Rejection reason is required")
+
+    update: dict = {
+        "verification_status": body.status,
+        "verified_by": consultant_id,
+        "verified_at": datetime.now(timezone.utc).isoformat(),
+        "rejection_reason": body.reason if body.status == "rejected" else None,
+    }
+
+    res = await (
+        client.table("documents")
+        .update(update)
+        .eq("id", doc_id)
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return res.data[0]

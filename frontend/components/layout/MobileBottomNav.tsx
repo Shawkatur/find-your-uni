@@ -10,6 +10,7 @@ import {
   Upload,
   User,
   Link2,
+  GraduationCap,
 } from "lucide-react";
 
 interface NavItem {
@@ -30,6 +31,7 @@ const studentTabs: NavItem[] = [
 
 const consultantTabs: NavItem[] = [
   { label: "Dashboard", href: "/consultant/dashboard", icon: LayoutDashboard },
+  { label: "Students", href: "/consultant/students", icon: GraduationCap },
   { label: "Applications", href: "/consultant/applications", icon: FileText },
   { label: "Tracking", href: "/consultant/tracking", icon: Link2 },
   { label: "Me", href: "/consultant/profile", icon: User },

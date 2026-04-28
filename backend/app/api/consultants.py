@@ -15,6 +15,7 @@ from app.core.security import get_current_user, require_role
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
 from app.models.application import ReviewCreate, ReviewOut, AgencyOut, AgencyCreate, ConsultantOut, ConsultantMeOut, ConsultantPublicOut
+from app.models.student import ConsultantStudentOut, PipelineStatus
 
 
 class ConsultantProfileUpdate(BaseModel):
@@ -121,6 +122,126 @@ async def get_my_colleagues(
         .execute()
     )
     return res.data or []
+
+
+# ─── My Students (CRM Roster) ────────────────────────────────────────────────
+
+
+class PipelineStatusUpdate(BaseModel):
+    pipeline_status: PipelineStatus
+
+
+@router.get("/consultants/me/students", response_model=list[ConsultantStudentOut])
+async def get_my_students(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Return all students linked to this consultant via applications."""
+    c_res = await (
+        client.table("consultants")
+        .select("id, status")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not c_res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    if c_res.data[0]["status"] != "active":
+        raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
+
+    consultant_id = c_res.data[0]["id"]
+
+    apps_res = await (
+        client.table("applications")
+        .select("student_id, assigned_source")
+        .eq("consultant_id", consultant_id)
+        .execute()
+    )
+    if not apps_res.data:
+        return []
+
+    seen: dict[str, str | None] = {}
+    for app in apps_res.data:
+        sid = app["student_id"]
+        if sid not in seen:
+            seen[sid] = app.get("assigned_source")
+
+    student_ids = list(seen.keys())
+
+    students_res = await (
+        client.table("students")
+        .select("id, full_name, phone, pipeline_status, preferred_countries, preferred_degree, created_at")
+        .in_("id", student_ids)
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    # Check which students have at least one rejected document
+    rejected_student_ids: set[str] = set()
+    if student_ids:
+        rejected_res = await (
+            client.table("documents")
+            .select("student_id")
+            .in_("student_id", student_ids)
+            .eq("verification_status", "rejected")
+            .execute()
+        )
+        for doc in (rejected_res.data or []):
+            rejected_student_ids.add(doc["student_id"])
+
+    result = []
+    for s in (students_res.data or []):
+        result.append({
+            **s,
+            "email": None,
+            "assigned_source": seen.get(s["id"]),
+            "has_rejected_docs": s["id"] in rejected_student_ids,
+        })
+    return result
+
+
+@router.patch("/consultants/me/students/{student_id}/pipeline", response_model=dict)
+async def update_student_pipeline(
+    student_id: str,
+    body: PipelineStatusUpdate,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Update a student's pipeline status. Only the assigned consultant can do this."""
+    c_res = await (
+        client.table("consultants")
+        .select("id, status")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not c_res.data:
+        raise HTTPException(status_code=404, detail="Consultant profile not found")
+    if c_res.data[0]["status"] != "active":
+        raise HTTPException(status_code=403, detail="Consultant account is not yet approved")
+
+    consultant_id = c_res.data[0]["id"]
+
+    app_check = await (
+        client.table("applications")
+        .select("id")
+        .eq("consultant_id", consultant_id)
+        .eq("student_id", student_id)
+        .limit(1)
+        .execute()
+    )
+    if not app_check.data:
+        raise HTTPException(status_code=403, detail="Student is not assigned to you")
+
+    res = await (
+        client.table("students")
+        .update({"pipeline_status": body.pipeline_status})
+        .eq("id", student_id)
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return res.data[0]
 
 
 # ─── Consultants ──────────────────────────────────────────────────────────────

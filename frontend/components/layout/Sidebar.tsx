@@ -14,6 +14,7 @@ import {
   GraduationCap,
   Link2,
   Bookmark,
+  ShieldCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -36,7 +37,9 @@ const studentNav: NavItem[] = [
 
 const consultantNav: NavItem[] = [
   { label: "Dashboard", href: "/consultant/dashboard", icon: LayoutDashboard },
+  { label: "My Students", href: "/consultant/students", icon: GraduationCap },
   { label: "Applications", href: "/consultant/applications", icon: FileText },
+  { label: "Documents", href: "/consultant/documents", icon: ShieldCheck },
   { label: "Tracking", href: "/consultant/tracking", icon: Link2 },
   { label: "Agencies", href: "/consultant/agencies", icon: Users },
   { label: "Profile", href: "/consultant/profile", icon: User },

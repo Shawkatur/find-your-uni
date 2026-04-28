@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 DegreeLevel = Literal["bachelor", "master", "phd", "diploma"]
+PipelineStatus = Literal["invited", "onboarding", "gathering_docs", "ready_to_apply", "applied", "enrolled"]
 
 
 class AcademicHistory(BaseModel):
@@ -74,5 +75,20 @@ class StudentOut(BaseModel):
     notify_status_changes: bool = True
     notify_deadlines: bool = True
     onboarding_completed: bool = False
+    pipeline_status: PipelineStatus = "onboarding"
     created_at: datetime
     updated_at: datetime
+
+
+class ConsultantStudentOut(BaseModel):
+    """Lightweight student record for the consultant CRM roster."""
+    id: str
+    full_name: str
+    phone: str | None = None
+    email: str | None = None
+    pipeline_status: PipelineStatus = "onboarding"
+    preferred_countries: list[str] = []
+    preferred_degree: str | None = None
+    assigned_source: str | None = None
+    has_rejected_docs: bool = False
+    created_at: datetime

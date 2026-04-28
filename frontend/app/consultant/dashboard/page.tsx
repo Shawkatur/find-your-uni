@@ -255,8 +255,13 @@ export default function ConsultantDashboard() {
               <Link key={app.id} href={`/consultant/applications/${app.id}`}>
                 <div className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
                   <div>
-                    <div className="text-sm font-medium text-slate-900">
+                    <div className="text-sm font-medium text-slate-900 flex items-center gap-1.5">
                       {app.student?.full_name ?? "Student"}
+                      {app.assigned_source === "admin" && (
+                        <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-700">
+                          Admin Assigned
+                        </span>
+                      )}
                     </div>
                     <div className="text-slate-500 text-xs mt-0.5">
                       {app.university?.name}{app.program?.name ? ` · ${app.program.name}` : ""}

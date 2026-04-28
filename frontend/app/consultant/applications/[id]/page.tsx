@@ -240,9 +240,16 @@ export default function ConsultantApplicationDetailPage() {
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
           {student?.full_name ?? "Student"}
         </h1>
-        <span className={`self-start rounded-full text-[11px] font-bold uppercase tracking-wider px-3 py-1 ${STATUS_PILL[app.status] ?? "bg-slate-100 text-slate-700"}`}>
-          {STATUS_LABEL[app.status] ?? app.status}
-        </span>
+        <div className="flex items-center gap-2 self-start">
+          <span className={`rounded-full text-[11px] font-bold uppercase tracking-wider px-3 py-1 ${STATUS_PILL[app.status] ?? "bg-slate-100 text-slate-700"}`}>
+            {STATUS_LABEL[app.status] ?? app.status}
+          </span>
+          {app.assigned_source === "admin" && (
+            <span className="rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-700">
+              Admin Assigned
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

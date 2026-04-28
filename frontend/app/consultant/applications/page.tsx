@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Application, AppStatus } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -145,7 +144,14 @@ function ApplicationCard({ app, onStatusChange }: {
   return (
     <div className="glass-card p-4 mb-2 glass-card-hover">
       <Link href={`/consultant/applications/${app.id}`} className="block mb-3">
-        <div className="text-[#1E293B] font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[#1E293B] font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</span>
+          {app.assigned_source === "admin" && (
+            <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-violet-700 shrink-0">
+              Admin
+            </span>
+          )}
+        </div>
         <div className="text-[#64748B] text-xs font-medium mt-0.5">{app.university?.name}</div>
         <div className="text-[#64748B] text-xs">{app.program?.name}</div>
       </Link>
@@ -200,6 +206,7 @@ export default function ConsultantApplicationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [universityFilter, setUniversityFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["consultant-applications-all"],
@@ -236,8 +243,15 @@ export default function ConsultantApplicationsPage() {
     if (universityFilter) {
       list = list.filter((a) => a.university?.name === universityFilter);
     }
+    if (sourceFilter) {
+      if (sourceFilter === "admin") {
+        list = list.filter((a) => a.assigned_source === "admin");
+      } else if (sourceFilter === "self") {
+        list = list.filter((a) => !a.assigned_source || a.assigned_source !== "admin");
+      }
+    }
     return list;
-  }, [applications, searchQuery, statusFilter, universityFilter]);
+  }, [applications, searchQuery, statusFilter, universityFilter, sourceFilter]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AppStatus }) => {
@@ -318,7 +332,7 @@ export default function ConsultantApplicationsPage() {
     setDownloading(false);
   }
 
-  const hasActiveFilters = searchQuery || statusFilter || universityFilter;
+  const hasActiveFilters = searchQuery || statusFilter || universityFilter || sourceFilter;
 
   return (
     <PageWrapper
@@ -380,9 +394,20 @@ export default function ConsultantApplicationsPage() {
             ))}
           </select>
 
+          {/* Source filter */}
+          <select
+            value={sourceFilter}
+            onChange={(e) => setSourceFilter(e.target.value)}
+            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+          >
+            <option value="">All Sources</option>
+            <option value="admin">Admin Assigned</option>
+            <option value="self">Self-Sourced</option>
+          </select>
+
           {hasActiveFilters && (
             <button
-              onClick={() => { setSearchQuery(""); setStatusFilter(""); setUniversityFilter(""); }}
+              onClick={() => { setSearchQuery(""); setStatusFilter(""); setUniversityFilter(""); setSourceFilter(""); }}
               className="flex items-center gap-1 px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors"
             >
               <X size={13} /> Clear
@@ -448,7 +473,7 @@ export default function ConsultantApplicationsPage() {
             <div className="px-4 py-12 text-center">
               <p className="text-slate-400 text-sm">No applications match your filters.</p>
               <button
-                onClick={() => { setSearchQuery(""); setStatusFilter(""); setUniversityFilter(""); }}
+                onClick={() => { setSearchQuery(""); setStatusFilter(""); setUniversityFilter(""); setSourceFilter(""); }}
                 className="text-emerald-600 text-sm font-medium mt-2 hover:text-emerald-700"
               >
                 Clear filters
@@ -479,8 +504,13 @@ export default function ConsultantApplicationsPage() {
 
                   {/* Name */}
                   <Link href={`/consultant/applications/${app.id}`} className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 truncate">
+                    <div className="text-sm font-semibold text-slate-900 truncate flex items-center gap-1.5">
                       {app.student?.full_name ?? "Student"}
+                      {app.assigned_source === "admin" && (
+                        <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-700 shrink-0">
+                          Admin Assigned
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-slate-600 truncate md:hidden">
                       {isBlankUni(app.university?.name)

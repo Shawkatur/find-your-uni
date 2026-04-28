@@ -61,6 +61,8 @@ class ApplicationOut(BaseModel):
     status: str
     status_history: list[dict]
     notes: str | None
+    assigned_source: str | None = None
+    assigned_by: str | None = None
     created_at: datetime
     updated_at: datetime
 
