@@ -249,6 +249,11 @@ export default function ConsultantApplicationDetailPage() {
               Admin Assigned
             </span>
           )}
+          {app.assigned_source === "tracking_link" && (
+            <span className="rounded-full bg-sky-50 border border-sky-200 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+              Tracking Link
+            </span>
+          )}
         </div>
       </div>
 

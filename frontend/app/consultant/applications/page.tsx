@@ -82,6 +82,12 @@ const KANBAN_COLUMNS: AppStatus[] = [
   "offer_received", "visa_stage", "enrolled", "rejected",
 ];
 
+const KANBAN_MAPPED_STATUSES = new Set<string>([
+  "lead", "pre_evaluation", "docs_collection", "applied",
+  "offer_received", "conditional_offer", "visa_stage",
+  "enrolled", "rejected", "withdrawn",
+]);
+
 const COLUMN_LABELS: Record<string, string> = {
   lead:            "Leads",
   pre_evaluation:  "Pre-Evaluation",
@@ -149,6 +155,11 @@ function ApplicationCard({ app, onStatusChange }: {
           {app.assigned_source === "admin" && (
             <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-violet-700 shrink-0">
               Admin
+            </span>
+          )}
+          {app.assigned_source === "tracking_link" && (
+            <span className="inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-sky-700 shrink-0">
+              Tracking
             </span>
           )}
         </div>
@@ -244,11 +255,7 @@ export default function ConsultantApplicationsPage() {
       list = list.filter((a) => a.university?.name === universityFilter);
     }
     if (sourceFilter) {
-      if (sourceFilter === "admin") {
-        list = list.filter((a) => a.assigned_source === "admin");
-      } else if (sourceFilter === "self") {
-        list = list.filter((a) => !a.assigned_source || a.assigned_source !== "admin");
-      }
+      list = list.filter((a) => a.assigned_source === sourceFilter);
     }
     return list;
   }, [applications, searchQuery, statusFilter, universityFilter, sourceFilter]);
@@ -337,7 +344,7 @@ export default function ConsultantApplicationsPage() {
   return (
     <PageWrapper
       title="Applications"
-      subtitle={`${applications.length} total applications`}
+      subtitle={`${hasActiveFilters ? `${filtered.length} of ` : ""}${applications.length} application${applications.length !== 1 ? "s" : ""}`}
       actions={
         <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white">
           <button
@@ -356,8 +363,7 @@ export default function ConsultantApplicationsPage() {
       }
     >
       {/* ─── CRM Action Bar ─────────────────────────────────────────────── */}
-      {view === "list" && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
           {/* Search */}
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -401,8 +407,8 @@ export default function ConsultantApplicationsPage() {
             className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
           >
             <option value="">All Sources</option>
+            <option value="tracking_link">Tracking Link</option>
             <option value="admin">Admin Assigned</option>
-            <option value="self">Self-Sourced</option>
           </select>
 
           {hasActiveFilters && (
@@ -414,7 +420,6 @@ export default function ConsultantApplicationsPage() {
             </button>
           )}
         </div>
-      )}
 
       {/* ─── Content ────────────────────────────────────────────────────── */}
       {isLoading ? (
@@ -511,6 +516,11 @@ export default function ConsultantApplicationsPage() {
                           Admin Assigned
                         </span>
                       )}
+                      {app.assigned_source === "tracking_link" && (
+                        <span className="inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-sky-700 shrink-0">
+                          Tracking Link
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-slate-600 truncate md:hidden">
                       {isBlankUni(app.university?.name)
@@ -576,11 +586,13 @@ export default function ConsultantApplicationsPage() {
         /* ─── Kanban View (unchanged) ──────────────────────────────────── */
         <div className="flex gap-4 overflow-x-auto pb-4">
           {KANBAN_COLUMNS.map((status) => {
-            const col = applications.filter((a) =>
+            const col = filtered.filter((a) =>
               status === "rejected"
                 ? ["rejected", "withdrawn"].includes(a.status)
                 : status === "offer_received"
                 ? ["offer_received", "conditional_offer"].includes(a.status)
+                : status === "lead"
+                ? a.status === "lead" || !KANBAN_MAPPED_STATUSES.has(a.status)
                 : a.status === status
             );
             return (

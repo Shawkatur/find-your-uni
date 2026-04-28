@@ -118,11 +118,7 @@ export default function ConsultantStudentsPage() {
       list = list.filter((s) => s.pipeline_status === stageFilter);
     }
     if (sourceFilter) {
-      if (sourceFilter === "admin") {
-        list = list.filter((s) => s.assigned_source === "admin");
-      } else if (sourceFilter === "self") {
-        list = list.filter((s) => !s.assigned_source || s.assigned_source !== "admin");
-      }
+      list = list.filter((s) => s.assigned_source === sourceFilter);
     }
     return list;
   }, [students, searchQuery, stageFilter, sourceFilter]);
@@ -198,8 +194,8 @@ export default function ConsultantStudentsPage() {
           className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
         >
           <option value="">All Sources</option>
+          <option value="tracking_link">Tracking Link</option>
           <option value="admin">Admin Assigned</option>
-          <option value="self">Self-Sourced</option>
         </select>
 
         {hasActiveFilters && (
@@ -295,6 +291,11 @@ export default function ConsultantStudentsPage() {
                       {student.assigned_source === "admin" && (
                         <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-700 shrink-0">
                           Admin Assigned
+                        </span>
+                      )}
+                      {student.assigned_source === "tracking_link" && (
+                        <span className="inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-sky-700 shrink-0">
+                          Tracking Link
                         </span>
                       )}
                     </div>

@@ -262,6 +262,11 @@ export default function ConsultantDashboard() {
                           Admin Assigned
                         </span>
                       )}
+                      {app.assigned_source === "tracking_link" && (
+                        <span className="inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-sky-700">
+                          Tracking Link
+                        </span>
+                      )}
                     </div>
                     <div className="text-slate-500 text-xs mt-0.5">
                       {app.university?.name}{app.program?.name ? ` · ${app.program.name}` : ""}

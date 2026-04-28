@@ -122,7 +122,7 @@ export interface MatchResultItem {
 }
 
 // ─── Application ─────────────────────────────────────────────────────────────
-export type AssignedSource = "admin" | "manual" | "algorithm" | null;
+export type AssignedSource = "admin" | "manual" | "algorithm" | "tracking_link" | null;
 
 export interface Application {
   id: string;

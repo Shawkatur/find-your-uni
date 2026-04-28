@@ -44,6 +44,8 @@ async def register_student(
     }
     if body.ref_code:
         row["referral_source"] = body.ref_code
+        if body.ref_code != ADMIN_REF_CODE:
+            row["pipeline_status"] = "invited"
 
     res = await client.table("students").insert(row).execute()
     student = res.data[0]
@@ -64,8 +66,7 @@ async def _create_lead_application(client: AsyncClient, student_id: str, ref_cod
     }
 
     if ref_code == ADMIN_REF_CODE:
-        # Unassigned lead — goes to admin pool
-        pass
+        lead["assigned_source"] = "admin"
     else:
         link_res = await (
             client.table("tracking_links")
@@ -75,8 +76,9 @@ async def _create_lead_application(client: AsyncClient, student_id: str, ref_cod
             .execute()
         )
         if link_res.data:
-            lead["consultant_id"] = link_res.data[0]["consultant_id"]
-            lead["agency_id"]     = link_res.data[0]["agency_id"]
+            lead["consultant_id"]   = link_res.data[0]["consultant_id"]
+            lead["agency_id"]       = link_res.data[0]["agency_id"]
+            lead["assigned_source"] = "tracking_link"
 
     try:
         await client.table("applications").insert(lead).execute()
