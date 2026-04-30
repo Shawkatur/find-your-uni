@@ -266,6 +266,22 @@ export interface ConsultantWithStatus extends Consultant {
   student_count?: number;
 }
 
+// ─── Recommendation ──────────────────────────────────────────────────────────
+export type RecommendationStatus = "pending" | "approved" | "rejected";
+
+export interface Recommendation {
+  id: string;
+  student_id: string;
+  consultant_id: string;
+  program_id: string;
+  notes: string | null;
+  status: RecommendationStatus;
+  reviewed_at: string | null;
+  created_at: string;
+  programs?: Program & { universities?: University };
+  consultants?: { full_name: string };
+}
+
 // ─── Lead Application ─────────────────────────────────────────────────────────
 export interface LeadApplication {
   id: string;

@@ -1,20 +1,24 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Sparkles, FileText, ArrowRight,
   TrendingUp, CheckCircle2, Clock, Send, Trophy,
   User, Upload, CircleDashed,
+  GraduationCap, ThumbsUp, X, Building2,
 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { Application, ApplicationApiResponse, MatchResultItem, Document as DocType, Student } from "@/types";
+import type { Application, ApplicationApiResponse, MatchResultItem, Document as DocType, Student, Recommendation } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/button";
 
 // ─── Onboarding Checklist Config ─────────────────────────────────────────────
 interface ChecklistStep {
@@ -261,6 +265,134 @@ function OnboardingChecklist({ completed }: { completed: Record<string, boolean>
   );
 }
 
+function RecommendationsWidget() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+
+  const { data: recommendations = [] } = useQuery<Recommendation[]>({
+    queryKey: ["pending-recommendations"],
+    queryFn: async () => {
+      const res = await api.get("/recommendations?status=pending");
+      return res.data ?? [];
+    },
+    enabled: !!user,
+  });
+
+  const reviewMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "approved" | "rejected" }) => {
+      const res = await api.patch(`/recommendations/${id}/review`, { status });
+      return res.data;
+    },
+    onMutate: async ({ id }) => {
+      setDismissedIds((prev) => new Set(prev).add(id));
+    },
+    onSuccess: (_data, { status }) => {
+      if (status === "approved") {
+        toast.success("Application started — your consultant will take it from here");
+        qc.invalidateQueries({ queryKey: ["student-applications"] });
+      } else {
+        toast.success("Recommendation declined");
+      }
+      qc.invalidateQueries({ queryKey: ["pending-recommendations"] });
+    },
+    onError: (_err, { id }) => {
+      setDismissedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      toast.error("Failed to update recommendation");
+    },
+  });
+
+  const visible = recommendations.filter((r) => !dismissedIds.has(r.id));
+  if (visible.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+          <Sparkles size={15} className="text-indigo-600" />
+        </div>
+        <div>
+          <h2 className="text-slate-900 font-bold text-sm">Consultant Recommendations</h2>
+          <p className="text-slate-500 text-xs">
+            Your consultant recommended {visible.length} program{visible.length !== 1 ? "s" : ""} for you
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {visible.map((rec) => {
+          const prog = rec.programs;
+          const uni = prog?.universities;
+          return (
+            <div
+              key={rec.id}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-indigo-200 transition-all duration-200"
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Building2 size={18} className="text-indigo-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-slate-900 font-semibold text-sm leading-snug line-clamp-2">
+                    {prog?.name ?? "Program"}
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1">
+                    {uni?.name ?? "University"}
+                    {uni?.country ? ` · ${uni.country}` : ""}
+                  </p>
+                  {prog?.degree_level && (
+                    <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full capitalize">
+                      {prog.degree_level}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {rec.consultants?.full_name && (
+                <p className="text-slate-400 text-xs mb-2">
+                  Recommended by <span className="font-medium text-slate-600">{rec.consultants.full_name}</span>
+                </p>
+              )}
+
+              {rec.notes && (
+                <p className="text-slate-500 text-xs italic border-l-2 border-indigo-200 pl-2 mb-4 line-clamp-3">
+                  {rec.notes}
+                </p>
+              )}
+
+              <div className="flex gap-2 mt-auto">
+                <Button
+                  size="sm"
+                  onClick={() => reviewMutation.mutate({ id: rec.id, status: "approved" })}
+                  disabled={reviewMutation.isPending}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <ThumbsUp size={13} className="mr-1.5" />
+                  Approve & Start
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => reviewMutation.mutate({ id: rec.id, status: "rejected" })}
+                  disabled={reviewMutation.isPending}
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                >
+                  <X size={13} className="mr-1" />
+                  Decline
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function StudentDashboard() {
   const router = useRouter();
   const { profile } = useAuth();
@@ -330,6 +462,9 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Consultant Recommendations — high visibility, before checklist */}
+      <RecommendationsWidget />
 
       {/* Dynamic Onboarding Checklist */}
       <OnboardingChecklist completed={completed} />
