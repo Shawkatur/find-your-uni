@@ -75,7 +75,7 @@ const BULK_STATUSES: AppStatus[] = [
   "offer_received", "rejected", "withdrawn",
 ];
 
-// ─── Kanban constants ───────────────────────────────────────────────────────
+// ─── Pipeline board constants ───────────────────────────────────────────────
 
 const KANBAN_COLUMNS: AppStatus[] = [
   "lead", "pre_evaluation", "docs_collection", "applied",
@@ -135,7 +135,7 @@ function isBlankUni(val: string | undefined | null): boolean {
   return !val || val.trim() === "" || val.trim() === ".";
 }
 
-// ─── Kanban Card (unchanged) ────────────────────────────────────────────────
+// ─── Pipeline Card ─────────────────────────────────────────────────────────
 
 function ApplicationCard({ app, onStatusChange }: {
   app: Application;
@@ -209,7 +209,7 @@ function ApplicationCard({ app, onStatusChange }: {
 export default function ConsultantApplicationsPage() {
   const router = useRouter();
   const qc = useQueryClient();
-  const [view, setView] = useState<"list" | "kanban">("list");
+  const [view, setView] = useState<"list" | "pipeline">("list");
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState(false);
 
@@ -341,10 +341,18 @@ export default function ConsultantApplicationsPage() {
 
   const hasActiveFilters = searchQuery || statusFilter || universityFilter || sourceFilter;
 
+  const pipelineCount = useMemo(() => {
+    return filtered.filter((a) => KANBAN_MAPPED_STATUSES.has(a.status)).length;
+  }, [filtered]);
+
+  const subtitle = view === "pipeline"
+    ? `${pipelineCount} active application${pipelineCount !== 1 ? "s" : ""} on board`
+    : `${hasActiveFilters ? `${filtered.length} of ` : ""}${applications.length} application${applications.length !== 1 ? "s" : ""}`;
+
   return (
     <PageWrapper
       title="Applications"
-      subtitle={`${hasActiveFilters ? `${filtered.length} of ` : ""}${applications.length} application${applications.length !== 1 ? "s" : ""}`}
+      subtitle={subtitle}
       actions={
         <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white">
           <button
@@ -354,10 +362,10 @@ export default function ConsultantApplicationsPage() {
             <List size={14} /> List
           </button>
           <button
-            onClick={() => setView("kanban")}
-            className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "kanban" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
+            onClick={() => setView("pipeline")}
+            className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "pipeline" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
           >
-            <Columns size={14} /> Kanban
+            <Columns size={14} /> Pipeline
           </button>
         </div>
       }
@@ -458,6 +466,7 @@ export default function ConsultantApplicationsPage() {
           className="py-24"
         />
       ) : view === "list" ? (
+        /* ─── List View ───────────────────────────────────────────────── */
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Table header */}
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-200 bg-slate-50/50">
@@ -583,18 +592,16 @@ export default function ConsultantApplicationsPage() {
           )}
         </div>
       ) : (
-        /* ─── Kanban View (unchanged) ──────────────────────────────────── */
+        /* ─── Pipeline Board View ─────────────────────────────────────── */
         <div className="flex gap-4 overflow-x-auto pb-4">
           {KANBAN_COLUMNS.map((status) => {
-            const col = filtered.filter((a) =>
-              status === "rejected"
-                ? ["rejected", "withdrawn"].includes(a.status)
-                : status === "offer_received"
-                ? ["offer_received", "conditional_offer"].includes(a.status)
-                : status === "lead"
-                ? a.status === "lead" || !KANBAN_MAPPED_STATUSES.has(a.status)
-                : a.status === status
-            );
+            const col = filtered.filter((a) => {
+              const s = a.status as string;
+              if (status === "rejected") return s === "rejected" || s === "withdrawn";
+              if (status === "offer_received") return s === "offer_received" || s === "conditional_offer";
+              if (status === "lead") return s === "lead" || !KANBAN_MAPPED_STATUSES.has(s);
+              return s === status;
+            });
             return (
               <div
                 key={status}
