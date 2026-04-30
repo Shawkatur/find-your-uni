@@ -22,7 +22,6 @@ import {
   CheckCircle2,
   XCircle,
   ChevronRight,
-  ArrowRight,
 } from "lucide-react";
 import api from "@/lib/api";
 import type { Recommendation } from "@/types";
@@ -208,22 +207,24 @@ function ConsultantStudentShortlistContent() {
           >
             <ArrowLeft size={14} /> Back to Applications
           </Link>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bookmark size={20} className="text-emerald-600" />
-              <h1 className="text-2xl font-bold text-[#1E293B]">Student Shortlist</h1>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus size={14} className="mr-1.5" /> Add University
-            </Button>
+          <div className="flex items-center gap-3">
+            <Bookmark size={20} className="text-emerald-600" />
+            <h1 className="text-2xl font-bold text-[#1E293B]">Student Shortlist</h1>
           </div>
           <p className="text-[#64748B] text-sm mt-1">
             {items.length > 0
-              ? `${items.length} saved universit${items.length === 1 ? "y" : "ies"}`
+              ? (
+                <>
+                  {items.length} saved universit{items.length === 1 ? "y" : "ies"}
+                  {" · "}
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Add another
+                  </button>
+                </>
+              )
               : "No universities saved for this student yet"}
           </p>
         </div>
