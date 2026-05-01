@@ -22,6 +22,8 @@ import {
   CheckCircle2,
   XCircle,
   ChevronRight,
+  PenLine,
+  Wallet,
 } from "lucide-react";
 import api from "@/lib/api";
 import type { Recommendation } from "@/types";
@@ -29,6 +31,21 @@ import { GlassCard } from "@/components/layout/GlassCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Sidebar } from "@/components/layout/Sidebar";
 import Providers from "@/components/Providers";
@@ -39,6 +56,11 @@ interface ShortlistItem {
   added_by_role: "student" | "consultant";
   note: string | null;
   added_at: string;
+  tuition_fee: number | null;
+  currency: string | null;
+  living_expense: number | null;
+  is_manual_entry: boolean;
+  program_name: string | null;
   university: {
     id: string;
     name: string;
@@ -83,6 +105,14 @@ function ConsultantStudentShortlistContent() {
   const qc = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [search, setSearch] = useState("");
+
+  // Manual entry state
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    name: "", country: "", city: "", program_name: "",
+    tuition_fee: "", currency: "USD", living_expense: "",
+    note: "",
+  });
 
   // Recommend modal state
   const [showRecommendModal, setShowRecommendModal] = useState(false);
@@ -139,6 +169,35 @@ function ConsultantStudentShortlistContent() {
       else toast.error("Failed to add");
     },
   });
+
+  const manualAddMutation = useMutation({
+    mutationFn: async (body: Record<string, unknown>) => {
+      await api.post(`/students/${studentId}/shortlist/manual`, body);
+    },
+    onSuccess: () => {
+      toast.success("University added to shortlist");
+      setShowAddModal(false);
+      setShowManualForm(false);
+      setManualForm({ name: "", country: "", city: "", program_name: "", tuition_fee: "", currency: "USD", living_expense: "", note: "" });
+      qc.invalidateQueries({ queryKey: ["student-shortlist", studentId] });
+    },
+    onError: () => toast.error("Failed to add university"),
+  });
+
+  function handleManualSubmit() {
+    if (!manualForm.name || !manualForm.country) return;
+    const body: Record<string, unknown> = {
+      name: manualForm.name,
+      country: manualForm.country,
+      currency: manualForm.currency,
+    };
+    if (manualForm.city) body.city = manualForm.city;
+    if (manualForm.program_name) body.program_name = manualForm.program_name;
+    if (manualForm.tuition_fee) body.tuition_fee = parseFloat(manualForm.tuition_fee);
+    if (manualForm.living_expense) body.living_expense = parseFloat(manualForm.living_expense);
+    if (manualForm.note) body.note = manualForm.note;
+    manualAddMutation.mutate(body);
+  }
 
   // ─── Recommendation queries ───────────────────────────────────────────────
 
@@ -280,10 +339,138 @@ function ConsultantStudentShortlistContent() {
               </div>
             )}
             {search.length >= 2 && searchResults.length === 0 && (
-              <p className="text-[#64748B] text-sm text-center py-4">No universities found</p>
+              <div className="text-center py-6 space-y-3">
+                <p className="text-[#64748B] text-sm">No universities found for &ldquo;{search}&rdquo;</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setManualForm((f) => ({ ...f, name: search }));
+                    setShowManualForm(true);
+                  }}
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                >
+                  <PenLine size={13} className="mr-1.5" /> Can&apos;t find it? Add manually
+                </Button>
+              </div>
             )}
           </GlassCard>
         )}
+
+        {/* Manual University Entry Dialog */}
+        <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <PenLine size={16} className="text-blue-600" />
+                Add University Manually
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Label className="text-xs text-[#64748B]">University Name *</Label>
+                  <Input
+                    value={manualForm.name}
+                    onChange={(e) => setManualForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="e.g. University of Toronto"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-[#64748B]">Country *</Label>
+                  <Input
+                    value={manualForm.country}
+                    onChange={(e) => setManualForm((f) => ({ ...f, country: e.target.value }))}
+                    placeholder="e.g. Canada"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-[#64748B]">City</Label>
+                  <Input
+                    value={manualForm.city}
+                    onChange={(e) => setManualForm((f) => ({ ...f, city: e.target.value }))}
+                    placeholder="e.g. Toronto"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs text-[#64748B]">Program Name</Label>
+                <Input
+                  value={manualForm.program_name}
+                  onChange={(e) => setManualForm((f) => ({ ...f, program_name: e.target.value }))}
+                  placeholder="e.g. MSc Computer Science"
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs text-[#64748B]">Tuition Fee</Label>
+                  <Input
+                    type="number"
+                    value={manualForm.tuition_fee}
+                    onChange={(e) => setManualForm((f) => ({ ...f, tuition_fee: e.target.value }))}
+                    placeholder="25000"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-[#64748B]">Currency</Label>
+                  <Select
+                    value={manualForm.currency}
+                    onValueChange={(val) => setManualForm((f) => ({ ...f, currency: val ?? "USD" }))}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="CAD">CAD</SelectItem>
+                      <SelectItem value="GBP">GBP</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="AUD">AUD</SelectItem>
+                      <SelectItem value="BDT">BDT</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-[#64748B]">Monthly Living Cost</Label>
+                  <Input
+                    type="number"
+                    value={manualForm.living_expense}
+                    onChange={(e) => setManualForm((f) => ({ ...f, living_expense: e.target.value }))}
+                    placeholder="1500"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs text-[#64748B]">Consultant Notes</Label>
+                <Textarea
+                  value={manualForm.note}
+                  onChange={(e) => setManualForm((f) => ({ ...f, note: e.target.value }))}
+                  placeholder="Any notes about this university..."
+                  rows={2}
+                  className="mt-1 resize-none"
+                />
+              </div>
+
+              <Button
+                onClick={handleManualSubmit}
+                disabled={!manualForm.name || !manualForm.country || manualAddMutation.isPending}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus size={14} className="mr-1.5" />
+                {manualAddMutation.isPending ? "Adding..." : "Add to Shortlist"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Shortlist Grid */}
         {isLoading ? (
@@ -352,7 +539,37 @@ function ConsultantStudentShortlistContent() {
                           <UserCheck size={9} className="mr-1" /> By Consultant
                         </Badge>
                       )}
+                      {item.is_manual_entry && (
+                        <Badge variant="outline" className="border-orange-200 text-orange-600 bg-orange-50 text-[10px]">
+                          <PenLine size={9} className="mr-1" /> Manual Entry
+                        </Badge>
+                      )}
                     </div>
+
+                    {item.program_name && (
+                      <p className="text-[#1E293B] text-xs font-medium mb-2">
+                        <GraduationCap size={11} className="inline mr-1 text-indigo-500" />
+                        {item.program_name}
+                      </p>
+                    )}
+
+                    {/* Financial details from manual entry */}
+                    {(item.tuition_fee || item.living_expense) && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {item.tuition_fee && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                            <Wallet size={9} />
+                            Est. Tuition: {item.currency ?? "USD"} {item.tuition_fee.toLocaleString()}/yr
+                          </span>
+                        )}
+                        {item.living_expense && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-50 text-violet-700 px-2 py-0.5 rounded-full">
+                            <DollarSign size={9} />
+                            Living: {item.currency ?? "USD"} {item.living_expense.toLocaleString()}/mo
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-200 pt-3">
                       {uni.tuition_usd_per_year ? (

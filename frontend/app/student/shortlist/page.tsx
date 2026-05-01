@@ -12,6 +12,9 @@ import {
   UserCheck,
   MapPin,
   BarChart3,
+  PenLine,
+  Wallet,
+  GraduationCap,
 } from "lucide-react";
 import api from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +29,11 @@ interface ShortlistItem {
   added_by_role: "student" | "consultant";
   note: string | null;
   added_at: string;
+  tuition_fee: number | null;
+  currency: string | null;
+  living_expense: number | null;
+  is_manual_entry: boolean;
+  program_name: string | null;
   university: {
     id: string;
     name: string;
@@ -160,6 +168,31 @@ function StudentShortlistContent() {
                         {uni.country}
                       </p>
 
+                      {item.program_name && (
+                        <p className="text-slate-700 text-xs font-medium mt-2 flex items-center gap-1">
+                          <GraduationCap size={11} className="text-indigo-500" />
+                          {item.program_name}
+                        </p>
+                      )}
+
+                      {/* Financial details from manual entry */}
+                      {(item.tuition_fee || item.living_expense) && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {item.tuition_fee && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                              <Wallet size={9} />
+                              Est. Tuition: {item.currency ?? "USD"} {item.tuition_fee.toLocaleString()}/yr
+                            </span>
+                          )}
+                          {item.living_expense && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-violet-50 text-violet-700 px-2 py-0.5 rounded-full">
+                              <DollarSign size={9} />
+                              Living: {item.currency ?? "USD"} {item.living_expense.toLocaleString()}/mo
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {/* Soft pills */}
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {uni.tuition_usd_per_year && (
@@ -183,6 +216,12 @@ function StudentShortlistContent() {
                           <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
                             <BadgeCheck size={9} />
                             Scholarships{uni.max_scholarship_pct ? ` ${uni.max_scholarship_pct}%` : ""}
+                          </span>
+                        )}
+                        {item.is_manual_entry && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+                            <PenLine size={9} />
+                            Manual Entry
                           </span>
                         )}
                       </div>

@@ -41,6 +41,36 @@ _UNI_FIELDS = (
 class ShortlistAdd(BaseModel):
     university_id: str
     note: str | None = None
+    tuition_fee: float | None = None
+    currency: str | None = None
+    living_expense: float | None = None
+
+
+class ManualUniversityAdd(BaseModel):
+    name: str
+    country: str
+    city: str | None = None
+    program_name: str | None = None
+    tuition_fee: float | None = None
+    currency: str = "USD"
+    living_expense: float | None = None
+    note: str | None = None
+    min_ielts: float | None = None
+    website: str | None = None
+    degree_level: str | None = None
+
+
+class CustomUniversityAdd(BaseModel):
+    name: str
+    country: str
+    city: str | None = None
+    tuition_usd_per_year: int | None = None
+    living_expense_usd_per_year: int | None = None
+    min_ielts: float | None = None
+    website: str | None = None
+    program_name: str | None = None
+    degree_level: str | None = None
+    note: str | None = None
 
 
 class RecommendationAdd(BaseModel):
@@ -93,10 +123,16 @@ _REC_SELECT = (
 )
 
 
+_SHORTLIST_FIELDS = (
+    "id, university_id, added_by_role, note, added_at, "
+    "tuition_fee, currency, living_expense, is_manual_entry, program_name"
+)
+
+
 async def _fetch_shortlist(student_id: str, client: AsyncClient) -> list[dict]:
     res = await (
         client.table("student_university_shortlist")
-        .select(f"id, university_id, added_by_role, note, added_at, universities({_UNI_FIELDS})")
+        .select(f"{_SHORTLIST_FIELDS}, universities({_UNI_FIELDS})")
         .eq("student_id", student_id)
         .order("added_at", desc=True)
         .execute()
@@ -109,6 +145,11 @@ async def _fetch_shortlist(student_id: str, client: AsyncClient) -> list[dict]:
             "added_by_role": row["added_by_role"],
             "note": row["note"],
             "added_at": row["added_at"],
+            "tuition_fee": row.get("tuition_fee"),
+            "currency": row.get("currency"),
+            "living_expense": row.get("living_expense"),
+            "is_manual_entry": row.get("is_manual_entry", False),
+            "program_name": row.get("program_name"),
             "university": row.get("universities"),
         })
     return items
@@ -254,6 +295,142 @@ async def consultant_remove_shortlist(
         .eq("university_id", university_id)
         .execute()
     )
+
+
+@router.post("/students/{student_id}/shortlist/manual", response_model=dict, status_code=201)
+async def consultant_add_manual_university(
+    student_id: str,
+    body: ManualUniversityAdd,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    allowed = await _get_consultant_student_ids(user, client)
+    if student_id not in allowed:
+        raise HTTPException(status_code=403, detail="Student not in your agency")
+
+    uni_row: dict = {
+        "name": body.name,
+        "country": body.country.upper()[:2] if len(body.country) == 2 else body.country,
+        "data_source": "consultant",
+    }
+    if body.city:
+        uni_row["city"] = body.city
+    if body.min_ielts is not None:
+        uni_row["min_ielts"] = body.min_ielts
+    if body.website:
+        uni_row["website"] = body.website
+
+    uni_res = await client.table("universities").insert(uni_row).execute()
+    university_id = uni_res.data[0]["id"]
+
+    if body.program_name:
+        await client.table("programs").insert({
+            "university_id": university_id,
+            "name": body.program_name,
+            "degree_level": body.degree_level or "master",
+            "field": "other",
+            "is_active": True,
+        }).execute()
+
+    await client.table("student_university_shortlist").insert({
+        "student_id": student_id,
+        "university_id": university_id,
+        "added_by_role": "consultant",
+        "note": body.note or None,
+        "tuition_fee": body.tuition_fee,
+        "currency": body.currency,
+        "living_expense": body.living_expense,
+        "is_manual_entry": True,
+        "program_name": body.program_name,
+    }).execute()
+
+    return await _fetch_shortlist_item(university_id, student_id, client)
+
+
+@router.post("/students/{student_id}/shortlist/custom", response_model=dict, status_code=201)
+async def consultant_add_custom_university(
+    student_id: str,
+    body: CustomUniversityAdd,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    allowed = await _get_consultant_student_ids(user, client)
+    if student_id not in allowed:
+        raise HTTPException(status_code=403, detail="Student not in your agency")
+
+    description = None
+    if body.living_expense_usd_per_year:
+        description = f"Estimated living expenses: ${body.living_expense_usd_per_year:,}/yr"
+
+    uni_row: dict = {
+        "name": body.name,
+        "country": body.country.upper()[:2] if len(body.country) == 2 else body.country,
+        "data_source": "consultant",
+    }
+    if body.city:
+        uni_row["city"] = body.city
+    if body.tuition_usd_per_year is not None:
+        uni_row["tuition_usd_per_year"] = body.tuition_usd_per_year
+    if body.min_ielts is not None:
+        uni_row["min_ielts"] = body.min_ielts
+    if body.website:
+        uni_row["website"] = body.website
+    if description:
+        uni_row["description"] = description
+
+    uni_res = await client.table("universities").insert(uni_row).execute()
+    university_id = uni_res.data[0]["id"]
+
+    if body.program_name:
+        await client.table("programs").insert({
+            "university_id": university_id,
+            "name": body.program_name,
+            "degree_level": body.degree_level or "master",
+            "field": "other",
+            "is_active": True,
+        }).execute()
+
+    shortlist_note = body.note or ""
+    if body.living_expense_usd_per_year and shortlist_note:
+        shortlist_note = f"Living expenses: ~${body.living_expense_usd_per_year:,}/yr. {shortlist_note}"
+    elif body.living_expense_usd_per_year:
+        shortlist_note = f"Living expenses: ~${body.living_expense_usd_per_year:,}/yr"
+
+    await client.table("student_university_shortlist").insert({
+        "student_id": student_id,
+        "university_id": university_id,
+        "added_by_role": "consultant",
+        "note": shortlist_note or None,
+    }).execute()
+
+    return await _fetch_shortlist_item(university_id, student_id, client)
+
+
+async def _fetch_shortlist_item(university_id: str, student_id: str, client: AsyncClient) -> dict:
+    res = await (
+        client.table("student_university_shortlist")
+        .select(f"{_SHORTLIST_FIELDS}, universities({_UNI_FIELDS})")
+        .eq("student_id", student_id)
+        .eq("university_id", university_id)
+        .limit(1)
+        .execute()
+    )
+    if not res.data:
+        return {}
+    row = res.data[0]
+    return {
+        "id": row["id"],
+        "university_id": row["university_id"],
+        "added_by_role": row["added_by_role"],
+        "note": row["note"],
+        "added_at": row["added_at"],
+        "tuition_fee": row.get("tuition_fee"),
+        "currency": row.get("currency"),
+        "living_expense": row.get("living_expense"),
+        "is_manual_entry": row.get("is_manual_entry", False),
+        "program_name": row.get("program_name"),
+        "university": row.get("universities"),
+    }
 
 
 # ─── Consultant recommendation endpoints ────────────────────────────────────
