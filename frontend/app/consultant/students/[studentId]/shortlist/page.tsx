@@ -24,6 +24,7 @@ import {
   ChevronRight,
   PenLine,
   Wallet,
+  Phone,
 } from "lucide-react";
 import api from "@/lib/api";
 import type { Recommendation } from "@/types";
@@ -120,6 +121,19 @@ function ConsultantStudentShortlistContent() {
   const [selectedUni, setSelectedUni] = useState<UniSearchResult | null>(null);
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [recNotes, setRecNotes] = useState("");
+
+  // ─── Student info ─────────────────────────────────────────────────────────
+
+  const { data: studentInfo } = useQuery<{ full_name: string; phone: string | null }>({
+    queryKey: ["student-info", studentId],
+    queryFn: async () => {
+      const res = await api.get("/consultants/me/students");
+      const students = res.data as { id: string; full_name: string; phone: string | null }[];
+      return students.find((s) => s.id === studentId) ?? { full_name: "Student", phone: null };
+    },
+    enabled: !!studentId,
+    staleTime: 60_000,
+  });
 
   // ─── Shortlist queries ────────────────────────────────────────────────────
 
@@ -271,7 +285,16 @@ function ConsultantStudentShortlistContent() {
           </Link>
           <div className="flex items-center gap-3">
             <Bookmark size={20} className="text-emerald-600" />
-            <h1 className="text-2xl font-bold text-[#1E293B]">Student Shortlist</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-[#1E293B]">
+                {studentInfo?.full_name ?? "Student"}&apos;s Shortlist
+              </h1>
+              {studentInfo?.phone && (
+                <p className="text-[#64748B] text-xs flex items-center gap-1 mt-0.5">
+                  <Phone size={11} /> {studentInfo.phone}
+                </p>
+              )}
+            </div>
           </div>
           <p className="text-[#64748B] text-sm mt-1">
             {items.length > 0
