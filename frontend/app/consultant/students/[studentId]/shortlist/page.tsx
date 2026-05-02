@@ -181,7 +181,10 @@ function ConsultantStudentShortlistContent() {
       setManualForm({ name: "", country: "", city: "", program_name: "", tuition_fee: "", currency: "USD", living_expense: "", note: "" });
       qc.invalidateQueries({ queryKey: ["student-shortlist", studentId] });
     },
-    onError: () => toast.error("Failed to add university"),
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      toast.error(msg || "Failed to add university");
+    },
   });
 
   function handleManualSubmit() {

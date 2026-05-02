@@ -320,29 +320,40 @@ async def consultant_add_manual_university(
     if body.website:
         uni_row["website"] = body.website
 
-    uni_res = await client.table("universities").insert(uni_row).execute()
+    try:
+        uni_res = await client.table("universities").insert(uni_row).execute()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to create university: {exc}")
+    if not uni_res.data:
+        raise HTTPException(status_code=500, detail="Failed to create university record")
     university_id = uni_res.data[0]["id"]
 
     if body.program_name:
-        await client.table("programs").insert({
-            "university_id": university_id,
-            "name": body.program_name,
-            "degree_level": body.degree_level or "master",
-            "field": "other",
-            "is_active": True,
-        }).execute()
+        try:
+            await client.table("programs").insert({
+                "university_id": university_id,
+                "name": body.program_name,
+                "degree_level": body.degree_level or "master",
+                "field": "other",
+                "is_active": True,
+            }).execute()
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Failed to create program: {exc}")
 
-    await client.table("student_university_shortlist").insert({
-        "student_id": student_id,
-        "university_id": university_id,
-        "added_by_role": "consultant",
-        "note": body.note or None,
-        "tuition_fee": body.tuition_fee,
-        "currency": body.currency,
-        "living_expense": body.living_expense,
-        "is_manual_entry": True,
-        "program_name": body.program_name,
-    }).execute()
+    try:
+        await client.table("student_university_shortlist").insert({
+            "student_id": student_id,
+            "university_id": university_id,
+            "added_by_role": "consultant",
+            "note": body.note or None,
+            "tuition_fee": body.tuition_fee,
+            "currency": body.currency,
+            "living_expense": body.living_expense,
+            "is_manual_entry": True,
+            "program_name": body.program_name,
+        }).execute()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to add to shortlist: {exc}")
 
     return await _fetch_shortlist_item(university_id, student_id, client)
 
