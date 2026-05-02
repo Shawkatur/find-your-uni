@@ -24,12 +24,11 @@ interface NavItem {
 }
 
 // Ordered to follow the "How It Works" 6-step flow:
-// 1. Profile  2. Documents  3. Match  4. Universities/Shortlist  5. Applications
+// 1. Profile  2. Documents  3. Universities/Shortlist  4. Applications
 const studentNav: NavItem[] = [
   { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
   { label: "Profile", href: "/student/profile", icon: User },
   { label: "Documents", href: "/student/documents", icon: Upload },
-  { label: "Match", href: "/student/match", icon: Sparkles },
   { label: "Universities", href: "/universities", icon: Building2 },
   { label: "Shortlist", href: "/student/shortlist", icon: Bookmark },
   { label: "Applications", href: "/student/applications", icon: FileText },

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  Sparkles, FileText, ArrowRight,
+  Sparkles, FileText, ArrowRight, Bookmark,
   TrendingUp, CheckCircle2, Clock, Send, Trophy,
   User, Upload, CircleDashed,
   GraduationCap, ThumbsUp, X, Building2,
@@ -48,17 +48,9 @@ const CHECKLIST_STEPS: ChecklistStep[] = [
     icon: Upload,
   },
   {
-    key: "match",
-    title: "Run Matching",
-    desc: "Let us rank the best-fit universities based on your complete profile.",
-    cta: "Find Matches",
-    href: "/student/match",
-    icon: Sparkles,
-  },
-  {
     key: "shortlist",
     title: "Save Universities",
-    desc: "Browse your matches and shortlist the ones you're most interested in.",
+    desc: "Browse universities and shortlist the ones you're most interested in.",
     cta: "Browse Universities",
     href: "/universities",
     icon: TrendingUp,
@@ -152,8 +144,7 @@ function useOnboardingState() {
   const completed: Record<string, boolean> = {
     profile: hasProfile,
     documents: hasDocs,
-    match: hasMatches,
-    shortlist: hasMatches, // if they ran matching, shortlisting is available
+    shortlist: hasMatches,
     apply: hasApplications,
     offer: hasOffer,
   };
@@ -484,7 +475,7 @@ export default function StudentDashboard() {
               icon={CircleDashed}
               title="No applications yet"
               description="Start applying to track your progress here."
-              action={{ label: "Find Matches", onClick: () => router.push("/student/match") }}
+              action={{ label: "Browse Universities", onClick: () => router.push("/universities") }}
               className="py-6 border-0"
             />
           ) : (
@@ -505,17 +496,17 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Top Match Results */}
+        {/* Saved Universities */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                <TrendingUp size={15} className="text-amber-600" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <Bookmark size={15} className="text-emerald-600" />
               </div>
-              <h2 className="text-slate-900 font-bold text-sm">Top Matches</h2>
+              <h2 className="text-slate-900 font-bold text-sm">Saved Universities</h2>
             </div>
             <Link
-              href="/student/match"
+              href="/student/shortlist"
               className="text-emerald-600 text-xs hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors"
             >
               View all <ArrowRight size={12} />
@@ -523,10 +514,10 @@ export default function StudentDashboard() {
           </div>
           {topMatches.length === 0 ? (
             <EmptyState
-              icon={Sparkles}
-              title="No matches yet"
-              description="Run matching to see your top universities ranked by fit."
-              action={{ label: "Find Matches", onClick: () => router.push("/student/match") }}
+              icon={Bookmark}
+              title="No saved universities"
+              description="Browse universities and save the ones you're interested in."
+              action={{ label: "Browse Universities", onClick: () => router.push("/universities") }}
               className="py-6 border-0"
             />
           ) : (
