@@ -498,6 +498,17 @@ async def consultant_add_recommendation(
     if existing.data:
         raise HTTPException(status_code=409, detail="This program has already been recommended to this student")
 
+    is_first = not existing.data
+    prior_recs = await (
+        client.table("consultant_recommendations")
+        .select("id")
+        .eq("student_id", student_id)
+        .eq("consultant_id", consultant["id"])
+        .limit(1)
+        .execute()
+    )
+    is_first = not prior_recs.data
+
     res = await (
         client.table("consultant_recommendations")
         .insert({
@@ -508,6 +519,40 @@ async def consultant_add_recommendation(
         })
         .execute()
     )
+
+    if is_first:
+        c_full = await (
+            client.table("consultants")
+            .select("full_name")
+            .eq("id", consultant["id"])
+            .limit(1)
+            .execute()
+        )
+        c_name = c_full.data[0]["full_name"] if c_full.data else "Your consultant"
+
+        s_full = await (
+            client.table("students")
+            .select("full_name")
+            .eq("id", student_id)
+            .limit(1)
+            .execute()
+        )
+        s_name = s_full.data[0]["full_name"] if s_full.data else "there"
+        s_first = s_name.split(" ")[0] if s_name else "there"
+
+        try:
+            await client.table("messages").insert({
+                "student_id": student_id,
+                "consultant_id": consultant["id"],
+                "sender_type": "consultant",
+                "content": (
+                    f"Hi {s_first}, I'm {c_name}, your dedicated advisor. "
+                    f"I'm reviewing your file now. Let me know if you have any immediate questions!"
+                ),
+            }).execute()
+        except Exception:
+            pass
+
     return res.data[0]
 
 

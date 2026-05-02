@@ -23,14 +23,11 @@ interface NavItem {
   icon: React.ElementType;
 }
 
-// Ordered to follow the "How It Works" 6-step flow:
-// 1. Profile  2. Documents  3. Universities/Shortlist  4. Applications
 const studentNav: NavItem[] = [
   { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
   { label: "Profile", href: "/student/profile", icon: User },
   { label: "Documents", href: "/student/documents", icon: Upload },
-  { label: "Universities", href: "/universities", icon: Building2 },
-  { label: "Shortlist", href: "/student/shortlist", icon: Bookmark },
+  { label: "Recommendations", href: "/student/shortlist", icon: Sparkles },
   { label: "Applications", href: "/student/applications", icon: FileText },
 ];
 
@@ -103,16 +100,7 @@ export function Sidebar({ role }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-[#E2E8F0]">
-        <Link
-          href="/universities"
-          className="flex items-center gap-2 text-xs text-[#64748B] hover:text-[#333] transition-colors font-medium"
-        >
-          <Building2 size={12} />
-          Browse Unis
-        </Link>
-      </div>
+      <div className="p-4 border-t border-[#E2E8F0]" />
     </aside>
   );
 }

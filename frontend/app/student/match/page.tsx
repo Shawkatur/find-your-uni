@@ -118,7 +118,7 @@ export default function MatchPage() {
           </div>
 
           <Button
-            size="xl"
+            size="lg"
             onClick={() => runMatch.mutate()}
             disabled={runMatch.isPending}
             className="relative"
