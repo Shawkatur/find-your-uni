@@ -278,25 +278,6 @@ async def consultant_add_shortlist(
     return res.data[0]
 
 
-@router.delete("/students/{student_id}/shortlist/{university_id}", status_code=204)
-async def consultant_remove_shortlist(
-    student_id: str,
-    university_id: str,
-    user: dict = Depends(get_current_user),
-    client: AsyncClient = Depends(get_client),
-):
-    allowed = await _get_consultant_student_ids(user, client)
-    if student_id not in allowed:
-        raise HTTPException(status_code=403, detail="Student not in your agency")
-    await (
-        client.table("student_university_shortlist")
-        .delete()
-        .eq("student_id", student_id)
-        .eq("university_id", university_id)
-        .execute()
-    )
-
-
 @router.post("/students/{student_id}/shortlist/manual", response_model=dict, status_code=201)
 async def consultant_add_manual_university(
     student_id: str,
@@ -415,6 +396,25 @@ async def consultant_add_custom_university(
     }).execute()
 
     return await _fetch_shortlist_item(university_id, student_id, client)
+
+
+@router.delete("/students/{student_id}/shortlist/{university_id}", status_code=204)
+async def consultant_remove_shortlist(
+    student_id: str,
+    university_id: str,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    allowed = await _get_consultant_student_ids(user, client)
+    if student_id not in allowed:
+        raise HTTPException(status_code=403, detail="Student not in your agency")
+    await (
+        client.table("student_university_shortlist")
+        .delete()
+        .eq("student_id", student_id)
+        .eq("university_id", university_id)
+        .execute()
+    )
 
 
 async def _fetch_shortlist_item(university_id: str, student_id: str, client: AsyncClient) -> dict:
