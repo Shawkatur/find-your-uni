@@ -38,23 +38,79 @@ export interface Student {
   email: string;
   phone?: string;
   nationality?: string;
+  date_of_birth?: string;
+  gender?: "male" | "female" | "other";
 
-  // Raw JSONB columns from DB
   academic_history?: {
     ssc_gpa?: number;
+    ssc_board?: string;
+    ssc_institution?: string;
+    ssc_year?: number;
+    ssc_grading_system?: string;
     hsc_gpa?: number;
+    hsc_board?: string;
+    hsc_institution?: string;
+    hsc_year?: number;
+    hsc_grading_system?: string;
     bachelor_cgpa?: number;
     bachelor_institution?: string;
     bachelor_subject?: string;
+    bachelor_year?: number;
+    bachelor_grading_system?: string;
+    postgrad_gpa?: number;
+    postgrad_institution?: string;
+    postgrad_field?: string;
+    postgrad_year?: number;
+    postgrad_grading_system?: string;
     gpa_percentage?: number;
   };
+
   test_scores?: {
     ielts?: number;
+    ielts_listening?: number;
+    ielts_reading?: number;
+    ielts_writing?: number;
+    ielts_speaking?: number;
+    ielts_date?: string;
+    ielts_trf?: string;
     toefl?: number;
+    toefl_date?: string;
+    pte?: number;
+    pte_date?: string;
+    duolingo?: number;
+    duolingo_date?: string;
     gre?: number;
+    gre_verbal?: number;
+    gre_quant?: number;
+    gre_awa?: number;
+    gre_date?: string;
     gmat?: number;
+    gmat_date?: string;
     sat?: number;
+    sat_date?: string;
   };
+
+  personal_details?: {
+    passport_number?: string;
+    passport_issue_date?: string;
+    passport_expiry_date?: string;
+    passport_issue_country?: string;
+    address_city?: string;
+    address_country?: string;
+    address_postal_code?: string;
+    emergency_name?: string;
+    emergency_phone?: string;
+    emergency_relation?: string;
+  };
+
+  work_experience?: {
+    organization?: string;
+    position?: string;
+    start_date?: string;
+    end_date?: string;
+    currently_working?: boolean;
+  }[];
+
   preferred_degree?: "bachelor" | "master" | "phd" | "diploma";
   preferred_countries?: string[];
   preferred_fields?: string[];
@@ -172,8 +228,11 @@ export type DocType =
   | "cv"
   | "ielts"
   | "toefl"
+  | "pte"
+  | "duolingo"
   | "gre"
   | "gmat"
+  | "sat"
   | "other";
 
 export type VerificationStatus = "pending_review" | "verified" | "rejected";

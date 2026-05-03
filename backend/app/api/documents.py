@@ -29,6 +29,7 @@ VALID_DOC_TYPES = {
     "passport", "transcript", "sop", "lor", "cv",
     "ielts_cert", "toefl_cert", "ielts", "toefl",
     "gre", "gmat", "nid", "other",
+    "pte", "duolingo", "sat",
 }
 
 ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png", "doc", "docx"}

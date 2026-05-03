@@ -70,6 +70,8 @@ const stepFields: FieldDef[][] = [
     { name: "full_name", label: "Full Name", placeholder: "e.g. Rahim Chowdhury", required: true },
     { name: "phone", label: "Phone (optional)", type: "tel", placeholder: "+880 17..." },
     { name: "nationality", label: "Nationality", placeholder: "e.g. Bangladeshi" },
+    { name: "date_of_birth", label: "Date of Birth", type: "date" },
+    { name: "gender", label: "Gender" },
   ],
   [
     { name: "ssc_gpa", label: "SSC GPA (5.0)", type: "number", placeholder: "4.50" },
@@ -159,6 +161,8 @@ function StudentRegisterForm() {
         full_name: values.full_name,
         phone: values.phone || undefined,
         nationality: values.nationality || undefined,
+        date_of_birth: values.date_of_birth || undefined,
+        gender: values.gender || undefined,
         academic_history: {
           ssc_gpa:          values.ssc_gpa          ? parseFloat(values.ssc_gpa)          : undefined,
           hsc_gpa:          values.hsc_gpa          ? parseFloat(values.hsc_gpa)          : undefined,
@@ -236,21 +240,42 @@ function StudentRegisterForm() {
         <div className="glass-card p-8">
           <div className="space-y-5">
             {step < 4 && (
-              <div className={step === 2 ? "grid grid-cols-2 gap-4" : "space-y-5"}>
-                {stepFields[step].map((field) => (
-                  <div key={field.name} className={step === 2 && ["bachelor_institution", "bachelor_field"].includes(field.name) ? "col-span-2" : ""}>
-                    <Label className="text-[#475569] mb-1.5 block">{field.label}</Label>
-                    <Input
-                      type={field.type ?? "text"}
-                      placeholder={field.placeholder}
-                      value={values[field.name] ?? ""}
-                      onChange={(e) => setValue(field.name, e.target.value)}
-                    />
-                    {errors[field.name] && (
-                      <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>
-                    )}
-                  </div>
-                ))}
+              <div className={step === 2 ? "grid grid-cols-2 gap-4" : step === 1 ? "grid grid-cols-2 gap-4" : "space-y-5"}>
+                {stepFields[step].map((field) => {
+                  const spanFull = (step === 2 && ["bachelor_institution", "bachelor_field"].includes(field.name))
+                    || (step === 1 && field.name === "full_name");
+                  if (field.name === "gender") {
+                    return (
+                      <div key={field.name}>
+                        <Label className="text-[#475569] mb-1.5 block">{field.label}</Label>
+                        <select
+                          value={values.gender ?? ""}
+                          onChange={(e) => setValue("gender", e.target.value)}
+                          className="w-full bg-white border border-[#CBD5E1] text-[#333] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
+                        >
+                          <option value="">Select</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={field.name} className={spanFull ? "col-span-2" : ""}>
+                      <Label className="text-[#475569] mb-1.5 block">{field.label}</Label>
+                      <Input
+                        type={field.type ?? "text"}
+                        placeholder={field.placeholder}
+                        value={values[field.name] ?? ""}
+                        onChange={(e) => setValue(field.name, e.target.value)}
+                      />
+                      {errors[field.name] && (
+                        <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>
+                      )}
+                    </div>
+                  );
+                })}
                 {step === 3 && (
                   <p className="text-[#64748B] text-xs">Leave blank if not taken. You can update later.</p>
                 )}

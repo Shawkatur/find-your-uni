@@ -35,8 +35,12 @@ async def register_student(
         "full_name":           body.full_name,
         "phone":               body.phone,
         "nationality":         body.nationality,
+        "date_of_birth":       str(body.date_of_birth) if body.date_of_birth else None,
+        "gender":              body.gender,
         "academic_history":    body.academic_history.model_dump(),
         "test_scores":         body.test_scores.model_dump(),
+        "personal_details":    body.personal_details.model_dump(),
+        "work_experience":     [w.model_dump() for w in body.work_experience],
         "budget_usd_per_year": body.budget_usd_per_year,
         "preferred_countries": body.preferred_countries,
         "preferred_degree":    body.preferred_degree,
@@ -152,10 +156,18 @@ async def update_student_profile(
         update["phone"] = body.phone or None
     if body.nationality is not None:
         update["nationality"] = body.nationality or None
+    if body.date_of_birth is not None:
+        update["date_of_birth"] = str(body.date_of_birth)
+    if body.gender is not None:
+        update["gender"] = body.gender
     if body.academic_history is not None:
         update["academic_history"] = body.academic_history.model_dump()
     if body.test_scores is not None:
         update["test_scores"] = body.test_scores.model_dump()
+    if body.personal_details is not None:
+        update["personal_details"] = body.personal_details.model_dump()
+    if body.work_experience is not None:
+        update["work_experience"] = [w.model_dump() for w in body.work_experience]
     if body.budget_usd_per_year is not None:
         update["budget_usd_per_year"] = body.budget_usd_per_year
     if body.preferred_countries is not None:
