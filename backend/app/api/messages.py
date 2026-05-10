@@ -120,6 +120,20 @@ async def student_get_consultant_info(
 
 # ─── Consultant endpoints ─────────────────────────────────────────────────────
 
+async def _verify_consultant_student_link(client: AsyncClient, consultant_id: str, student_id: str) -> None:
+    """Verify the consultant is assigned to this student via an application."""
+    link = await (
+        client.table("applications")
+        .select("id")
+        .eq("student_id", student_id)
+        .eq("consultant_id", consultant_id)
+        .limit(1)
+        .execute()
+    )
+    if not link.data:
+        raise HTTPException(status_code=403, detail="Student is not assigned to you")
+
+
 @router.get("/students/{student_id}/messages", response_model=list[dict])
 async def consultant_get_messages(
     student_id: str,
@@ -130,6 +144,8 @@ async def consultant_get_messages(
     if not c_res.data:
         raise HTTPException(status_code=404, detail="Consultant profile not found")
     consultant_id = c_res.data[0]["id"]
+
+    await _verify_consultant_student_link(client, consultant_id, student_id)
 
     res = await (
         client.table("messages")
@@ -153,6 +169,8 @@ async def consultant_send_message(
     if not c_res.data:
         raise HTTPException(status_code=404, detail="Consultant profile not found")
     consultant_id = c_res.data[0]["id"]
+
+    await _verify_consultant_student_link(client, consultant_id, student_id)
 
     res = await (
         client.table("messages")

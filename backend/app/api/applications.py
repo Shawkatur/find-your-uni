@@ -54,8 +54,12 @@ async def create_application(
         if dup.data:
             raise HTTPException(status_code=409, detail="A lead application already exists")
 
+    role = (user.get("app_metadata") or {}).get("role", "student")
     row = body.model_dump(exclude={"student_id"})
     row["student_id"] = student_id  # enforce authenticated student
+    if role == "student":
+        row.pop("consultant_id", None)
+        row.pop("agency_id", None)
     row["status_history"] = [{
         "status":     "lead",
         "changed_by": user["sub"],
@@ -294,13 +298,23 @@ async def get_whatsapp_link(
     """Generate a pre-filled WhatsApp link to message the student about their application."""
     res = await (
         client.table("applications")
-        .select("status, students(full_name, phone), programs(name, universities(name))")
+        .select("status, student_id, consultant_id, students(full_name, phone), programs(name, universities(name))")
         .eq("id", app_id)
         .single()
         .execute()
     )
     if not res.data:
         raise HTTPException(status_code=404, detail="Application not found")
+
+    role = (user.get("app_metadata") or {}).get("role", "student")
+    if role == "student":
+        student = await get_student_by_user_id(client, user["sub"])
+        if not student or student["id"] != res.data.get("student_id"):
+            raise HTTPException(status_code=403, detail="Forbidden")
+    elif role == "consultant":
+        c_res = await client.table("consultants").select("id").eq("user_id", user["sub"]).limit(1).execute()
+        if not c_res.data or c_res.data[0]["id"] != res.data.get("consultant_id"):
+            raise HTTPException(status_code=403, detail="Forbidden")
 
     app_data    = res.data
     student_data = app_data.get("students") or {}

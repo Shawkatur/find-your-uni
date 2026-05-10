@@ -51,7 +51,9 @@ function StudentLoginForm() {
       toast.error("This login is for students only. Please use the admin portal.");
       return;
     }
-    router.push(searchParams.get("next") || "/student/dashboard");
+    const next = searchParams.get("next");
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/student/dashboard";
+    router.push(safeNext);
   };
 
   return (

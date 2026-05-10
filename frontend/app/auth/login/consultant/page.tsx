@@ -51,7 +51,9 @@ function ConsultantLoginForm() {
       toast.error("This login is for consultants only.");
       return;
     }
-    router.push(searchParams.get("next") || "/consultant/dashboard");
+    const next = searchParams.get("next");
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/consultant/dashboard";
+    router.push(safeNext);
   };
 
   return (

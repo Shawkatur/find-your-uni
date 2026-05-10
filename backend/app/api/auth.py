@@ -218,8 +218,10 @@ async def get_me(
         res = await client.table("consultants").select(
             "id, user_id, agency_id, role, full_name, phone, role_title, whatsapp, status, created_at, "
             "agencies(id, name, license_no, address, city, website, avg_rating, review_count, is_active, created_at)"
-        ).eq("user_id", user_id).single().execute()
-        return {"role": "consultant", "profile": res.data}
+        ).eq("user_id", user_id).limit(1).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Consultant profile not found. Please complete registration.")
+        return {"role": "consultant", "profile": res.data[0]}
     else:
         student = await get_student_by_user_id(client, user_id)
         if not student:

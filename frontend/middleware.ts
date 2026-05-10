@@ -73,8 +73,11 @@ export async function middleware(request: NextRequest) {
     }
 
     // Redirect to role-specific dashboard
-    if (role === "student" || role === "consultant") {
-      const dashUrl = request.nextUrl.clone();
+    const dashUrl = request.nextUrl.clone();
+    if (role === "super_admin") {
+      dashUrl.pathname = "/admin/dashboard";
+      return NextResponse.redirect(dashUrl);
+    } else if (role === "student" || role === "consultant") {
       dashUrl.pathname = `/${role}/dashboard`;
       return NextResponse.redirect(dashUrl);
     }

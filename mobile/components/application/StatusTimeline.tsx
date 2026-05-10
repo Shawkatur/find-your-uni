@@ -7,6 +7,7 @@ const STATUS_ORDER: AppStatus[] = [
   "docs_collection",
   "applied",
   "offer_received",
+  "conditional_offer",
   "visa_stage",
   "enrolled",
 ];

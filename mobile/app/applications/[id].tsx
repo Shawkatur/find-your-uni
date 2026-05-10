@@ -10,7 +10,7 @@ import { useDocumentUpload } from "@/hooks/useDocumentUpload";
 import { COUNTRY_FLAG } from "@/lib/countries";
 import { Linking } from "react-native";
 
-const DOC_TYPES = ["passport", "transcript", "ielts_cert", "sop", "lor", "cv"] as const;
+const DOC_TYPES = ["passport", "transcript", "ielts", "sop", "lor", "cv"] as const;
 
 export default function ApplicationDetail() {
   const router = useRouter();

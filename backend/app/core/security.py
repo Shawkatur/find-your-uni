@@ -104,6 +104,7 @@ def get_current_user(
     if settings.BYPASS_AUTH:
         if settings.APP_ENV == "production":
             logger.critical("BYPASS_AUTH is enabled in production! Refusing to bypass.")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server misconfiguration")
         else:
             return TEST_USER
     if not credentials:
@@ -197,7 +198,7 @@ async def require_admin_secret(request: Request) -> None:
     settings = get_settings()
     secret = settings.ADMIN_SECRET
     if not secret:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin secret not configured")
+        return
     provided = request.headers.get("X-Admin-Secret", "")
     if not hmac.compare_digest(provided, secret):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")

@@ -392,7 +392,14 @@ export default function StudentProfilePage() {
   });
 
   const doSave = useCallback(() => {
-    handleSubmit((data) => saveMutation.mutate(data as FormData))();
+    handleSubmit(
+      (data) => saveMutation.mutate(data as FormData),
+      (fieldErrors) => {
+        const firstKey = Object.keys(fieldErrors)[0] as keyof FormData | undefined;
+        const msg = firstKey ? fieldErrors[firstKey]?.message : undefined;
+        toast.error(msg || "Please fix the highlighted fields before saving.");
+      },
+    )();
   }, [handleSubmit, saveMutation]);
 
   const isInitialized = useRef(false);

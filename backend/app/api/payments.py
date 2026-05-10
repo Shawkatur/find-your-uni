@@ -88,7 +88,9 @@ async def initiate_payment(
             resp.raise_for_status()
             result = resp.json()
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Payment gateway error: {exc}")
+        from app.core.logger import logger
+        logger.error("Payment gateway error: %s", exc)
+        raise HTTPException(status_code=502, detail="Payment gateway error")
 
     if result.get("status") != "SUCCESS":
         raise HTTPException(status_code=502, detail=result.get("failedreason", "Gateway error"))

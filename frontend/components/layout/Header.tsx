@@ -53,13 +53,19 @@ export function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 bg-white border-[#E2E8F0]">
             <DropdownMenuItem
-              onClick={() => router.push("/student/profile")}
+              onClick={() => {
+                const base = profile?.role === "consultant" ? "/consultant" : "/student";
+                router.push(`${base}/profile`);
+              }}
               className="text-[#333] hover:bg-[#F1F5F9] cursor-pointer"
             >
               <User size={14} className="mr-2" /> Profile
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => router.push("/student/settings")}
+              onClick={() => {
+                const base = profile?.role === "consultant" ? "/consultant" : "/student";
+                router.push(`${base}/settings`);
+              }}
               className="text-[#333] hover:bg-[#F1F5F9] cursor-pointer"
             >
               <Settings size={14} className="mr-2" /> Settings

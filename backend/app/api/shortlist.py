@@ -201,16 +201,19 @@ async def add_to_shortlist(
     )
     if existing.data:
         raise HTTPException(status_code=409, detail="Already in shortlist")
-    res = await (
-        client.table("student_university_shortlist")
-        .insert({
-            "student_id": student_id,
-            "university_id": body.university_id,
-            "added_by_role": "student",
-            "note": body.note,
-        })
-        .execute()
-    )
+    row = {
+        "student_id": student_id,
+        "university_id": body.university_id,
+        "added_by_role": "student",
+        "note": body.note,
+    }
+    if body.tuition_fee is not None:
+        row["tuition_fee"] = body.tuition_fee
+    if body.currency is not None:
+        row["currency"] = body.currency
+    if body.living_expense is not None:
+        row["living_expense"] = body.living_expense
+    res = await client.table("student_university_shortlist").insert(row).execute()
     return res.data[0]
 
 
@@ -265,16 +268,19 @@ async def consultant_add_shortlist(
     )
     if existing.data:
         raise HTTPException(status_code=409, detail="Already in shortlist")
-    res = await (
-        client.table("student_university_shortlist")
-        .insert({
-            "student_id": student_id,
-            "university_id": body.university_id,
-            "added_by_role": "consultant",
-            "note": body.note,
-        })
-        .execute()
-    )
+    row = {
+        "student_id": student_id,
+        "university_id": body.university_id,
+        "added_by_role": "consultant",
+        "note": body.note,
+    }
+    if body.tuition_fee is not None:
+        row["tuition_fee"] = body.tuition_fee
+    if body.currency is not None:
+        row["currency"] = body.currency
+    if body.living_expense is not None:
+        row["living_expense"] = body.living_expense
+    res = await client.table("student_university_shortlist").insert(row).execute()
     return res.data[0]
 
 

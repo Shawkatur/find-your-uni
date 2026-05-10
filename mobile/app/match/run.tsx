@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
@@ -7,8 +7,11 @@ import { useRunMatch } from "@/hooks/useMatchResults";
 export default function RunMatch() {
   const router = useRouter();
   const runMatch = useRunMatch();
+  const hasFired = useRef(false);
 
   useEffect(() => {
+    if (hasFired.current) return;
+    hasFired.current = true;
     runMatch.mutate(undefined, {
       onSuccess: () => router.replace("/match/results"),
       onError: () => router.back(),

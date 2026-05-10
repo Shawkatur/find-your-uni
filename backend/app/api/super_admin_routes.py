@@ -199,7 +199,7 @@ async def update_student(
         raise HTTPException(status_code=404, detail="Student not found")
     before = before_res.data[0]
 
-    update = body.model_dump(exclude_unset=True)
+    update = body.model_dump(exclude_unset=True, mode="json")
     if body.preferred_countries is not None:
         update["preferred_countries"] = [c.upper() for c in body.preferred_countries]
 
@@ -343,10 +343,11 @@ async def bulk_assign_leads(
                 client.table("applications")
                 .update(update)
                 .eq("id", item.application_id)
+                .is_("consultant_id", "null")
                 .execute()
             )
             if not res.data:
-                errors.append({"application_id": item.application_id, "error": "Application not found"})
+                errors.append({"application_id": item.application_id, "error": "Application not found or already assigned"})
                 continue
 
             await ghost_audit(
