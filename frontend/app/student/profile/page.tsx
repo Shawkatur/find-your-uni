@@ -378,15 +378,12 @@ export default function StudentProfilePage() {
       if (savedFadeRef.current) clearTimeout(savedFadeRef.current);
       savedFadeRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
     },
-    onError: () => {
+    onError: (err: unknown) => {
       setSaveStatus("error");
-      try {
-        const lastSaved = JSON.parse(lastSavedRef.current) as FormData;
-        reset(lastSaved);
-        setWorkEntries(JSON.parse(workRef.current));
-        setIsDirty(false);
-      } catch { /* noop */ }
-      toast.error("Failed to save profile. Your changes have been reverted.");
+      const msg =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data
+          ?.detail ?? "Unknown error";
+      toast.error(`Failed to save profile: ${msg}`);
       setTimeout(() => setSaveStatus("idle"), 3000);
     },
   });

@@ -188,7 +188,13 @@ async def update_student_profile(
     if not update:
         raise HTTPException(status_code=422, detail="No valid fields to update")
 
-    res = await client.table("students").update(update).eq("id", student["id"]).execute()
+    try:
+        res = await client.table("students").update(update).eq("id", student["id"]).execute()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Database update failed")
+
+    if not res.data:
+        raise HTTPException(status_code=500, detail="Update returned no data")
 
     # Backfill: if this student has no application row at all, create an
     # unassigned lead so they show up in the admin portal's lead queue.

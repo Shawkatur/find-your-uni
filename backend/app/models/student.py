@@ -141,14 +141,14 @@ class StudentOut(BaseModel):
     nationality: str | None = None
     date_of_birth: date | None = None
     gender: str | None = None
-    academic_history: dict
-    test_scores: dict
+    academic_history: dict = {}
+    test_scores: dict = {}
     personal_details: dict = {}
     work_experience: list = []
-    budget_usd_per_year: int
-    preferred_countries: list[str]
-    preferred_degree: str | None
-    preferred_fields: list[str]
+    budget_usd_per_year: int | None = None
+    preferred_countries: list[str] = []
+    preferred_degree: str | None = None
+    preferred_fields: list[str] = []
     push_enabled: bool = True
     notify_status_changes: bool = True
     notify_deadlines: bool = True
