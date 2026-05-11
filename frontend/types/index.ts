@@ -1,5 +1,6 @@
 // ─── Application Status ──────────────────────────────────────────────────────
 export type AppStatus =
+  | "unverified"
   | "lead"
   | "pre_evaluation"
   | "docs_collection"
@@ -9,7 +10,8 @@ export type AppStatus =
   | "visa_stage"
   | "enrolled"
   | "rejected"
-  | "withdrawn";
+  | "withdrawn"
+  | "junk";
 
 // ─── Pipeline Status ─────────────────────────────────────────────────────────
 export type PipelineStatus =

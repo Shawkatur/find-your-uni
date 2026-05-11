@@ -50,13 +50,46 @@ async def get_stats(client: AsyncClient = Depends(get_client)):
         .eq("status", "pending")
         .execute()
     )
+    junk_res = await client.table("applications").select("id", count="exact").eq("status", "junk").execute()
+    unverified_res = await client.table("applications").select("id", count="exact").eq("status", "unverified").execute()
     return {
         "total_students":            students_res.count or 0,
         "total_consultants":         consultants_res.count or 0,
         "total_applications":        apps_res.count or 0,
         "unassigned_leads":          leads_res.count or 0,
         "pending_consultant_approvals": pending_res.count or 0,
+        "junk_leads":                junk_res.count or 0,
+        "unverified_leads":          unverified_res.count or 0,
     }
+
+
+@router.get("/leads/junk-stats")
+async def junk_stats_by_ref_code(client: AsyncClient = Depends(get_client)):
+    """Percentage of junk leads per tracking link ref_code for auditing."""
+    all_res = await (
+        client.table("applications")
+        .select("id, status, students(referral_source)")
+        .in_("status", ["lead", "pre_evaluation", "docs_collection", "applied", "junk"])
+        .execute()
+    )
+    stats: dict[str, dict] = {}
+    for app in (all_res.data or []):
+        ref = (app.get("students") or {}).get("referral_source") or "direct"
+        if ref not in stats:
+            stats[ref] = {"total": 0, "junk": 0}
+        stats[ref]["total"] += 1
+        if app["status"] == "junk":
+            stats[ref]["junk"] += 1
+
+    return [
+        {
+            "ref_code": ref,
+            "total": s["total"],
+            "junk": s["junk"],
+            "junk_pct": round(s["junk"] / s["total"] * 100, 1) if s["total"] > 0 else 0,
+        }
+        for ref, s in sorted(stats.items(), key=lambda x: x[1]["junk"], reverse=True)
+    ]
 
 
 # ─── Consultants ──────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 
 
 AppStatus = Literal[
+    "unverified",
     "lead",
     "pre_evaluation",
     "docs_collection",
@@ -15,12 +16,14 @@ AppStatus = Literal[
     "enrolled",
     "rejected",
     "withdrawn",
+    "junk",
 ]
 
 # Valid transitions: key → allowed next statuses
 STATUS_TRANSITIONS: dict[str, list[str]] = {
-    "lead":              ["pre_evaluation", "withdrawn"],
-    "pre_evaluation":    ["docs_collection", "rejected", "withdrawn"],
+    "unverified":        ["lead"],
+    "lead":              ["pre_evaluation", "junk", "withdrawn"],
+    "pre_evaluation":    ["docs_collection", "junk", "rejected", "withdrawn"],
     "docs_collection":   ["applied", "withdrawn"],
     "applied":           ["offer_received", "conditional_offer", "rejected", "withdrawn"],
     "offer_received":    ["visa_stage", "withdrawn"],
@@ -29,6 +32,7 @@ STATUS_TRANSITIONS: dict[str, list[str]] = {
     "enrolled":          [],
     "rejected":          [],
     "withdrawn":         [],
+    "junk":              [],
 }
 
 

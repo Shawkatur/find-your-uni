@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { GraduationCap, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { createClient } from "@/lib/supabase";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -47,10 +48,25 @@ function toISO(name: string): string {
   return COUNTRY_ISO[name.trim().toLowerCase()] ?? name.trim().toUpperCase().slice(0, 2);
 }
 
+const DISPOSABLE_DOMAINS = new Set([
+  "mailinator.com", "tempmail.com", "guerrillamail.com", "throwaway.email",
+  "yopmail.com", "sharklasers.com", "guerrillamailblock.com", "grr.la",
+  "dispostable.com", "trashmail.com", "fakeinbox.com", "tempail.com",
+  "mailnesia.com", "maildrop.cc", "discard.email", "temp-mail.org",
+  "getnada.com", "10minutemail.com", "mohmal.com", "burnermail.io",
+]);
+
 function validateStep(step: number, values: FormValues): Record<string, string> {
   const errs: Record<string, string> = {};
   if (step === 0) {
-    if (!values.email?.includes("@")) errs.email = "Valid email required";
+    if (!values.email?.includes("@")) {
+      errs.email = "Valid email required";
+    } else {
+      const domain = values.email.split("@")[1]?.toLowerCase();
+      if (DISPOSABLE_DOMAINS.has(domain)) {
+        errs.email = "Please use a valid personal email address";
+      }
+    }
     if ((values.password?.length ?? 0) < 8) errs.password = "At least 8 characters";
     if (values.password !== values.confirmPassword) errs.confirmPassword = "Passwords don't match";
   }
@@ -115,6 +131,7 @@ function StudentRegisterForm() {
   const [values, setValues] = useState<FormValues>({ target_degree: "master" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const setValue = (name: string, value: string) => {
     setValues((prev) => ({ ...prev, [name]: value }));
@@ -180,9 +197,12 @@ function StudentRegisterForm() {
         preferred_countries: values.target_countries?.split(",").map((s) => toISO(s)).filter(Boolean) ?? [],
         preferred_fields:    values.target_fields?.split(",").map((s) => s.trim()).filter(Boolean) ?? [],
         ref_code:            refCode,
+        turnstile_token:     turnstileToken || undefined,
       });
 
-      // Clear persisted referral code after successful registration
+      // Promote unverified → lead (OTP already confirmed via Supabase session)
+      try { await api.post("/auth/verify-otp"); } catch {}
+
       sessionStorage.removeItem(REF_STORAGE_KEY);
       toast.success("You're in! Let's go.");
       router.push("/student/dashboard");
@@ -276,6 +296,14 @@ function StudentRegisterForm() {
                     </div>
                   );
                 })}
+                {step === 0 && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+                  <Turnstile
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                    onSuccess={setTurnstileToken}
+                    onError={() => setTurnstileToken(null)}
+                    onExpire={() => setTurnstileToken(null)}
+                  />
+                )}
                 {step === 3 && (
                   <p className="text-[#64748B] text-xs">Leave blank if not taken. You can update later.</p>
                 )}

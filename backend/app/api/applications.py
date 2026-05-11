@@ -90,6 +90,8 @@ async def list_applications(
             client.table("applications")
             .select("*, programs(name, universities(name, country)), students(full_name, phone)")
             .eq("agency_id", agency_id)
+            .neq("status", "unverified")
+            .neq("status", "junk")
             .order("updated_at", desc=True)
             .execute()
         )
@@ -332,3 +334,24 @@ async def get_whatsapp_link(
         new_status=app_data["status"],
     )
     return {"whatsapp_url": whatsapp_link(phone, message)}
+
+
+@router.patch("/{app_id}/junk")
+async def mark_as_junk(
+    app_id: str,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Consultant marks a lead as junk — removes it from their board."""
+    consultant = await get_active_consultant_dep(user, client)
+
+    res = await (
+        client.table("applications")
+        .update({"status": "junk", "junked_by": consultant["id"], "junked_at": datetime.now(timezone.utc).isoformat()})
+        .eq("id", app_id)
+        .in_("status", ["lead", "pre_evaluation"])
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Application not found or cannot be marked as junk")
+    return res.data[0]

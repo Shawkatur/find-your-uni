@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   List, Columns, MessageCircle, ChevronDown, Plus, Download,
-  Search, X,
+  Search, X, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -137,9 +137,10 @@ function isBlankUni(val: string | undefined | null): boolean {
 
 // ─── Pipeline Card ─────────────────────────────────────────────────────────
 
-function ApplicationCard({ app, onStatusChange }: {
+function ApplicationCard({ app, onStatusChange, onMarkJunk }: {
   app: Application;
   onStatusChange: (id: string, status: AppStatus) => void;
+  onMarkJunk: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const next = NEXT_STATUSES[app.status] ?? [];
@@ -174,6 +175,16 @@ function ApplicationCard({ app, onStatusChange }: {
               <MessageCircle size={13} />
             </button>
           </a>
+        )}
+
+        {(app.status === "lead" || app.status === "pre_evaluation") && (
+          <button
+            onClick={() => onMarkJunk(app.id)}
+            title="Mark as junk"
+            className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-colors"
+          >
+            <Trash2 size={13} />
+          </button>
         )}
 
         {next.length > 0 && (
@@ -269,6 +280,17 @@ export default function ConsultantApplicationsPage() {
       qc.invalidateQueries({ queryKey: ["consultant-applications-all"] });
     },
     onError: () => toast.error("Failed to update status"),
+  });
+
+  const markJunk = useMutation({
+    mutationFn: async (id: string) => {
+      await api.patch(`/applications/${id}/junk`);
+    },
+    onSuccess: () => {
+      toast.success("Marked as junk");
+      qc.invalidateQueries({ queryKey: ["consultant-applications-all"] });
+    },
+    onError: () => toast.error("Failed to mark as junk"),
   });
 
   const handleStatusChange = (id: string, status: AppStatus) => {
@@ -582,6 +604,15 @@ export default function ConsultantApplicationsPage() {
                               {s.replace(/_/g, " ")}
                             </DropdownMenuItem>
                           ))}
+                          {(app.status === "lead" || app.status === "pre_evaluation") && (
+                            <DropdownMenuItem
+                              onClick={() => markJunk.mutate(app.id)}
+                              className="text-xs text-rose-600"
+                            >
+                              <Trash2 size={12} className="mr-2" />
+                              Mark as Junk
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -618,7 +649,7 @@ export default function ConsultantApplicationsPage() {
 
                 <div className="space-y-2">
                   {col.map((app) => (
-                    <ApplicationCard key={app.id} app={app} onStatusChange={handleStatusChange} />
+                    <ApplicationCard key={app.id} app={app} onStatusChange={handleStatusChange} onMarkJunk={(id) => markJunk.mutate(id)} />
                   ))}
                   {col.length === 0 && (
                     <div className="glass-card-dashed flex flex-col items-center justify-center py-8 px-4 text-center">

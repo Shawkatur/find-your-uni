@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     SSLCOMMERZ_VALIDATION_URL: str = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
     APP_BASE_URL: str = "http://localhost:8000"
 
+    # ── Cloudflare Turnstile ─────────────────────────────────────────────────
+    TURNSTILE_SECRET_KEY: str = ""
+
     # ── Rate limiting ─────────────────────────────────────────────────────────
     MATCH_RATE_LIMIT: str = "10/minute"
 

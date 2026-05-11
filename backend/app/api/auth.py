@@ -1,11 +1,14 @@
 """
 POST /auth/student/register    — create student profile after Supabase signup
 POST /auth/consultant/register — create consultant profile + link to agency
+POST /auth/verify-otp          — promote unverified lead to lead after OTP
 GET  /auth/me                  — return current user's profile
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from supabase import AsyncClient
+import httpx
 
+from app.core.config import get_settings
 from app.core.security import get_current_user
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
@@ -16,6 +19,27 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 ADMIN_REF_CODE = "admin"
 
+DISPOSABLE_DOMAINS = {
+    "mailinator.com", "tempmail.com", "guerrillamail.com", "throwaway.email",
+    "yopmail.com", "sharklasers.com", "guerrillamailblock.com", "grr.la",
+    "dispostable.com", "trashmail.com", "fakeinbox.com", "tempail.com",
+    "mailnesia.com", "maildrop.cc", "discard.email", "temp-mail.org",
+    "getnada.com", "10minutemail.com", "mohmal.com", "burnermail.io",
+}
+
+
+async def _verify_turnstile(token: str) -> bool:
+    """Verify a Cloudflare Turnstile token. Returns True if valid."""
+    secret = get_settings().TURNSTILE_SECRET_KEY
+    if not secret:
+        return True
+    async with httpx.AsyncClient() as http:
+        resp = await http.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data={"secret": secret, "response": token},
+        )
+        return resp.json().get("success", False)
+
 
 @router.post("/student/register", response_model=StudentOut, status_code=201)
 async def register_student(
@@ -24,6 +48,19 @@ async def register_student(
     client: AsyncClient = Depends(get_client),
 ):
     user_id: str = user["sub"]
+
+    # --- Layer 1: Turnstile bot check ---
+    if get_settings().TURNSTILE_SECRET_KEY:
+        if not body.turnstile_token:
+            raise HTTPException(status_code=403, detail="Bot verification required")
+        if not await _verify_turnstile(body.turnstile_token):
+            raise HTTPException(status_code=403, detail="Bot verification failed")
+
+    # --- Layer 2: Disposable email check ---
+    email = (user.get("email") or "").lower()
+    domain = email.split("@")[-1] if "@" in email else ""
+    if domain in DISPOSABLE_DOMAINS:
+        raise HTTPException(status_code=422, detail="Please provide a valid personal email address")
 
     # Prevent duplicate profiles
     existing = await get_student_by_user_id(client, user_id)
@@ -54,19 +91,17 @@ async def register_student(
     res = await client.table("students").insert(row).execute()
     student = res.data[0]
 
-    # Always create a lead application so the student lands in the admin
-    # portal's lead queue immediately. If a ref_code is present we route to
-    # the matching consultant; otherwise it stays unassigned (admin pool).
+    # --- Layer 3: Create as unverified until OTP confirmed ---
     await _create_lead_application(client, student["id"], body.ref_code or ADMIN_REF_CODE)
 
     return student
 
 
 async def _create_lead_application(client: AsyncClient, student_id: str, ref_code: str) -> None:
-    """Insert a lead-stage application linked to the tracking code's consultant."""
+    """Insert an unverified application linked to the tracking code's consultant."""
     lead: dict = {
         "student_id": student_id,
-        "status":     "lead",
+        "status":     "unverified",
     }
 
     if ref_code == ADMIN_REF_CODE:
@@ -89,6 +124,28 @@ async def _create_lead_application(client: AsyncClient, student_id: str, ref_cod
     except Exception as exc:
         from app.core.logger import logger
         logger.error("Failed to create lead application for student %s (ref_code=%s): %s", student_id, ref_code, exc)
+
+
+@router.post("/verify-otp")
+async def verify_otp_promote_lead(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """After Supabase email/OTP verification, promote unverified → lead."""
+    student = await get_student_by_user_id(client, user["sub"])
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    res = await (
+        client.table("applications")
+        .update({"status": "lead"})
+        .eq("student_id", student["id"])
+        .eq("status", "unverified")
+        .execute()
+    )
+    if not res.data:
+        return {"promoted": 0, "message": "No unverified leads found (already verified)"}
+    return {"promoted": len(res.data), "message": "Lead verified successfully"}
 
 
 @router.post("/consultant/register", response_model=ConsultantOut, status_code=201)

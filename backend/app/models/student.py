@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import Literal
 from pydantic import BaseModel, Field, field_validator
+import phonenumbers
 
 
 DegreeLevel = Literal["bachelor", "master", "phd", "diploma"]
@@ -106,6 +107,20 @@ class StudentCreate(BaseModel):
     preferred_degree: DegreeLevel | None = None
     preferred_fields: list[str] = Field(default_factory=list, max_length=10)
     ref_code: str | None = None
+    turnstile_token: str | None = None
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str | None) -> str | None:
+        if not v:
+            return v
+        try:
+            parsed = phonenumbers.parse(v, "BD")
+            if not phonenumbers.is_valid_number(parsed):
+                raise ValueError
+            return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+        except Exception:
+            raise ValueError("Please provide a valid phone number")
 
     @field_validator("preferred_countries")
     @classmethod

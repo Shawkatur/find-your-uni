@@ -7,6 +7,8 @@ supabase==2.10.0
 
 # Config / validation
 pydantic-settings==2.7.0
+email-validator==2.3.0
+phonenumbers==9.0.30
 
 # AI
 openai==1.58.1
