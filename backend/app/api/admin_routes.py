@@ -166,6 +166,35 @@ async def list_unassigned_leads(
     return {"items": res.data, "total": res.count or 0, "page": page, "page_size": page_size}
 
 
+@router.get("/leads/all")
+async def list_all_leads(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    assigned: bool | None = Query(None, description="Filter: true=assigned, false=unassigned, omit=all"),
+    client: AsyncClient = Depends(get_client),
+):
+    """Global activity feed: every lead in the system with assignment info."""
+    offset = (page - 1) * page_size
+    query = (
+        client.table("applications")
+        .select(
+            "*, students(full_name, phone, nationality, created_at), "
+            "consultants(full_name, agency_id, agencies(name))",
+            count="exact",
+        )
+        .eq("status", "lead")
+        .order("created_at", desc=True)
+        .range(offset, offset + page_size - 1)
+    )
+    if assigned is True:
+        query = query.neq("consultant_id", None)
+    elif assigned is False:
+        query = query.is_("consultant_id", "null")
+
+    res = await query.execute()
+    return {"items": res.data, "total": res.count or 0, "page": page, "page_size": page_size}
+
+
 @router.patch("/leads/{application_id}/assign")
 async def assign_lead(
     application_id: str,
