@@ -13,7 +13,6 @@ import {
   Lock,
 } from "lucide-react";
 import api from "@/lib/api";
-import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import type { Application, ApplicationApiResponse, Document as DocType, Student, Recommendation } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
@@ -359,21 +358,6 @@ function ChatWidget({ consultantName }: { consultantName: string }) {
     enabled: !!user,
     refetchInterval: open ? 5000 : false,
   });
-
-  // Supabase realtime subscription
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel("messages-realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        () => { refetch(); }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [refetch]);
 
   // Auto-scroll to bottom
   useEffect(() => {

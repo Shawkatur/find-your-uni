@@ -150,39 +150,40 @@ async def update_student_profile(
         raise HTTPException(status_code=404, detail="Student profile not found")
 
     update: dict = {}
-    if body.full_name is not None:
+    fields = body.model_fields_set
+    if "full_name" in fields:
         update["full_name"] = body.full_name
-    if body.phone is not None:
+    if "phone" in fields:
         update["phone"] = body.phone or None
-    if body.nationality is not None:
+    if "nationality" in fields:
         update["nationality"] = body.nationality or None
-    if body.date_of_birth is not None:
-        update["date_of_birth"] = str(body.date_of_birth)
-    if body.gender is not None:
+    if "date_of_birth" in fields:
+        update["date_of_birth"] = str(body.date_of_birth) if body.date_of_birth else None
+    if "gender" in fields:
         update["gender"] = body.gender
-    if body.academic_history is not None:
-        update["academic_history"] = body.academic_history.model_dump()
-    if body.test_scores is not None:
-        update["test_scores"] = body.test_scores.model_dump()
-    if body.personal_details is not None:
-        update["personal_details"] = body.personal_details.model_dump()
-    if body.work_experience is not None:
-        update["work_experience"] = [w.model_dump() for w in body.work_experience]
-    if body.budget_usd_per_year is not None:
+    if "academic_history" in fields:
+        update["academic_history"] = body.academic_history.model_dump() if body.academic_history else None
+    if "test_scores" in fields:
+        update["test_scores"] = body.test_scores.model_dump() if body.test_scores else None
+    if "personal_details" in fields:
+        update["personal_details"] = body.personal_details.model_dump() if body.personal_details else None
+    if "work_experience" in fields:
+        update["work_experience"] = [w.model_dump() for w in body.work_experience] if body.work_experience else []
+    if "budget_usd_per_year" in fields:
         update["budget_usd_per_year"] = body.budget_usd_per_year
-    if body.preferred_countries is not None:
+    if "preferred_countries" in fields:
         update["preferred_countries"] = body.preferred_countries
-    if body.preferred_degree is not None:
+    if "preferred_degree" in fields:
         update["preferred_degree"] = body.preferred_degree
-    if body.preferred_fields is not None:
+    if "preferred_fields" in fields:
         update["preferred_fields"] = body.preferred_fields
-    if body.push_enabled is not None:
+    if "push_enabled" in fields:
         update["push_enabled"] = body.push_enabled
-    if body.notify_status_changes is not None:
+    if "notify_status_changes" in fields:
         update["notify_status_changes"] = body.notify_status_changes
-    if body.notify_deadlines is not None:
+    if "notify_deadlines" in fields:
         update["notify_deadlines"] = body.notify_deadlines
-    if body.onboarding_completed is not None:
+    if "onboarding_completed" in fields:
         update["onboarding_completed"] = body.onboarding_completed
 
     if not update:

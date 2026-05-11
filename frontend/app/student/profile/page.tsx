@@ -374,6 +374,7 @@ export default function StudentProfilePage() {
       workRef.current = JSON.stringify(workEntries);
       setIsDirty(false);
       setSaveStatus("saved");
+      toast.success("Profile saved!");
       qc.invalidateQueries({ queryKey: ["student-me"] });
       if (savedFadeRef.current) clearTimeout(savedFadeRef.current);
       savedFadeRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
