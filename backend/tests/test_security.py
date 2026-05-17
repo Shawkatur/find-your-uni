@@ -29,14 +29,14 @@ class TestGetCurrentUser:
 
     @patch.dict(os.environ, {"APP_ENV": "production"})
     def test_bypass_auth_blocked_in_production(self):
-        """In production with BYPASS_AUTH, should fall through to real auth."""
+        """In production with BYPASS_AUTH, should refuse with 500 (server misconfiguration)."""
         from app.core.config import get_settings
         get_settings.cache_clear()
 
         try:
             with pytest.raises(HTTPException) as exc_info:
                 get_current_user(credentials=None)
-            assert exc_info.value.status_code == 401
+            assert exc_info.value.status_code == 500
         finally:
             os.environ["APP_ENV"] = "development"
             get_settings.cache_clear()

@@ -271,15 +271,15 @@ class TestStatusTransitions:
 
     def test_all_statuses_have_transitions(self):
         expected = {
-            "lead", "pre_evaluation", "docs_collection", "applied",
+            "unverified", "lead", "pre_evaluation", "docs_collection", "applied",
             "offer_received", "conditional_offer", "visa_stage",
-            "enrolled", "rejected", "withdrawn",
+            "enrolled", "rejected", "withdrawn", "junk",
         }
         assert set(STATUS_TRANSITIONS.keys()) == expected
 
     def test_withdrawn_reachable_from_non_terminal(self):
         for status, transitions in STATUS_TRANSITIONS.items():
-            if transitions:  # non-terminal
+            if transitions and status != "unverified":  # non-terminal, post-verification
                 assert "withdrawn" in transitions, f"{status} should allow withdrawal"
 
 
