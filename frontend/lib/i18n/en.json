@@ -1,0 +1,51 @@
+{
+  "common": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "documents": "Documents",
+    "applications": "Applications",
+    "universities": "Universities",
+    "shortlist": "Shortlist",
+    "search": "Search",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "welcome": "Welcome"
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInStudent": "Sign in as Student",
+    "signInConsultant": "Sign in as Consultant",
+    "email": "Email address",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create your account",
+    "resetPassword": "Reset password"
+  },
+  "student": {
+    "myShortlist": "My Shortlist",
+    "myApplications": "My Applications",
+    "myDocuments": "My Documents",
+    "runMatch": "Run Match",
+    "compareUniversities": "Compare Universities",
+    "uploadDocument": "Upload Document",
+    "applicationStatus": "Application Status",
+    "recommendations": "Recommendations"
+  },
+  "landing": {
+    "heroTitle": "Find Your Perfect University",
+    "heroSubtitle": "Smart university matching for Bangladeshi students",
+    "browseUniversities": "Browse Universities",
+    "getStarted": "Get Started"
+  }
+}

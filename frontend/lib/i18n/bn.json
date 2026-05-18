@@ -1,0 +1,51 @@
+{
+  "common": {
+    "signIn": "সাইন ইন",
+    "signOut": "সাইন আউট",
+    "register": "নিবন্ধন",
+    "dashboard": "ড্যাশবোর্ড",
+    "profile": "প্রোফাইল",
+    "documents": "ডকুমেন্টস",
+    "applications": "আবেদনসমূহ",
+    "universities": "বিশ্ববিদ্যালয়",
+    "shortlist": "শর্টলিস্ট",
+    "search": "খুঁজুন",
+    "save": "সংরক্ষণ",
+    "cancel": "বাতিল",
+    "delete": "মুছুন",
+    "loading": "লোড হচ্ছে...",
+    "noResults": "কোনো ফলাফল পাওয়া যায়নি",
+    "back": "পিছনে",
+    "next": "পরবর্তী",
+    "submit": "জমা দিন",
+    "welcome": "স্বাগতম"
+  },
+  "auth": {
+    "welcomeBack": "স্বাগতম",
+    "signInStudent": "শিক্ষার্থী হিসেবে সাইন ইন",
+    "signInConsultant": "পরামর্শদাতা হিসেবে সাইন ইন",
+    "email": "ইমেইল ঠিকানা",
+    "password": "পাসওয়ার্ড",
+    "forgotPassword": "পাসওয়ার্ড ভুলে গেছেন?",
+    "noAccount": "অ্যাকাউন্ট নেই?",
+    "hasAccount": "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+    "createAccount": "আপনার অ্যাকাউন্ট তৈরি করুন",
+    "resetPassword": "পাসওয়ার্ড রিসেট"
+  },
+  "student": {
+    "myShortlist": "আমার শর্টলিস্ট",
+    "myApplications": "আমার আবেদনসমূহ",
+    "myDocuments": "আমার ডকুমেন্টস",
+    "runMatch": "ম্যাচ চালান",
+    "compareUniversities": "বিশ্ববিদ্যালয় তুলনা",
+    "uploadDocument": "ডকুমেন্ট আপলোড",
+    "applicationStatus": "আবেদনের অবস্থা",
+    "recommendations": "সুপারিশসমূহ"
+  },
+  "landing": {
+    "heroTitle": "আপনার স্বপ্নের বিশ্ববিদ্যালয় খুঁজুন",
+    "heroSubtitle": "বাংলাদেশি শিক্ষার্থীদের জন্য স্মার্ট বিশ্ববিদ্যালয় ম্যাচিং",
+    "browseUniversities": "বিশ্ববিদ্যালয় দেখুন",
+    "getStarted": "শুরু করুন"
+  }
+}

@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Sparkles,
   Building2,
+  CalendarDays,
   FileText,
   Upload,
   User,
@@ -38,6 +39,7 @@ const consultantNav: NavItem[] = [
   { label: "Documents", href: "/consultant/documents", icon: ShieldCheck },
   { label: "Tracking", href: "/consultant/tracking", icon: Link2 },
   { label: "Agencies", href: "/consultant/agencies", icon: Users },
+  { label: "Calendar", href: "/consultant/calendar", icon: CalendarDays },
   { label: "Profile", href: "/consultant/profile", icon: User },
 ];
 

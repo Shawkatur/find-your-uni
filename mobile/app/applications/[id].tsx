@@ -1,4 +1,4 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -7,6 +7,7 @@ import { DocumentRow } from "@/components/application/DocumentRow";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { useApplication } from "@/hooks/useApplications";
 import { useDocumentUpload } from "@/hooks/useDocumentUpload";
+import { useInitiatePayment, openPaymentGateway } from "@/hooks/usePayments";
 import { COUNTRY_FLAG } from "@/lib/countries";
 import { Linking } from "react-native";
 
@@ -17,6 +18,20 @@ export default function ApplicationDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: app, isLoading, refetch } = useApplication(id);
   const { upload, uploading } = useDocumentUpload();
+  const initiatePayment = useInitiatePayment();
+
+  const handlePayFee = async () => {
+    try {
+      const data = await initiatePayment.mutateAsync({
+        product: "application_fee",
+        amount_bdt: 5000,
+        application_id: id,
+      });
+      await openPaymentGateway(data.payment_url);
+    } catch (err) {
+      // Payment initiation failed — mutation error state will show
+    }
+  };
 
   if (isLoading || !app) {
     return (
@@ -104,6 +119,35 @@ export default function ApplicationDetail() {
               </TouchableOpacity>
             )}
           </GlassCard>
+        )}
+
+        {/* Pay Application Fee */}
+        <TouchableOpacity
+          onPress={handlePayFee}
+          disabled={initiatePayment.isPending}
+          style={{
+            backgroundColor: initiatePayment.isPending ? "#065F46" : "#10B981",
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "row",
+            gap: 8,
+            marginBottom: 8,
+          }}
+        >
+          {initiatePayment.isPending ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={{ color: "white", fontWeight: "700", fontSize: 15 }}>
+              💳 Pay Application Fee (৳5,000)
+            </Text>
+          )}
+        </TouchableOpacity>
+        {initiatePayment.isError && (
+          <Text style={{ color: "#EF4444", fontSize: 12, textAlign: "center", marginBottom: 8 }}>
+            Payment initiation failed. Please try again.
+          </Text>
         )}
       </ScrollView>
     </ScreenWrapper>

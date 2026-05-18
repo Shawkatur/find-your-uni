@@ -48,13 +48,13 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         />
       </head>
-      <body className={`${plusJakarta.variable} antialiased bg-[#F8F9FA] text-[#333]`}>
+      <body className={`${plusJakarta.variable} antialiased bg-background text-foreground`}>
         <Providers>
           {children}
         </Providers>
         <Analytics />
         <SpeedInsights />
-        <Toaster position="top-right" theme="light" richColors />
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

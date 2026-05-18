@@ -13,6 +13,8 @@ import { LogOut, User, Settings, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
@@ -23,7 +25,7 @@ export function Header() {
     : user?.email?.slice(0, 2).toUpperCase() ?? "??";
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-[#E2E8F0] bg-white/90 backdrop-blur-sm sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <header className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-border bg-card/90 backdrop-blur-sm sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       {/* Mobile brand mark */}
       <Link href="/" className="md:hidden flex items-center gap-2">
         <div className="w-8 h-8 bg-[#10B981] rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/20">
@@ -33,6 +35,8 @@ export function Header() {
       </Link>
       <div className="hidden md:block" />
       <div className="flex items-center gap-4">
+        <LanguageToggle />
+        <ThemeToggle />
         <NotificationDropdown />
 
         <DropdownMenu>
