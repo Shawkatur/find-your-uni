@@ -7,6 +7,7 @@ Notification helpers:
 from __future__ import annotations
 import urllib.parse
 from supabase import AsyncClient
+from app.core.constants import STATUS_LABELS
 from app.core.logger import logger
 from app.services.push_service import send_push, get_student_tokens, get_tokens_by_user_id
 
@@ -54,19 +55,7 @@ async def notify_status_change(
     with no admin attribution.
     """
     # 0. Persist in notification center
-    status_labels = {
-        "lead":              "Enquiry Received",
-        "pre_evaluation":    "Profile Evaluated",
-        "docs_collection":   "Documents Needed",
-        "applied":           "Application Submitted",
-        "offer_received":    "Offer Letter Received!",
-        "conditional_offer": "Conditional Offer",
-        "visa_stage":        "Visa Stage",
-        "enrolled":          "Enrolled — Congrats!",
-        "rejected":          "Application Update",
-        "withdrawn":         "Application Withdrawn",
-    }
-    label = status_labels.get(new_status, new_status)
+    label = STATUS_LABELS.get(new_status, new_status)
     await create_notification(
         client,
         user_id=student_user_id,
@@ -107,19 +96,7 @@ async def notify_status_change(
             prefs = student_res.data or {}
             if prefs.get("push_enabled") and prefs.get("notify_status_changes"):
                 tokens = await get_student_tokens(client, student_id)
-                status_labels = {
-                    "lead":              "Enquiry Received",
-                    "pre_evaluation":    "Profile Evaluated",
-                    "docs_collection":   "Documents Needed",
-                    "applied":           "Application Submitted",
-                    "offer_received":    "Offer Letter Received!",
-                    "conditional_offer": "Conditional Offer",
-                    "visa_stage":        "Visa Stage",
-                    "enrolled":          "Enrolled — Congrats!",
-                    "rejected":          "Application Update",
-                    "withdrawn":         "Application Withdrawn",
-                }
-                label = status_labels.get(new_status, new_status)
+                label = STATUS_LABELS.get(new_status, new_status)
                 await send_push(
                     tokens=tokens,
                     title=f"Application Update: {label}",
@@ -146,19 +123,7 @@ def status_update_whatsapp_message(
     program_name: str,
     new_status: str,
 ) -> str:
-    status_labels = {
-        "lead":              "Initial Enquiry Received",
-        "pre_evaluation":    "Profile Pre-Evaluated",
-        "docs_collection":   "Documents Being Collected",
-        "applied":           "Application Submitted",
-        "offer_received":    "Offer Letter Received",
-        "conditional_offer": "Conditional Offer Received",
-        "visa_stage":        "Visa Application Stage",
-        "enrolled":          "Enrolled — Congratulations!",
-        "rejected":          "Application Not Successful",
-        "withdrawn":         "Application Withdrawn",
-    }
-    label = status_labels.get(new_status, new_status)
+    label = STATUS_LABELS.get(new_status, new_status)
     return (
         f"Dear {student_name},\n\n"
         f"Your application update:\n"

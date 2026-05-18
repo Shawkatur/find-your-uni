@@ -8,6 +8,7 @@ import json
 from openai import AsyncOpenAI
 
 from app.core.config import get_settings
+from app.core.constants import AI_TEMPERATURE, AI_MAX_TOKENS
 from app.core.logger import logger
 from app.models.university import MatchResultItem
 
@@ -73,8 +74,8 @@ async def generate_match_summaries(
         response = await client.chat.completions.create(
             model=settings.OPENAI_MODEL,
             messages=[{"role": "user", "content": _build_match_prompt(student, matches)}],
-            temperature=0.4,
-            max_tokens=1500,
+            temperature=AI_TEMPERATURE,
+            max_tokens=AI_MAX_TOKENS,
         )
         raw = response.choices[0].message.content or "[]"
         summaries: list[str] = json.loads(raw)

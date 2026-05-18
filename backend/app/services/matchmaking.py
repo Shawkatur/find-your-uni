@@ -7,6 +7,10 @@
 from __future__ import annotations
 from supabase import AsyncClient
 
+from app.core.constants import (
+    MAX_QS_RANK, DEFAULT_BUDGET_USD, DEFAULT_ACCEPTANCE_RATE_BD,
+    SCHOLARSHIP_BONUS_FACTOR, DEFAULT_SCHOLARSHIP_PCT, RESULT_BUFFER,
+)
 from app.db.queries import filter_programs, get_match_settings, upsert_match_cache
 from app.models.university import MatchResultItem
 from app.services.ai import generate_match_summaries
@@ -14,7 +18,7 @@ from app.services.ai import generate_match_summaries
 
 # ─── Layer 2: Scoring helpers ─────────────────────────────────────────────────
 
-def normalize_ranking(rank: int | None, max_rank: int = 1500) -> float:
+def normalize_ranking(rank: int | None, max_rank: int = MAX_QS_RANK) -> float:
     """Rank #1 → 1.0, unranked → 0.0"""
     if rank is None or rank <= 0:
         return 0.0
@@ -31,7 +35,7 @@ def cost_efficiency_score(tuition: int, budget: int, has_scholarship: bool, max_
     ratio = (budget - tuition) / budget
     score = max(0.0, min(1.0, ratio))
     if has_scholarship:
-        bonus = 0.15 * ((max_scholarship_pct or 25) / 100)
+        bonus = SCHOLARSHIP_BONUS_FACTOR * ((max_scholarship_pct or DEFAULT_SCHOLARSHIP_PCT) / 100)
         score = min(1.0, score + bonus)
     return score
 
@@ -53,7 +57,7 @@ def _score_program(row: dict, budget: int, weights: dict) -> tuple[float, dict]:
         uni.get("max_scholarship_pct"),
     )
     raw_bd = uni.get("acceptance_rate_bd")
-    bd_acc = (raw_bd if raw_bd is not None else 50.0) / 100.0  # default 50% if unknown
+    bd_acc = (raw_bd if raw_bd is not None else DEFAULT_ACCEPTANCE_RATE_BD) / 100.0
 
     total = (
         ranking_score * weights["weight_ranking"]
@@ -89,7 +93,7 @@ async def run_matchmaking(
     # Layer 1 — filter
     candidates = await filter_programs(
         client=client,
-        budget_usd=student.get("budget_usd_per_year") or 20000,
+        budget_usd=student.get("budget_usd_per_year") or DEFAULT_BUDGET_USD,
         countries=student.get("preferred_countries") or [],
         degree_level=student.get("preferred_degree") or "master",
         ielts=scores.get("ielts"),
@@ -102,14 +106,14 @@ async def run_matchmaking(
         return []
 
     # Layer 2 — score + sort
-    budget = student.get("budget_usd_per_year") or 20000
+    budget = student.get("budget_usd_per_year") or DEFAULT_BUDGET_USD
     scored: list[tuple[float, dict, dict]] = []
     for row in candidates:
         score, breakdown = _score_program(row, budget, settings)
         scored.append((score, breakdown, row))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    result_limit = int(settings.get("ai_top_n", 10)) + 5  # return slightly more than AI processes
+    result_limit = int(settings.get("ai_top_n", 10)) + RESULT_BUFFER
     top_n = scored[:result_limit]
 
     results: list[MatchResultItem] = []

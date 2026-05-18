@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from typing import Any
 from supabase import AsyncClient
 
+from app.core.constants import DEFAULT_BUDGET_USD, PROGRAM_FILTER_LIMIT
+
 
 async def get_match_settings(client: AsyncClient) -> dict:
     """Return the most recently updated match_settings row."""
@@ -71,7 +73,7 @@ async def filter_programs(
     Layer-1 deterministic filter.
     Returns matching programs with joined university data.
     """
-    budget_usd = budget_usd or 20000  # safe default if missing
+    budget_usd = budget_usd or DEFAULT_BUDGET_USD
     max_budget = int(budget_usd * (1 + budget_buffer))
     countries = _normalize_countries(countries)
 
@@ -96,7 +98,7 @@ async def filter_programs(
 
     # IELTS / GPA JSONB filters applied in Python after fetch (PostgREST
     # does not support JSONB path filters via the REST API).
-    res = await query.limit(200).execute()
+    res = await query.limit(PROGRAM_FILTER_LIMIT).execute()
     rows = res.data or []
 
     # Python-side JSONB requirement checks

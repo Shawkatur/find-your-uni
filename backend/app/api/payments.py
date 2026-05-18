@@ -12,6 +12,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user, get_current_student_dep
 from app.core.config import get_settings
+from app.core.constants import MIN_PAYMENT_BDT, MAX_PAYMENT_BDT, PAYMENT_AMOUNT_TOLERANCE_BDT, SSLCOMMERZ_TIMEOUT_SECONDS
 from app.core.limiter import limiter
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
@@ -22,7 +23,7 @@ get_student = get_current_student_dep()
 
 class PaymentInitBody(BaseModel):
     product: str        # 'match_premium' | 'application_fee' | 'consultation'
-    amount_bdt: int = Field(ge=100, le=500_000, description="Payment amount in BDT (100–500,000)")
+    amount_bdt: int = Field(ge=MIN_PAYMENT_BDT, le=MAX_PAYMENT_BDT, description="Payment amount in BDT")
     application_id: str | None = None
 
 
@@ -189,7 +190,7 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
     # Verify via SSLCommerz validation API
     if status == "VALID" and tran_id and val_id:
         try:
-            async with httpx.AsyncClient(timeout=10.0) as http:
+            async with httpx.AsyncClient(timeout=SSLCOMMERZ_TIMEOUT_SECONDS) as http:
                 vr = await http.get(
                     f"{settings.SSLCOMMERZ_VALIDATION_URL}"
                     f"?val_id={val_id}&store_id={settings.SSLCOMMERZ_STORE_ID}"
@@ -214,7 +215,7 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
 
             original_amount = pay_res.data[0].get("amount_bdt", 0)
             paid_amount = float(form.get("amount", 0))
-            if abs(paid_amount - original_amount) > 1:
+            if abs(paid_amount - original_amount) > PAYMENT_AMOUNT_TOLERANCE_BDT:
                 # Amount mismatch — possible tampering
                 from app.core.logger import logger
                 logger.warning(
