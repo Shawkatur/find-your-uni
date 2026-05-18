@@ -26,6 +26,13 @@ MAX_PAYMENT_BDT = 500_000
 PAYMENT_AMOUNT_TOLERANCE_BDT = 1
 SSLCOMMERZ_TIMEOUT_SECONDS = 10.0
 
+# ─── Match settings defaults ────────────────────────────────────────────────
+DEFAULT_WEIGHT_RANKING = 0.30
+DEFAULT_WEIGHT_COST_EFFICIENCY = 0.40
+DEFAULT_WEIGHT_BD_ACCEPTANCE = 0.30
+DEFAULT_AI_TOP_N = 10
+DEFAULT_FILTER_BUDGET_BUFFER = 0.10
+
 # ─── Program filter ─────────────────────────────────────────────────────────
 PROGRAM_FILTER_LIMIT = 200
 

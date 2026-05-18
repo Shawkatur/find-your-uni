@@ -10,6 +10,7 @@ from supabase import AsyncClient
 from app.core.constants import (
     MAX_QS_RANK, DEFAULT_BUDGET_USD, DEFAULT_ACCEPTANCE_RATE_BD,
     SCHOLARSHIP_BONUS_FACTOR, DEFAULT_SCHOLARSHIP_PCT, RESULT_BUFFER,
+    DEFAULT_FILTER_BUDGET_BUFFER, DEFAULT_AI_TOP_N,
 )
 from app.db.queries import filter_programs, get_match_settings, upsert_match_cache
 from app.models.university import MatchResultItem
@@ -99,7 +100,7 @@ async def run_matchmaking(
         ielts=scores.get("ielts"),
         gpa_pct=academic.get("gpa_percentage"),
         fields=student.get("preferred_fields") or None,
-        budget_buffer=float(settings.get("filter_budget_buffer", 0.10)),
+        budget_buffer=float(settings.get("filter_budget_buffer", DEFAULT_FILTER_BUDGET_BUFFER)),
     )
 
     if not candidates:
@@ -113,7 +114,7 @@ async def run_matchmaking(
         scored.append((score, breakdown, row))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    result_limit = int(settings.get("ai_top_n", 10)) + RESULT_BUFFER
+    result_limit = int(settings.get("ai_top_n", DEFAULT_AI_TOP_N)) + RESULT_BUFFER
     top_n = scored[:result_limit]
 
     results: list[MatchResultItem] = []
@@ -135,7 +136,7 @@ async def run_matchmaking(
         )
 
     # Layer 3 — AI summaries for top ai_top_n
-    ai_n = int(settings.get("ai_top_n", 10))
+    ai_n = int(settings.get("ai_top_n", DEFAULT_AI_TOP_N))
     if run_ai and results:
         summaries = await generate_match_summaries(student, results[:ai_n])
         for i, summary in enumerate(summaries):

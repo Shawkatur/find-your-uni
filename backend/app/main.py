@@ -19,6 +19,17 @@ from app.api import admin_routes, super_admin_routes, tracking, push_notificatio
 
 settings = get_settings()
 
+# ─── Sentry (production only) ────────────────────────────────────────────────
+if settings.APP_ENV == "production" and settings.SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.APP_ENV,
+        traces_sample_rate=0.2,
+        send_default_pii=False,
+    )
+    logger.info("Sentry SDK initialised")
+
 # ─── APScheduler for weekly College Scorecard sync ───────────────────────────
 scheduler = AsyncIOScheduler()
 

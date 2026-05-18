@@ -7,7 +7,11 @@ from datetime import datetime, timezone
 from typing import Any
 from supabase import AsyncClient
 
-from app.core.constants import DEFAULT_BUDGET_USD, PROGRAM_FILTER_LIMIT
+from app.core.constants import (
+    DEFAULT_BUDGET_USD, PROGRAM_FILTER_LIMIT,
+    DEFAULT_WEIGHT_RANKING, DEFAULT_WEIGHT_COST_EFFICIENCY,
+    DEFAULT_WEIGHT_BD_ACCEPTANCE, DEFAULT_AI_TOP_N, DEFAULT_FILTER_BUDGET_BUFFER,
+)
 
 
 async def get_match_settings(client: AsyncClient) -> dict:
@@ -21,11 +25,11 @@ async def get_match_settings(client: AsyncClient) -> dict:
     )
     if not res.data:
         return {
-            "weight_ranking": 0.30,
-            "weight_cost_efficiency": 0.40,
-            "weight_bd_acceptance": 0.30,
-            "ai_top_n": 10,
-            "filter_budget_buffer": 0.10,
+            "weight_ranking": DEFAULT_WEIGHT_RANKING,
+            "weight_cost_efficiency": DEFAULT_WEIGHT_COST_EFFICIENCY,
+            "weight_bd_acceptance": DEFAULT_WEIGHT_BD_ACCEPTANCE,
+            "ai_top_n": DEFAULT_AI_TOP_N,
+            "filter_budget_buffer": DEFAULT_FILTER_BUDGET_BUFFER,
         }
     return res.data[0]
 
@@ -67,7 +71,7 @@ async def filter_programs(
     ielts: float | None,
     gpa_pct: int | None,
     fields: list[str] | None,
-    budget_buffer: float = 0.10,
+    budget_buffer: float = DEFAULT_FILTER_BUDGET_BUFFER,
 ) -> list[dict]:
     """
     Layer-1 deterministic filter.

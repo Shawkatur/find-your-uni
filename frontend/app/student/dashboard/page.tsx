@@ -334,32 +334,22 @@ function RecommendationsWidget() {
 
 // ─── Chat Widget ────────────────────────────────────────────────────────────
 
-interface Message {
-  id: string;
-  student_id: string;
-  consultant_id: string;
-  sender_type: "student" | "consultant";
-  content: string;
-  is_read: boolean;
-  created_at: string;
-}
-
-function ChatWidget({ consultantName }: { consultantName: string }) {
+function ChatWidget({ consultantName, consultantId }: { consultantName: string; consultantId?: string }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
-  const { data: messages = [], refetch } = useQuery<Message[]>({
-    queryKey: ["chat-messages"],
-    queryFn: async () => {
-      const res = await api.get("/messages");
-      return res.data ?? [];
-    },
-    enabled: !!user,
+  const { messages, loading: messagesLoading, sendMessage, sending, error: msgError } = useRealtimeMessages({
+    enabled: open && !!user,
+    studentId: user?.id,
+    consultantId,
   });
 
-  useRealtimeMessages(open && !!user);
+  // Show toast on send error
+  useEffect(() => {
+    if (msgError) toast.error(msgError);
+  }, [msgError]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -368,21 +358,15 @@ function ChatWidget({ consultantName }: { consultantName: string }) {
     }
   }, [messages, open]);
 
-  const sendMutation = useMutation({
-    mutationFn: async (content: string) => {
-      await api.post("/messages", { content });
-    },
-    onSuccess: () => {
-      setText("");
-      refetch();
-    },
-    onError: () => toast.error("Failed to send message"),
-  });
-
-  function handleSend() {
+  async function handleSend() {
     const trimmed = text.trim();
     if (!trimmed) return;
-    sendMutation.mutate(trimmed);
+    setText("");
+    try {
+      await sendMessage(trimmed);
+    } catch {
+      // error is surfaced via the hook's error state
+    }
   }
 
   const unreadCount = messages.filter((m) => m.sender_type === "consultant" && !m.is_read).length;
@@ -416,7 +400,12 @@ function ChatWidget({ consultantName }: { consultantName: string }) {
 
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-            {messages.length === 0 && (
+            {messagesLoading && (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner />
+              </div>
+            )}
+            {!messagesLoading && messages.length === 0 && (
               <p className="text-slate-400 text-sm text-center py-8">No messages yet. Say hello!</p>
             )}
             {messages.map((msg) => {
@@ -450,7 +439,7 @@ function ChatWidget({ consultantName }: { consultantName: string }) {
             <Button
               size="sm"
               onClick={handleSend}
-              disabled={!text.trim() || sendMutation.isPending}
+              disabled={!text.trim() || sending}
               className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 w-10 p-0"
             >
               <Send size={15} />
@@ -683,7 +672,7 @@ export default function StudentDashboard() {
 
       {/* Chat Widget — only when consultant is assigned */}
       {consultantInfo?.assigned && consultantInfo.consultant && (
-        <ChatWidget consultantName={consultantInfo.consultant.full_name} />
+        <ChatWidget consultantName={consultantInfo.consultant.full_name} consultantId={consultantInfo.consultant.id} />
       )}
     </PageWrapper>
   );

@@ -1,8 +1,11 @@
 """
 PDF export endpoints for student profile and shortlist.
 
-GET /exports/profile-pdf  — download student profile as PDF
-GET /exports/shortlist-pdf — download shortlist comparison as PDF
+GET /exports/profile-pdf   — download student profile as PDF (fpdf2)
+GET /exports/shortlist-pdf — download shortlist comparison as PDF (fpdf2)
+GET /exports/profile/pdf   — download student profile as PDF (reportlab)
+GET /exports/shortlist/pdf — download shortlist as PDF (reportlab)
+GET /exports/application/{application_id}/pdf — download application summary as PDF (reportlab)
 """
 from __future__ import annotations
 
@@ -16,6 +19,11 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
+from app.services.pdf_export import (
+    generate_application_summary_pdf,
+    generate_profile_pdf,
+    generate_shortlist_pdf,
+)
 
 router = APIRouter(prefix="/exports", tags=["exports"])
 
@@ -161,4 +169,117 @@ async def export_shortlist_pdf(
         buf,
         media_type="application/pdf",
         headers={"Content-Disposition": 'attachment; filename="shortlist.pdf"'},
+    )
+
+
+# ── Reportlab-based endpoints ────────────────────────────────────────────────
+
+
+@router.get("/profile/pdf")
+async def export_profile_pdf_v2(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Download student profile as a PDF (reportlab)."""
+    student_res = await (
+        client.table("students")
+        .select("*")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not student_res.data:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    student = student_res.data[0]
+    pdf_bytes = generate_profile_pdf(student)
+    filename = f"profile_{(student.get('full_name') or 'student').replace(' ', '_')}.pdf"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/shortlist/pdf")
+async def export_shortlist_pdf_v2(
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Download shortlisted universities as a PDF table (reportlab)."""
+    student_res = await (
+        client.table("students")
+        .select("id, full_name")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not student_res.data:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    student = student_res.data[0]
+
+    shortlist_res = await (
+        client.table("student_university_shortlist")
+        .select(
+            "*, universities(name, country, city, ranking_qs, "
+            "tuition_usd_per_year, min_ielts, scholarships_available)"
+        )
+        .eq("student_id", student["id"])
+        .order("added_at", desc=True)
+        .execute()
+    )
+    items = shortlist_res.data or []
+
+    pdf_bytes = generate_shortlist_pdf(student, items)
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="shortlist.pdf"'},
+    )
+
+
+@router.get("/application/{application_id}/pdf")
+async def export_application_pdf(
+    application_id: str,
+    user: dict = Depends(get_current_user),
+    client: AsyncClient = Depends(get_client),
+):
+    """Download application summary as a PDF (reportlab)."""
+    # Fetch application with joined program, university, and student data
+    app_res = await (
+        client.table("applications")
+        .select(
+            "*, programs(name, degree_level, field, tuition_usd_per_year, "
+            "universities(name, country, city, ranking_qs, website)), "
+            "students(full_name, phone)"
+        )
+        .eq("id", application_id)
+        .limit(1)
+        .execute()
+    )
+    if not app_res.data:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    application = app_res.data[0]
+
+    # Verify the authenticated student owns this application
+    student_res = await (
+        client.table("students")
+        .select("id")
+        .eq("user_id", user["sub"])
+        .limit(1)
+        .execute()
+    )
+    if not student_res.data or application["student_id"] != student_res.data[0]["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    pdf_bytes = generate_application_summary_pdf(application)
+    app_id_short = application_id[:8]
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="application_{app_id_short}.pdf"'
+        },
     )

@@ -66,6 +66,9 @@ class Settings(BaseSettings):
             raise ValueError("TURNSTILE_SECRET_KEY must be set in production")
         return v
 
+    # ── Sentry ───────────────────────────────────────────────────────────────
+    SENTRY_DSN: str = ""
+
     # ── Rate limiting ─────────────────────────────────────────────────────────
     MATCH_RATE_LIMIT: str = "10/minute"
 

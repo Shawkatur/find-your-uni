@@ -41,7 +41,7 @@ async def _ensure_bucket(client: AsyncClient) -> None:
             BUCKET,
             options={"public": False, "fileSizeLimit": MAX_FILE_SIZE_BYTES},
         )
-    except Exception:
+    except (OSError, ValueError):
         pass  # bucket already exists
 
 
@@ -50,7 +50,7 @@ async def _signed_url(client: AsyncClient, key: str, settings) -> str | None:
     try:
         res = await client.storage.from_(BUCKET).create_signed_url(key, SIGNED_URL_EXPIRY_SECONDS)
         return res["signedURL"]
-    except Exception:
+    except (OSError, KeyError, ValueError):
         logger.warning("Failed to generate signed URL for key: %s", key)
         return None
 
@@ -105,7 +105,7 @@ async def upload_document(
         await client.storage.from_(BUCKET).upload(
             key, content, {"contentType": content_type}
         )
-    except Exception as exc:
+    except OSError as exc:
         logger.error("Storage upload failed for student %s: %s", student['id'], exc)
         raise HTTPException(status_code=500, detail="Storage upload failed")
 
@@ -183,7 +183,7 @@ async def delete_document(
 
     try:
         await client.storage.from_(BUCKET).remove([res.data["storage_url"]])
-    except Exception as exc:
+    except OSError as exc:
         logger.error("Storage delete failed (non-fatal) for doc %s: %s", doc_id, exc)
 
 

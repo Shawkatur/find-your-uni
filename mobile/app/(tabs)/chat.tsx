@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -8,56 +8,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import api from "@/lib/api";
-import { supabase } from "@/lib/supabase";
-
-interface Message {
-  id: string;
-  sender_role: string;
-  body: string;
-  created_at: string;
-}
+import { useChat, ChatMessage } from "@/hooks/useChat";
 
 export default function ChatScreen() {
-  const qc = useQueryClient();
   const [text, setText] = useState("");
   const flatListRef = useRef<FlatList>(null);
+  const { messages, loading, sendMessage, sending, consultantInfo } = useChat();
 
-  const { data: consultantInfo } = useQuery({
-    queryKey: ["chat-consultant"],
-    queryFn: () => api.get("/messages/consultant-info").then((r) => r.data),
-  });
+  const handleSend = () => {
+    if (!text.trim()) return;
+    sendMessage(text.trim());
+    setText("");
+  };
 
-  const { data: messages = [] } = useQuery<Message[]>({
-    queryKey: ["chat-messages"],
-    queryFn: () => api.get("/messages").then((r) => r.data ?? []),
-    enabled: !!consultantInfo,
-  });
-
-  const sendMutation = useMutation({
-    mutationFn: (body: string) => api.post("/messages", { body }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["chat-messages"] });
-      setText("");
-    },
-  });
-
-  // Realtime subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel("mobile-chat")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        () => qc.invalidateQueries({ queryKey: ["chat-messages"] })
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [qc]);
-
-  if (!consultantInfo) {
+  // No consultant assigned
+  if (!loading && (!consultantInfo || !consultantInfo.assigned)) {
     return (
       <ScreenWrapper>
         <View className="flex-1 items-center justify-center px-6">
@@ -66,16 +32,29 @@ export default function ChatScreen() {
             No Consultant Assigned
           </Text>
           <Text className="text-text-muted text-sm text-center mt-2">
-            Chat will be available once a consultant is assigned to your application.
+            Chat will be available once a consultant is assigned to your
+            application.
           </Text>
         </View>
       </ScreenWrapper>
     );
   }
 
-  const sorted = [...messages].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
+  // Loading state
+  if (loading) {
+    return (
+      <ScreenWrapper>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-text-muted text-sm">Loading chat...</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
+  const consultantName =
+    consultantInfo?.consultant?.full_name ?? "Your Consultant";
+  const consultantRole =
+    consultantInfo?.consultant?.role_title ?? "Consultant";
 
   return (
     <ScreenWrapper>
@@ -87,31 +66,35 @@ export default function ChatScreen() {
         {/* Header */}
         <View className="px-5 py-3 border-b border-border-subtle">
           <Text className="text-text-base font-bold text-base">
-            {consultantInfo.consultant_name ?? "Your Consultant"}
+            {consultantName}
           </Text>
-          <Text className="text-text-muted text-xs">
-            {consultantInfo.agency_name ?? "Consultant"}
-          </Text>
+          <Text className="text-text-muted text-xs">{consultantRole}</Text>
         </View>
 
         {/* Messages */}
         <FlatList
           ref={flatListRef}
-          data={sorted}
-          keyExtractor={(m) => m.id}
+          data={messages}
+          keyExtractor={(m: ChatMessage) => m.id}
           contentContainerStyle={{ padding: 16, gap: 8 }}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
-          renderItem={({ item }) => {
-            const isMe = item.sender_role === "student";
+          renderItem={({ item }: { item: ChatMessage }) => {
+            const isMe = item.sender_type === "student";
             return (
-              <View className={`max-w-[80%] ${isMe ? "self-end" : "self-start"}`}>
+              <View
+                className={`max-w-[80%] ${isMe ? "self-end" : "self-start"}`}
+              >
                 <View
                   className={`px-4 py-2.5 rounded-2xl ${
-                    isMe ? "bg-indigo-600 rounded-br-sm" : "bg-surface-card rounded-bl-sm"
+                    isMe
+                      ? "bg-indigo-600 rounded-br-sm"
+                      : "bg-surface-card rounded-bl-sm"
                   }`}
                 >
-                  <Text className={`text-sm ${isMe ? "text-white" : "text-text-base"}`}>
-                    {item.body}
+                  <Text
+                    className={`text-sm ${isMe ? "text-white" : "text-text-base"}`}
+                  >
+                    {item.content}
                   </Text>
                 </View>
                 <Text className="text-text-muted text-[10px] mt-1 px-1">
@@ -125,7 +108,9 @@ export default function ChatScreen() {
           }}
           ListEmptyComponent={
             <View className="items-center justify-center py-16">
-              <Text className="text-text-muted text-sm">No messages yet. Say hello!</Text>
+              <Text className="text-text-muted text-sm">
+                No messages yet. Say hello!
+              </Text>
             </View>
           }
         />
@@ -138,16 +123,15 @@ export default function ChatScreen() {
             placeholderTextColor="#6B7280"
             value={text}
             onChangeText={setText}
-            onSubmitEditing={() => {
-              if (text.trim()) sendMutation.mutate(text.trim());
-            }}
+            onSubmitEditing={handleSend}
+            returnKeyType="send"
           />
           <TouchableOpacity
-            onPress={() => {
-              if (text.trim()) sendMutation.mutate(text.trim());
-            }}
-            disabled={!text.trim() || sendMutation.isPending}
-            className="w-10 h-10 bg-indigo-600 rounded-full items-center justify-center"
+            onPress={handleSend}
+            disabled={!text.trim() || sending}
+            className={`w-10 h-10 rounded-full items-center justify-center ${
+              !text.trim() || sending ? "bg-indigo-600/50" : "bg-indigo-600"
+            }`}
           >
             <Text className="text-white text-lg">↑</Text>
           </TouchableOpacity>

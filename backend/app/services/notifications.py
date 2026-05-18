@@ -33,7 +33,7 @@ async def create_notification(
             })
             .execute()
         )
-    except Exception as exc:
+    except (KeyError, TypeError, OSError) as exc:
         logger.error("Failed to create notification for user %s: %s", user_id, exc)
 
 
@@ -78,7 +78,7 @@ async def notify_status_change(
                 "source": source,
             },
         )
-    except Exception as exc:
+    except (OSError, TypeError) as exc:
         logger.error("Realtime broadcast failed for application %s: %s", application_id, exc)
     finally:
         await client.remove_channel(channel)
@@ -103,7 +103,7 @@ async def notify_status_change(
                     body=note or "Your application status has been updated. Tap to view details.",
                     data={"application_id": application_id, "status": new_status},
                 )
-        except Exception as exc:
+        except (KeyError, TypeError, OSError) as exc:
             logger.error("Push notification failed for student %s: %s", student_id, exc)
 
 
@@ -164,7 +164,7 @@ async def notify_lead_assignment(
                 "message": body,
             },
         )
-    except Exception as exc:
+    except (OSError, TypeError) as exc:
         logger.error("Lead assignment broadcast failed for application %s: %s", application_id, exc)
     finally:
         await client.remove_channel(channel)
@@ -179,5 +179,5 @@ async def notify_lead_assignment(
                 body=body,
                 data={"application_id": application_id, "type": event_type},
             )
-    except Exception as exc:
+    except (KeyError, TypeError, OSError) as exc:
         logger.error("Lead assignment push failed for consultant %s: %s", consultant_id, exc)

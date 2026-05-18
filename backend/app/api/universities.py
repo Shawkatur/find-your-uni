@@ -12,12 +12,17 @@ from supabase import AsyncClient
 from app.core.security import get_current_user
 from app.db.client import get_client
 from app.models.university import UniversityCreate, UniversityUpdate
+from app.models.responses import (
+    UniversityListResponse, UniversityDetailResponse,
+    UniversityCreateResponse, UniversityUpdateResponse,
+    UniversityFeaturedOut, UniversitySemanticOut, ProgramSummaryOut,
+)
 from app.services.ai import semantic_search_query
 
 router = APIRouter(prefix="/universities", tags=["universities"])
 
 
-@router.get("", response_model=dict)
+@router.get("", response_model=UniversityListResponse)
 async def list_universities(
     country: str | None = None,
     degree_level: str | None = None,
@@ -58,7 +63,7 @@ async def list_universities(
     return {"items": res.data or [], "total": res.count or 0}
 
 
-@router.get("/semantic", response_model=list[dict])
+@router.get("/semantic", response_model=list[UniversitySemanticOut])
 async def semantic_search(
     q: str = Query(..., min_length=3, description="Natural language search query"),
     limit: int = Query(10, ge=1, le=50),
@@ -82,7 +87,7 @@ async def semantic_search(
     return res.data or []
 
 
-@router.get("/featured", response_model=list[dict])
+@router.get("/featured", response_model=list[UniversityFeaturedOut])
 async def get_featured_universities(
     limit: int = Query(10, ge=1, le=50),
     client: AsyncClient = Depends(get_client),
@@ -99,7 +104,7 @@ async def get_featured_universities(
     return res.data or []
 
 
-@router.get("/{university_id}", response_model=dict)
+@router.get("/{university_id}", response_model=UniversityDetailResponse)
 async def get_university(
     university_id: str,
     client: AsyncClient = Depends(get_client),
@@ -122,7 +127,7 @@ async def get_university(
     return res.data
 
 
-@router.get("/{university_id}/programs", response_model=list[dict])
+@router.get("/{university_id}/programs", response_model=list[ProgramSummaryOut])
 async def get_university_programs(
     university_id: str,
     degree_level: str | None = None,
@@ -148,7 +153,7 @@ async def get_university_programs(
     return res.data or []
 
 
-@router.post("", response_model=dict, status_code=201)
+@router.post("", response_model=UniversityCreateResponse, status_code=201)
 async def create_university(
     body: UniversityCreate,
     user: dict = Depends(get_current_user),
@@ -163,7 +168,7 @@ async def create_university(
     return res.data[0]
 
 
-@router.patch("/{university_id}", response_model=dict)
+@router.patch("/{university_id}", response_model=UniversityUpdateResponse)
 async def update_university(
     university_id: str,
     body: UniversityUpdate,

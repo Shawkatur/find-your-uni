@@ -14,16 +14,16 @@ export const APP_STATUSES: AppStatus[] = [
 export const STATUS_LABELS: Record<AppStatus, string> = {
   unverified: "Unverified",
   lead: "Enquiry Received",
-  pre_evaluation: "Pre-Evaluation",
-  docs_collection: "Docs Collection",
-  applied: "Applied",
-  offer_received: "Offer Received",
+  pre_evaluation: "Profile Evaluated",
+  docs_collection: "Documents Needed",
+  applied: "Application Submitted",
+  offer_received: "Offer Letter Received!",
   conditional_offer: "Conditional Offer",
   visa_stage: "Visa Stage",
-  enrolled: "Enrolled",
-  rejected: "Rejected",
-  withdrawn: "Withdrawn",
-  junk: "Junk",
+  enrolled: "Enrolled — Congrats!",
+  rejected: "Application Update",
+  withdrawn: "Application Withdrawn",
+  junk: "Junk Lead",
 };
 
 export const STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -56,3 +56,5 @@ export const DOC_TYPES = [
 ] as const;
 
 export const VERIFICATION_STATUSES = ["pending_review", "verified", "rejected"] as const;
+
+export const CONSULTANT_STATUSES = ["pending", "active", "banned", "rejected"] as const;

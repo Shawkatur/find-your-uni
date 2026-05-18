@@ -107,7 +107,7 @@ async def _download_document(client: AsyncClient, storage_url: str) -> bytes | N
     try:
         res = await client.storage.from_(BUCKET).download(storage_url)
         return res
-    except Exception as exc:
+    except (OSError, KeyError, TypeError) as exc:
         logger.warning("Failed to download document %s: %s", storage_url, exc)
         return None
 

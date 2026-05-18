@@ -28,6 +28,14 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
+from app.models.responses import (
+    ShortlistAddResponse,
+    ShortlistItemOut,
+    ShortlistSavedResponse,
+    RecommendationAddResponse,
+    RecommendationOut,
+    RecommendationReviewResponse,
+)
 
 router = APIRouter(tags=["shortlist"])
 
@@ -157,7 +165,7 @@ async def _fetch_shortlist(student_id: str, client: AsyncClient) -> list[dict]:
 
 # ─── Student endpoints ────────────────────────────────────────────────────────
 
-@router.get("/shortlist", response_model=list[dict])
+@router.get("/shortlist", response_model=list[ShortlistItemOut])
 async def get_shortlist(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -166,7 +174,7 @@ async def get_shortlist(
     return await _fetch_shortlist(student_id, client)
 
 
-@router.get("/shortlist/check/{university_id}", response_model=dict)
+@router.get("/shortlist/check/{university_id}", response_model=ShortlistSavedResponse)
 async def check_shortlist(
     university_id: str,
     user: dict = Depends(get_current_user),
@@ -183,7 +191,7 @@ async def check_shortlist(
     return {"saved": bool(res.data)}
 
 
-@router.post("/shortlist", response_model=dict, status_code=201)
+@router.post("/shortlist", response_model=ShortlistAddResponse, status_code=201)
 async def add_to_shortlist(
     body: ShortlistAdd,
     user: dict = Depends(get_current_user),
@@ -235,7 +243,7 @@ async def remove_from_shortlist(
 
 # ─── Consultant endpoints ─────────────────────────────────────────────────────
 
-@router.get("/students/{student_id}/shortlist", response_model=list[dict])
+@router.get("/students/{student_id}/shortlist", response_model=list[ShortlistItemOut])
 async def consultant_get_shortlist(
     student_id: str,
     user: dict = Depends(get_current_user),
@@ -247,7 +255,7 @@ async def consultant_get_shortlist(
     return await _fetch_shortlist(student_id, client)
 
 
-@router.post("/students/{student_id}/shortlist", response_model=dict, status_code=201)
+@router.post("/students/{student_id}/shortlist", response_model=ShortlistAddResponse, status_code=201)
 async def consultant_add_shortlist(
     student_id: str,
     body: ShortlistAdd,
@@ -284,7 +292,7 @@ async def consultant_add_shortlist(
     return res.data[0]
 
 
-@router.post("/students/{student_id}/shortlist/manual", response_model=dict, status_code=201)
+@router.post("/students/{student_id}/shortlist/manual", response_model=ShortlistItemOut, status_code=201)
 async def consultant_add_manual_university(
     student_id: str,
     body: ManualUniversityAdd,
@@ -309,7 +317,7 @@ async def consultant_add_manual_university(
 
     try:
         uni_res = await client.table("universities").insert(uni_row).execute()
-    except Exception as exc:
+    except (KeyError, TypeError, OSError) as exc:
         raise HTTPException(status_code=500, detail=f"Failed to create university: {exc}")
     if not uni_res.data:
         raise HTTPException(status_code=500, detail="Failed to create university record")
@@ -324,7 +332,7 @@ async def consultant_add_manual_university(
                 "field": "other",
                 "is_active": True,
             }).execute()
-        except Exception as exc:
+        except (KeyError, TypeError, OSError) as exc:
             raise HTTPException(status_code=500, detail=f"Failed to create program: {exc}")
 
     try:
@@ -339,13 +347,13 @@ async def consultant_add_manual_university(
             "is_manual_entry": True,
             "program_name": body.program_name,
         }).execute()
-    except Exception as exc:
+    except (KeyError, TypeError, OSError) as exc:
         raise HTTPException(status_code=500, detail=f"Failed to add to shortlist: {exc}")
 
     return await _fetch_shortlist_item(university_id, student_id, client)
 
 
-@router.post("/students/{student_id}/shortlist/custom", response_model=dict, status_code=201)
+@router.post("/students/{student_id}/shortlist/custom", response_model=ShortlistItemOut, status_code=201)
 async def consultant_add_custom_university(
     student_id: str,
     body: CustomUniversityAdd,
@@ -453,7 +461,7 @@ async def _fetch_shortlist_item(university_id: str, student_id: str, client: Asy
 # ─── Consultant recommendation endpoints ────────────────────────────────────
 
 
-@router.get("/students/{student_id}/recommendations", response_model=list[dict])
+@router.get("/students/{student_id}/recommendations", response_model=list[RecommendationOut])
 async def consultant_get_recommendations(
     student_id: str,
     user: dict = Depends(get_current_user),
@@ -472,7 +480,7 @@ async def consultant_get_recommendations(
     return res.data or []
 
 
-@router.post("/students/{student_id}/recommendations", response_model=dict, status_code=201)
+@router.post("/students/{student_id}/recommendations", response_model=RecommendationAddResponse, status_code=201)
 async def consultant_add_recommendation(
     student_id: str,
     body: RecommendationAdd,
@@ -556,7 +564,7 @@ async def consultant_add_recommendation(
                     f"I'm reviewing your file now. Let me know if you have any immediate questions!"
                 ),
             }).execute()
-        except Exception:
+        except (KeyError, TypeError, OSError):
             pass
 
     return res.data[0]
@@ -565,7 +573,7 @@ async def consultant_add_recommendation(
 # ─── Student recommendation endpoints ───────────────────────────────────────
 
 
-@router.get("/recommendations", response_model=list[dict])
+@router.get("/recommendations", response_model=list[RecommendationOut])
 async def student_get_recommendations(
     status: str | None = Query(None),
     user: dict = Depends(get_current_user),
@@ -583,7 +591,7 @@ async def student_get_recommendations(
     return res.data or []
 
 
-@router.patch("/recommendations/{rec_id}/review", response_model=dict)
+@router.patch("/recommendations/{rec_id}/review", response_model=RecommendationReviewResponse)
 async def student_review_recommendation(
     rec_id: str,
     body: RecommendationReview,

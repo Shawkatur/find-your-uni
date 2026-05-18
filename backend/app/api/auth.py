@@ -125,7 +125,7 @@ async def _create_lead_application(client: AsyncClient, student_id: str, ref_cod
 
     try:
         await client.table("applications").insert(lead).execute()
-    except Exception as exc:
+    except (KeyError, TypeError, OSError) as exc:
         from app.core.logger import logger
         logger.error("Failed to create lead application for student %s (ref_code=%s): %s", student_id, ref_code, exc)
 
@@ -254,8 +254,8 @@ async def update_student_profile(
 
     try:
         res = await client.table("students").update(update).eq("id", student["id"]).execute()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Database update failed")
+    except (KeyError, TypeError, OSError) as exc:
+        raise HTTPException(status_code=500, detail="Database update failed") from exc
 
     if not res.data:
         raise HTTPException(status_code=500, detail="Update returned no data")

@@ -17,14 +17,22 @@ logger.setLevel(logging.INFO)
 class JSONFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         log = {
-            "time": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
+            "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%M:%S.") + f"{int(record.msecs):03d}Z",
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
             "request_id": request_id_var.get("-"),
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
         }
         if record.exc_info and record.exc_info[1]:
             log["exception"] = self.formatException(record.exc_info)
+        # Merge any extra fields passed via logger.info("msg", extra={"key": val})
+        for key in ("user_id", "path", "status_code", "duration_ms"):
+            val = getattr(record, key, None)
+            if val is not None:
+                log[key] = val
         return json.dumps(log, default=str)
 
 

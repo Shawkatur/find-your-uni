@@ -83,7 +83,7 @@ async def generate_match_summaries(
         while len(summaries) < len(matches):
             summaries.append("")
         return summaries[: len(matches)]
-    except Exception as exc:
+    except (json.JSONDecodeError, KeyError, TypeError, OSError) as exc:
         logger.error("generate_match_summaries failed: %s", exc)
         return [""] * len(matches)
 

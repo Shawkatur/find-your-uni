@@ -7,6 +7,7 @@ Ghost mode (X-Ghost-Mode: true) is available to super_admin users only.
 """
 from __future__ import annotations
 import asyncio
+import binascii
 import csv
 import io
 from datetime import datetime, timezone
@@ -127,7 +128,7 @@ async def analytics_overview(client: AsyncClient = Depends(get_client)):
         )
         total_revenue = sum(p["amount"] for p in (paid_res.data or []))
         payment_count = len(paid_res.data or [])
-    except Exception:
+    except Exception:  # payments table may not exist yet; non-critical
         total_revenue = 0
         payment_count = 0
 
@@ -565,7 +566,7 @@ async def _admin_signed_url(client: AsyncClient, key: str) -> str | None:
     try:
         res = await client.storage.from_(DOCS_BUCKET).create_signed_url(key, 3600)
         return res.get("signedURL")
-    except Exception:
+    except (OSError, KeyError, ValueError):
         return None
 
 
@@ -607,7 +608,7 @@ async def admin_delete_document(
     if storage_url:
         try:
             await client.storage.from_(DOCS_BUCKET).remove([storage_url])
-        except Exception:
+        except OSError:
             pass  # storage object may already be gone; still remove DB row
 
     await client.table("documents").delete().eq("id", document_id).execute()
@@ -687,7 +688,7 @@ async def _safe_delete(client: AsyncClient, table: str, row_id: str, ghost_ctx: 
     before = before_res.data[0]
     try:
         await client.table(table).delete().eq("id", row_id).execute()
-    except Exception as e:
+    except Exception as e:  # supabase-py doesn't expose typed errors; checking message for FK violations
         msg = str(e).lower()
         if "foreign key" in msg or "violates" in msg or "23503" in msg:
             raise HTTPException(
@@ -801,7 +802,7 @@ async def admin_universities_bulk_import(
         raise HTTPException(status_code=400, detail="content_b64 required")
     try:
         raw = base64.b64decode(b64, validate=True)
-    except Exception:
+    except (ValueError, binascii.Error):
         raise HTTPException(status_code=400, detail="content_b64 is not valid base64")
     if len(raw) > BULK_IMPORT_MAX_BYTES:
         raise HTTPException(status_code=413, detail=f"CSV exceeds {BULK_IMPORT_MAX_BYTES // 1024} KB")
@@ -996,10 +997,10 @@ async def admin_universities_bulk_import(
                             client, ghost_ctx, "bulk_create_program", "program",
                             p["id"], None, p,
                         )
-                except Exception as pe:
+                except Exception as pe:  # supabase-py doesn't expose typed errors
                     for row_idx in batch_row_indices:
                         errors.append({"row": row_idx, "field": "program", "message": str(pe)})
-        except Exception as ue:
+        except Exception as ue:  # supabase-py doesn't expose typed errors
             for row_idx, _ in items:
                 errors.append({"row": row_idx, "field": "university", "message": str(ue)})
 
@@ -1047,7 +1048,7 @@ async def admin_students_bulk_import(
         raise HTTPException(status_code=400, detail="content_b64 required")
     try:
         raw = base64.b64decode(b64, validate=True)
-    except Exception:
+    except (ValueError, binascii.Error):
         raise HTTPException(status_code=400, detail="content_b64 is not valid base64")
     if len(raw) > BULK_IMPORT_MAX_BYTES:
         raise HTTPException(status_code=413, detail=f"CSV exceeds {BULK_IMPORT_MAX_BYTES // 1024} KB")
@@ -1132,7 +1133,10 @@ async def admin_students_bulk_import(
         summary["leads_created"] = len(parsed)
         return summary
 
-    # ── Pass 2: create auth user → student row → lead application ──
+    # ── Pass 2: create auth user → student row, then batch-insert lead applications ──
+    lead_rows: list[dict] = []          # collected for batch insert
+    lead_row_indices: list[int] = []    # track source CSV rows for error reporting
+
     for row_idx, student_payload, email in parsed:
         try:
             # 1) Create auth user with a random password
@@ -1145,7 +1149,7 @@ async def admin_students_bulk_import(
             })
             user_id = auth_res.user.id
 
-            # 2) Insert student row
+            # 2) Insert student row (depends on user_id, so still per-student)
             student_payload["user_id"] = user_id
             ins = await client.table("students").insert(student_payload).execute()
             if not ins.data:
@@ -1153,22 +1157,25 @@ async def admin_students_bulk_import(
             student_id = ins.data[0]["id"]
             summary["students_created"] += 1
 
-            # 3) Unassigned lead application
-            try:
-                await client.table("applications").insert({
-                    "student_id": student_id,
-                    "status": "lead",
-                }).execute()
-                summary["leads_created"] += 1
-            except Exception as le:
-                errors.append({"row": row_idx, "field": "lead", "message": str(le)})
+            # 3) Collect lead application for batch insert
+            lead_rows.append({"student_id": student_id, "status": "lead"})
+            lead_row_indices.append(row_idx)
 
             await ghost_audit(
                 client, ghost_ctx, "bulk_create_student", "student",
                 student_id, None, {"email": email, **student_payload},
             )
-        except Exception as ue:
+        except Exception as ue:  # catch-all: auth + DB creation involves multiple failure modes
             errors.append({"row": row_idx, "field": "student", "message": str(ue)})
+
+    # 4) Batch-insert all lead applications in one call
+    if lead_rows:
+        try:
+            lead_ins = await client.table("applications").insert(lead_rows).execute()
+            summary["leads_created"] += len(lead_ins.data or [])
+        except Exception as le:  # supabase-py doesn't expose typed errors
+            for row_idx in lead_row_indices:
+                errors.append({"row": row_idx, "field": "lead", "message": str(le)})
 
     return summary
 

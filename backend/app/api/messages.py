@@ -17,7 +17,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
-from app.models.responses import ChatMessageOut
+from app.models.responses import ChatMessageOut, ConsultantInfoResponse
 
 router = APIRouter(tags=["messages"])
 
@@ -99,7 +99,7 @@ async def student_send_message(
     return res.data[0]
 
 
-@router.get("/messages/consultant-info", response_model=dict)
+@router.get("/messages/consultant-info", response_model=ConsultantInfoResponse)
 async def student_get_consultant_info(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
