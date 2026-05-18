@@ -107,6 +107,11 @@ function ConsultantLoginForm() {
                 </button>
               </div>
               {errors.password && <p className="text-red-400 text-xs mt-1.5">{errors.password.message}</p>}
+              <div className="text-right">
+                <Link href="/auth/forgot-password" className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             <Button

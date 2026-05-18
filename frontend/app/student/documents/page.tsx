@@ -4,10 +4,11 @@ import { useState, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import {
-  Upload, Trash2, ExternalLink, Shield,
+  Upload, Trash2, ExternalLink, Shield, Eye,
   FileText, Loader2, AlertCircle, ShieldCheck,
   HelpCircle, Clock,
 } from "lucide-react";
+import { DocumentPreview } from "@/components/documents/DocumentPreview";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import type { Document, DocType } from "@/types";
@@ -110,10 +111,12 @@ function DocCard({
   docType,
   uploaded,
   onDelete,
+  onPreview,
 }: {
   docType: DocTypeConfig;
   uploaded: Document[];
   onDelete: (id: string) => void;
+  onPreview: (url: string, filename?: string) => void;
 }) {
   const qc = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
@@ -238,15 +241,27 @@ function DocCard({
                     </div>
                     <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover/file:opacity-100 transition-opacity">
                       {doc.url && (
-                        <a
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-emerald-500 hover:text-emerald-700"
-                        >
-                          <ExternalLink size={12} />
-                        </a>
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onPreview(doc.url!, doc.filename);
+                            }}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Preview"
+                          >
+                            <Eye size={12} />
+                          </button>
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-emerald-500 hover:text-emerald-700"
+                          >
+                            <ExternalLink size={12} />
+                          </a>
+                        </>
                       )}
                       <button
                         onClick={(e) => {
@@ -291,6 +306,7 @@ function DocCard({
 export default function DocumentsPage() {
   const qc = useQueryClient();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ url: string; filename?: string } | null>(null);
 
   const { data: documents = [], isLoading } = useQuery<Document[]>({
     queryKey: ["student-documents"],
@@ -385,6 +401,7 @@ export default function DocumentsPage() {
               docType={docType}
               uploaded={getUploadsForType(docType)}
               onDelete={setDeleteId}
+              onPreview={(url, filename) => setPreviewDoc({ url, filename })}
             />
           ))}
         </div>
@@ -401,6 +418,12 @@ export default function DocumentsPage() {
           confirmLabel="Delete"
           destructive
           onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
+        />
+        <DocumentPreview
+          open={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          url={previewDoc?.url ?? null}
+          filename={previewDoc?.filename}
         />
       </PageWrapper>
     </TooltipProvider>

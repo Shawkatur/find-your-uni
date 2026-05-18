@@ -91,6 +91,14 @@ function StudentShortlistContent() {
               </p>
             </div>
           </div>
+          {items.length >= 2 && (
+            <Link
+              href="/student/compare"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors"
+            >
+              <BarChart3 size={14} /> Compare
+            </Link>
+          )}
         </div>
 
         {isLoading ? (

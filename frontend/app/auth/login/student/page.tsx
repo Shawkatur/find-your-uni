@@ -101,6 +101,11 @@ function StudentLoginForm() {
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1.5">{errors.password.message}</p>}
+              <div className="text-right">
+                <Link href="/auth/forgot-password" className="text-xs text-[#10B981] hover:text-[#059669] font-medium">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             <Button
