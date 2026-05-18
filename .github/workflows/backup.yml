@@ -23,6 +23,7 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           BACKUP_DIR: ./backups
           BACKUP_RETAIN_DAYS: 30
+          PATH: /usr/lib/postgresql/17/bin:${{ env.PATH }}
         run: bash scripts/backup-db.sh
 
       - name: Upload backup artifact
