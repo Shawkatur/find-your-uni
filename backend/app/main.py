@@ -72,6 +72,20 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Correlation ID middleware
+from app.core.logger import request_id_var, generate_request_id
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        rid = request.headers.get("X-Request-ID") or generate_request_id()
+        request_id_var.set(rid)
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = rid
+        return response
+
+app.add_middleware(RequestIDMiddleware)
+
 # CORS — allow all origins during testing
 _origins = settings.cors_origins_list
 _allow_all = "*" in _origins

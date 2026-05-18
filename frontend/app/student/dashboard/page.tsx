@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 import type { Application, ApplicationApiResponse, Document as DocType, Student, Recommendation } from "@/types";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -356,8 +357,9 @@ function ChatWidget({ consultantName }: { consultantName: string }) {
       return res.data ?? [];
     },
     enabled: !!user,
-    refetchInterval: open ? 5000 : false,
   });
+
+  useRealtimeMessages(open && !!user);
 
   // Auto-scroll to bottom
   useEffect(() => {
