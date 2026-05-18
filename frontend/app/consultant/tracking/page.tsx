@@ -23,7 +23,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-lg border border-slate-200 text-[#64748B] hover:text-[#1E293B] hover:bg-slate-50 transition-colors"
+      className="p-1.5 rounded-lg border border-slate-200 text-muted-foreground hover:text-foreground hover:bg-slate-50 transition-colors"
       title="Copy link"
     >
       {copied ? <Check size={13} className="text-green-400" /> : <Copy size={13} />}
@@ -50,24 +50,24 @@ function CreateLinkDialog({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="glass-card w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-bold text-[#1E293B]">New Tracking Link</h3>
-          <button onClick={onClose} className="text-[#64748B] hover:text-[#1E293B]">
+          <h3 className="text-base font-bold text-foreground">New Tracking Link</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X size={18} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-[#64748B] text-sm block mb-1.5">Campaign Name (optional)</label>
+            <label className="text-muted-foreground text-sm block mb-1.5">Campaign Name (optional)</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Facebook Campaign, April Fair"
-              className="w-full bg-slate-50 border border-slate-200 text-[#1E293B] placeholder:text-[#64748B] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 border border-slate-200 text-foreground placeholder:text-muted-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
             />
           </div>
-          <p className="text-[#64748B] text-xs">
+          <p className="text-muted-foreground text-xs">
             A unique 8-character code will be generated automatically.
           </p>
         </div>
@@ -75,7 +75,7 @@ function CreateLinkDialog({ onClose }: { onClose: () => void }) {
         <div className="flex gap-3 mt-5">
           <button
             onClick={onClose}
-            className="flex-1 py-2 rounded-lg border border-slate-200 text-[#64748B] text-sm hover:bg-slate-50 transition-colors"
+            className="flex-1 py-2 rounded-lg border border-slate-200 text-muted-foreground text-sm hover:bg-slate-50 transition-colors"
           >
             Cancel
           </button>
@@ -112,8 +112,8 @@ export default function ConsultantTrackingPage() {
             <Link2 size={18} className="text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[#1E293B]">Tracking Links</h1>
-            <p className="text-[#64748B] text-sm">Generate shareable intake links</p>
+            <h1 className="text-xl font-bold text-foreground">Tracking Links</h1>
+            <p className="text-muted-foreground text-sm">Generate shareable intake links</p>
           </div>
         </div>
         <button
@@ -129,10 +129,10 @@ export default function ConsultantTrackingPage() {
       <div className="glass-card p-4 mb-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <p className="text-xs text-[#64748B] uppercase tracking-widest mb-0.5 font-semibold">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-0.5 font-semibold">
               Platform Generic Link
             </p>
-            <p className="text-[#1E293B] text-sm font-mono">{adminIntakeUrl}</p>
+            <p className="text-foreground text-sm font-mono">{adminIntakeUrl}</p>
           </div>
           <CopyButton text={adminIntakeUrl} />
         </div>
@@ -143,23 +143,23 @@ export default function ConsultantTrackingPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3">Name</th>
-              <th className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3 hidden sm:table-cell">Code</th>
-              <th className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3">Clicks</th>
+              <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3">Name</th>
+              <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3 hidden sm:table-cell">Code</th>
+              <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3">Clicks</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={4} className="text-center text-[#64748B] py-12 text-sm">Loading...</td>
+                <td colSpan={4} className="text-center text-muted-foreground py-12 text-sm">Loading...</td>
               </tr>
             )}
             {!isLoading && (!links || links.length === 0) && (
               <tr>
                 <td colSpan={4} className="text-center py-12">
                   <Link2 size={32} className="text-slate-600 mx-auto mb-2" />
-                  <p className="text-[#64748B] text-sm">No tracking links yet</p>
+                  <p className="text-muted-foreground text-sm">No tracking links yet</p>
                   <button
                     onClick={() => setShowCreate(true)}
                     className="mt-3 text-emerald-600 hover:text-emerald-700 text-xs font-semibold"
@@ -173,18 +173,18 @@ export default function ConsultantTrackingPage() {
               const fullUrl = `${APP_URL}/intake/${link.code}`;
               return (
                 <tr key={link.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 text-[#1E293B] text-sm font-medium">
-                    {link.name ?? <span className="text-[#64748B] italic">Unnamed</span>}
+                  <td className="px-4 py-3 text-foreground text-sm font-medium">
+                    {link.name ?? <span className="text-muted-foreground italic">Unnamed</span>}
                   </td>
-                  <td className="px-4 py-3 text-[#64748B] text-xs font-mono hidden sm:table-cell">
+                  <td className="px-4 py-3 text-muted-foreground text-xs font-mono hidden sm:table-cell">
                     {link.code}
                   </td>
-                  <td className="px-4 py-3 text-[#1E293B] text-sm">
+                  <td className="px-4 py-3 text-foreground text-sm">
                     {link.clicks}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <span className="text-[#64748B] text-xs font-mono truncate max-w-[180px] hidden md:block">
+                      <span className="text-muted-foreground text-xs font-mono truncate max-w-[180px] hidden md:block">
                         {fullUrl}
                       </span>
                       <CopyButton text={fullUrl} />

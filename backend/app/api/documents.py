@@ -19,6 +19,7 @@ from app.core.logger import logger
 from app.core.security import get_current_user, get_active_consultant_dep
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
+from app.models.responses import DocumentListOut, DocumentVerificationQueueOut, DocumentVerifyOut
 from supabase import AsyncClient
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -126,7 +127,7 @@ async def upload_document(
     }
 
 
-@router.get("", response_model=list[dict])
+@router.get("", response_model=list[DocumentListOut])
 async def list_documents(
     application_id: str | None = None,
     user: dict = Depends(get_current_user),
@@ -196,7 +197,7 @@ class VerifyDocumentBody(BaseModel):
     reason: str | None = None
 
 
-@router.get("/verification-queue", response_model=list[dict])
+@router.get("/verification-queue", response_model=list[DocumentVerificationQueueOut])
 async def list_verification_queue(
     consultant: dict = Depends(get_consultant),
     client: AsyncClient = Depends(get_client),
@@ -238,7 +239,7 @@ async def list_verification_queue(
     return docs
 
 
-@router.patch("/{doc_id}/verify", response_model=dict)
+@router.patch("/{doc_id}/verify", response_model=DocumentVerifyOut)
 async def verify_document(
     doc_id: str,
     body: VerifyDocumentBody,

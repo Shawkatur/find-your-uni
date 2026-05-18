@@ -54,13 +54,13 @@ export function Sidebar({ role }: SidebarProps) {
   return (
     <aside className="fixed left-0 top-0 h-full w-64 sidebar-gradient z-40 hidden md:flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-[#E2E8F0]">
+      <div className="h-16 flex items-center px-5 border-b border-border">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 bg-[#10B981] rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 transition-shadow">
             <GraduationCap size={18} className="text-white" />
           </div>
           <div className="leading-tight">
-            <div className="font-black tracking-tight text-[#333] text-sm leading-none">Find Your</div>
+            <div className="font-black tracking-tight text-foreground text-sm leading-none">Find Your</div>
             <div className="font-black tracking-tight text-[#10B981] text-sm leading-tight">Uni</div>
           </div>
         </Link>
@@ -86,7 +86,7 @@ export function Sidebar({ role }: SidebarProps) {
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all",
                 active
                   ? "bg-[rgba(16,185,129,0.08)] text-[#059669] border border-[rgba(16,185,129,0.2)] shadow-sm"
-                  : "text-[#64748B] hover:text-[#333] hover:bg-[#F1F5F9] border border-transparent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary border border-transparent"
               )}
             >
               <Icon
@@ -102,7 +102,7 @@ export function Sidebar({ role }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-4 border-t border-[#E2E8F0]" />
+      <div className="p-4 border-t border-border" />
     </aside>
   );
 }

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { GraduationCap, Briefcase, ChevronRight } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function LoginPickerPage() {
+  const { t } = useTranslation();
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="relative w-full max-w-lg">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
@@ -14,8 +16,8 @@ export default function LoginPickerPage() {
               <GraduationCap size={30} className="text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-[#333]">Welcome back</h1>
-          <p className="text-[#64748B] mt-1">How would you like to sign in?</p>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">{t("auth.welcomeBack")}</h1>
+          <p className="text-muted-foreground mt-1">How would you like to sign in?</p>
         </div>
 
         {/* Role cards */}
@@ -26,13 +28,13 @@ export default function LoginPickerPage() {
               <GraduationCap size={24} className="text-[#10B981]" />
             </div>
             <div className="flex-1">
-              <h2 className="text-[#333] font-bold text-lg">Student</h2>
-              <p className="text-[#64748B] text-sm mt-1 leading-relaxed">
+              <h2 className="text-foreground font-bold text-lg">Student</h2>
+              <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
                 See your matches, track apps, and manage docs.
               </p>
             </div>
             <div className="flex items-center text-[#10B981] text-sm font-semibold group-hover:gap-2 transition-all gap-1">
-              Sign in as Student <ChevronRight size={16} />
+              {t("auth.signInStudent")} <ChevronRight size={16} />
             </div>
           </Link>
 
@@ -42,19 +44,19 @@ export default function LoginPickerPage() {
               <Briefcase size={24} className="text-[#3B82F6]" />
             </div>
             <div className="flex-1">
-              <h2 className="text-[#333] font-bold text-lg">Consultant</h2>
-              <p className="text-[#64748B] text-sm mt-1 leading-relaxed">
+              <h2 className="text-foreground font-bold text-lg">Consultant</h2>
+              <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
                 Manage your agency, students, and pipeline.
               </p>
             </div>
             <div className="flex items-center text-[#3B82F6] text-sm font-semibold group-hover:gap-2 transition-all gap-1">
-              Sign in as Consultant <ChevronRight size={16} />
+              {t("auth.signInConsultant")} <ChevronRight size={16} />
             </div>
           </Link>
         </div>
 
-        <p className="text-center text-[#64748B] text-sm mt-8">
-          <Link href="/" className="hover:text-[#64748B] transition-colors">← Back to home</Link>
+        <p className="text-center text-muted-foreground text-sm mt-8">
+          <Link href="/" className="hover:text-muted-foreground transition-colors">← Back to home</Link>
         </p>
       </div>
     </div>

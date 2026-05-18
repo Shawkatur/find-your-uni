@@ -22,6 +22,7 @@ jobs:
         run: bash scripts/backup-db.sh
 
       - name: Upload backup artifact
+        if: hashFiles('./backups/*.sql.gz') != ''
         uses: actions/upload-artifact@v4
         with:
           name: db-backup-${{ github.run_id }}

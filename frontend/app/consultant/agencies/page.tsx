@@ -35,23 +35,23 @@ export default function ConsultantAgenciesPage() {
           <GlassCard>
             {agencyData ? (
               <>
-                <h2 className="text-[#1E293B] font-bold text-lg mb-1">{agencyData.name}</h2>
+                <h2 className="text-foreground font-bold text-lg mb-1">{agencyData.name}</h2>
                 {agencyData.city && (
-                  <p className="text-[#64748B] text-sm mb-4">{agencyData.city}</p>
+                  <p className="text-muted-foreground text-sm mb-4">{agencyData.city}</p>
                 )}
 
                 {(agencyData.avg_rating ?? 0) > 0 && (
                   <div className="flex items-center gap-2 mb-2">
                     <Star size={14} className="text-yellow-400" fill="currentColor" />
-                    <span className="text-[#1E293B] font-semibold">{agencyData.avg_rating!.toFixed(1)}</span>
+                    <span className="text-foreground font-semibold">{agencyData.avg_rating!.toFixed(1)}</span>
                     {(agencyData.review_count ?? 0) > 0 && (
-                      <span className="text-[#64748B] text-sm">({agencyData.review_count} reviews)</span>
+                      <span className="text-muted-foreground text-sm">({agencyData.review_count} reviews)</span>
                     )}
                   </div>
                 )}
 
                 {agencyData.license_no && (
-                  <p className="text-[#64748B] text-xs">License: {agencyData.license_no}</p>
+                  <p className="text-muted-foreground text-xs">License: {agencyData.license_no}</p>
                 )}
 
                 {agencyData.website && (
@@ -66,7 +66,7 @@ export default function ConsultantAgenciesPage() {
                 )}
               </>
             ) : (
-              <div className="text-[#64748B] text-sm">No agency assigned. Contact your administrator.</div>
+              <div className="text-muted-foreground text-sm">No agency assigned. Contact your administrator.</div>
             )}
           </GlassCard>
         </div>
@@ -74,11 +74,11 @@ export default function ConsultantAgenciesPage() {
         {/* Colleagues */}
         <div className="lg:col-span-2">
           <GlassCard>
-            <h2 className="text-[#1E293B] font-semibold mb-4">Team Members</h2>
+            <h2 className="text-foreground font-semibold mb-4">Team Members</h2>
             {colleaguesLoading ? (
               <LoadingSpinner size="sm" />
             ) : colleagues.length === 0 ? (
-              <p className="text-[#64748B] text-sm">No other consultants in this agency.</p>
+              <p className="text-muted-foreground text-sm">No other consultants in this agency.</p>
             ) : (
               <div className="space-y-3">
                 {colleagues.map((c) => (
@@ -89,8 +89,8 @@ export default function ConsultantAgenciesPage() {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <div className="text-[#1E293B] font-medium text-sm">{c.full_name}</div>
-                      <div className="text-[#64748B] text-xs">{c.role_title ?? "Consultant"}</div>
+                      <div className="text-foreground font-medium text-sm">{c.full_name}</div>
+                      <div className="text-muted-foreground text-xs">{c.role_title ?? "Consultant"}</div>
                     </div>
                     {c.whatsapp && (
                       <a

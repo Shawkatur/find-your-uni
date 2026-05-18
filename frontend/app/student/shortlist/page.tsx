@@ -142,7 +142,7 @@ function StudentShortlistContent() {
               return (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden group relative"
+                  className="bg-card rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden group relative"
                 >
                   {/* Remove button */}
                   <button
@@ -151,7 +151,7 @@ function StudentShortlistContent() {
                       removeMutation.mutate(item.university_id);
                     }}
                     disabled={removeMutation.isPending}
-                    className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                    className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-card/80 backdrop-blur-sm text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
                     title="Remove from shortlist"
                   >
                     <X size={14} />

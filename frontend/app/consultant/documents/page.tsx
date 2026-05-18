@@ -135,7 +135,7 @@ export default function DocumentVerificationPage() {
     >
       {/* ─── Summary Cards ──────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
             <Clock size={18} className="text-amber-600" />
           </div>
@@ -144,7 +144,7 @@ export default function DocumentVerificationPage() {
             <div className="text-xs text-slate-500">Pending Review</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
             <ShieldCheck size={18} className="text-emerald-600" />
           </div>
@@ -155,7 +155,7 @@ export default function DocumentVerificationPage() {
             <div className="text-xs text-slate-500">Students</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
             <FileText size={18} className="text-blue-600" />
           </div>
@@ -175,14 +175,14 @@ export default function DocumentVerificationPage() {
             placeholder="Search by student name or document type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
           />
         </div>
 
         <select
           value={docTypeFilter}
           onChange={(e) => setDocTypeFilter(e.target.value)}
-          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
         >
           <option value="">All Document Types</option>
           {docTypes.map((t) => (
@@ -204,7 +204,7 @@ export default function DocumentVerificationPage() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div key={i} className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-start gap-3 mb-4">
                 <Skeleton className="w-10 h-10 rounded-lg" />
                 <div className="flex-1">
@@ -246,7 +246,7 @@ export default function DocumentVerificationPage() {
             return (
               <div
                 key={doc.id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow"
+                className="bg-card rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow"
               >
                 {/* Header */}
                 <div className="flex items-start gap-3 mb-3">
@@ -315,7 +315,7 @@ export default function DocumentVerificationPage() {
 
       {/* ─── Rejection Dialog ───────────────────────────────────────── */}
       <Dialog open={!!rejectDocId} onOpenChange={(open) => { if (!open) { setRejectDocId(null); setRejectionReason(""); } }}>
-        <DialogContent className="bg-white border border-slate-200 text-slate-900 sm:max-w-md">
+        <DialogContent className="bg-card border border-slate-200 text-slate-900 sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-slate-900">Reject Document</DialogTitle>
           </DialogHeader>

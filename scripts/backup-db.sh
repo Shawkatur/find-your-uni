@@ -16,8 +16,8 @@ TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 FILENAME="findyouruni_${TIMESTAMP}.sql.gz"
 
 if [ -z "${SUPABASE_DB_URL:-}" ]; then
-  echo "ERROR: SUPABASE_DB_URL is not set" >&2
-  exit 1
+  echo "SUPABASE_DB_URL is not set — skipping backup."
+  exit 0
 fi
 
 mkdir -p "$BACKUP_DIR"

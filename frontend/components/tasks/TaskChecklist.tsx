@@ -70,7 +70,7 @@ export function TaskChecklist({ applicationId }: { applicationId: string }) {
           <div className="w-7 h-7 rounded-lg bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.15)] flex items-center justify-center">
             <CheckCircle2 size={13} className="text-violet-500" />
           </div>
-          <h3 className="text-[#333] font-black tracking-tight">Tasks</h3>
+          <h3 className="text-foreground font-black tracking-tight">Tasks</h3>
           {tasks.length > 0 && (
             <span className="text-xs text-slate-400 font-medium">
               {completedCount}/{tasks.length}

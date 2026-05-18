@@ -82,7 +82,7 @@ export default function AdminAnalyticsPage() {
     <PageWrapper title="Analytics" subtitle="Platform performance and growth metrics.">
       {/* Top cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-500">Total Applications</span>
             <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
@@ -93,7 +93,7 @@ export default function AdminAnalyticsPage() {
             {Object.values(data.funnel).reduce((a, b) => a + b, 0)}
           </p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-500">Revenue</span>
             <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
@@ -105,7 +105,7 @@ export default function AdminAnalyticsPage() {
           </p>
           <p className="text-xs text-slate-400 mt-1">{data.revenue.transactions} transactions</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-500">Enrolled</span>
             <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -118,7 +118,7 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Funnel */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
           <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
             <BarChart3 size={14} className="text-violet-500" /> Pipeline Funnel
           </h3>
@@ -143,7 +143,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Registrations Chart */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
           <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Users size={14} className="text-emerald-500" /> Registrations (Last 12 Months)
           </h3>
@@ -164,7 +164,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Demographics */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
           <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
             <Globe size={14} className="text-blue-500" /> Top Countries
           </h3>

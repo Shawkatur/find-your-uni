@@ -101,8 +101,8 @@ export default function MatchPage() {
               Find your best unis
             </span>
           </h2>
-          <p className="relative text-[#64748B] max-w-md mx-auto mb-3 leading-relaxed">
-            We match your profile against <strong className="text-[#333]">1,200+ unis</strong> using
+          <p className="relative text-muted-foreground max-w-md mx-auto mb-3 leading-relaxed">
+            We match your profile against <strong className="text-foreground">1,200+ unis</strong> using
             QS rankings, cost, and Bangladeshi acceptance rates.
           </p>
 
@@ -139,10 +139,10 @@ export default function MatchPage() {
           </div>
 
           <div className="text-center">
-            <p className="text-[#333] font-bold text-lg mb-1 transition-all duration-500">
+            <p className="text-foreground font-bold text-lg mb-1 transition-all duration-500">
               {LOADING_STEPS[loadingStep]}
             </p>
-            <p className="text-[#64748B] text-sm">Usually takes 10–20 seconds.</p>
+            <p className="text-muted-foreground text-sm">Usually takes 10–20 seconds.</p>
           </div>
 
           {/* Progress dots */}
@@ -151,7 +151,7 @@ export default function MatchPage() {
               <div
                 key={i}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                  i <= loadingStep ? "bg-[#10B981]" : "bg-[#E2E8F0]"
+                  i <= loadingStep ? "bg-[#10B981]" : "bg-border"
                 }`}
               />
             ))}
@@ -165,10 +165,10 @@ export default function MatchPage() {
           {/* Results header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between mb-6">
             <div>
-              <p className="text-[#333] font-black text-lg">
+              <p className="text-foreground font-black text-lg">
                 {results.length} unis matched
               </p>
-              <p className="text-[#64748B] text-sm mt-0.5">
+              <p className="text-muted-foreground text-sm mt-0.5">
                 Ranked by fit score based on your profile
               </p>
             </div>

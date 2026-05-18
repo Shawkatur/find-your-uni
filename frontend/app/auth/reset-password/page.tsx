@@ -57,33 +57,33 @@ export default function ResetPasswordPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
           <div className="w-16 h-16 bg-[#10B981] rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20 mx-auto mb-5">
             <KeyRound size={30} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-[#333] mb-2">Verifying reset link...</h1>
-          <p className="text-[#64748B] text-sm">Please wait while we verify your password reset link.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Verifying reset link...</h1>
+          <p className="text-muted-foreground text-sm">Please wait while we verify your password reset link.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-[#10B981] rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20 mb-5">
             <CheckCircle2 size={30} className="text-white" />
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-[#333]">New password</h1>
-          <p className="text-[#64748B] mt-1">Choose a strong password for your account</p>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">New password</h1>
+          <p className="text-muted-foreground mt-1">Choose a strong password for your account</p>
         </div>
 
         <div className="glass-card p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <Label className="text-[#475569] mb-2 block font-semibold text-sm">New Password</Label>
+              <Label className="text-secondary-foreground mb-2 block font-semibold text-sm">New Password</Label>
               <div className="relative">
                 <Input
                   {...register("password")}
@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#333] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <Label className="text-[#475569] mb-2 block font-semibold text-sm">Confirm Password</Label>
+              <Label className="text-secondary-foreground mb-2 block font-semibold text-sm">Confirm Password</Label>
               <Input
                 {...register("confirm")}
                 type={showPw ? "text" : "password"}

@@ -111,7 +111,7 @@ async def list_applications(
     return res.data or []
 
 
-@router.get("/{app_id}", response_model=dict)
+@router.get("/{app_id}")
 async def get_application_detail(
     app_id: str,
     user: dict = Depends(get_current_user),
@@ -227,7 +227,7 @@ async def update_status(
     return updated
 
 
-@router.patch("/{app_id}/forward", response_model=dict)
+@router.patch("/{app_id}/forward", response_model=ApplicationOut)
 async def forward_application(
     app_id: str,
     body: ForwardBody,

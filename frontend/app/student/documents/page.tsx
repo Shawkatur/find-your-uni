@@ -164,8 +164,8 @@ function DocCard({
         ${isDragActive
           ? "bg-emerald-50 border-emerald-500 border-dashed shadow-sm"
           : isDone
-            ? "bg-white border-slate-200 hover:border-slate-300"
-            : "bg-white border-slate-200 border-dashed hover:border-emerald-300 hover:bg-emerald-50/30"
+            ? "bg-card border-slate-200 hover:border-slate-300"
+            : "bg-card border-slate-200 border-dashed hover:border-emerald-300 hover:bg-emerald-50/30"
         }
         ${isUploading ? "pointer-events-none opacity-70" : ""}
       `}
@@ -361,7 +361,7 @@ export default function DocumentsPage() {
     <TooltipProvider delay={200}>
       <PageWrapper title="Documents" subtitle="Click or drag files onto each card to upload.">
         {/* Progress */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">

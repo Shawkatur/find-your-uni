@@ -272,31 +272,31 @@ function ConsultantStudentShortlistContent() {
   const activePrograms = (selectedUni?.programs ?? []).filter((p) => p.is_active !== false);
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-card">
       <Sidebar role="consultant" />
       <main className="flex-1 md:ml-64 p-6 max-w-5xl">
         {/* Header */}
         <div className="mb-6">
           <Link
             href="/consultant/applications"
-            className="inline-flex items-center gap-1.5 text-[#64748B] hover:text-[#1E293B] text-sm transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm transition-colors mb-4"
           >
             <ArrowLeft size={14} /> Back to Applications
           </Link>
           <div className="flex items-center gap-3">
             <Bookmark size={20} className="text-emerald-600" />
             <div>
-              <h1 className="text-2xl font-bold text-[#1E293B]">
+              <h1 className="text-2xl font-bold text-foreground">
                 {studentInfo?.full_name ?? "Student"}&apos;s Shortlist
               </h1>
               {studentInfo?.phone && (
-                <p className="text-[#64748B] text-xs flex items-center gap-1 mt-0.5">
+                <p className="text-muted-foreground text-xs flex items-center gap-1 mt-0.5">
                   <Phone size={11} /> {studentInfo.phone}
                 </p>
               )}
             </div>
           </div>
-          <p className="text-[#64748B] text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             {items.length > 0
               ? (
                 <>
@@ -318,21 +318,21 @@ function ConsultantStudentShortlistContent() {
         {showAddModal && (
           <GlassCard className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[#1E293B] font-semibold">Search & Add University</h3>
+              <h3 className="text-foreground font-semibold">Search & Add University</h3>
               <button
                 onClick={() => { setShowAddModal(false); setSearch(""); }}
-                className="text-[#64748B] hover:text-[#1E293B]"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X size={16} />
               </button>
             </div>
             <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search universities..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 bg-slate-50 border-slate-200 text-[#1E293B] placeholder:text-[#64748B]"
+                className="pl-8 bg-slate-50 border-slate-200 text-foreground placeholder:text-muted-foreground"
                 autoFocus
               />
             </div>
@@ -344,8 +344,8 @@ function ConsultantStudentShortlistContent() {
                     className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                   >
                     <div>
-                      <div className="text-[#1E293B] text-sm font-medium">{uni.name}</div>
-                      <div className="text-[#64748B] text-xs">
+                      <div className="text-foreground text-sm font-medium">{uni.name}</div>
+                      <div className="text-muted-foreground text-xs">
                         {uni.city ? `${uni.city}, ` : ""}
                         {uni.country}
                         {uni.ranking_qs ? ` · QS #${uni.ranking_qs}` : ""}
@@ -356,7 +356,7 @@ function ConsultantStudentShortlistContent() {
                       variant="outline"
                       onClick={() => addMutation.mutate(uni.id)}
                       disabled={addMutation.isPending}
-                      className="border-slate-200 text-[#64748B] hover:bg-blue-50 hover:text-blue-600"
+                      className="border-slate-200 text-muted-foreground hover:bg-blue-50 hover:text-blue-600"
                     >
                       <Plus size={13} className="mr-1" /> Add
                     </Button>
@@ -366,7 +366,7 @@ function ConsultantStudentShortlistContent() {
             )}
             {search.length >= 2 && searchResults.length === 0 && (
               <div className="text-center py-6 space-y-3">
-                <p className="text-[#64748B] text-sm">No universities found for &ldquo;{search}&rdquo;</p>
+                <p className="text-muted-foreground text-sm">No universities found for &ldquo;{search}&rdquo;</p>
                 <Button
                   size="sm"
                   variant="outline"
@@ -395,7 +395,7 @@ function ConsultantStudentShortlistContent() {
             <div className="space-y-4 pt-2">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <Label className="text-xs text-[#64748B]">University Name *</Label>
+                  <Label className="text-xs text-muted-foreground">University Name *</Label>
                   <Input
                     value={manualForm.name}
                     onChange={(e) => setManualForm((f) => ({ ...f, name: e.target.value }))}
@@ -404,7 +404,7 @@ function ConsultantStudentShortlistContent() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#64748B]">Country *</Label>
+                  <Label className="text-xs text-muted-foreground">Country *</Label>
                   <Input
                     value={manualForm.country}
                     onChange={(e) => setManualForm((f) => ({ ...f, country: e.target.value }))}
@@ -413,7 +413,7 @@ function ConsultantStudentShortlistContent() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#64748B]">City</Label>
+                  <Label className="text-xs text-muted-foreground">City</Label>
                   <Input
                     value={manualForm.city}
                     onChange={(e) => setManualForm((f) => ({ ...f, city: e.target.value }))}
@@ -424,7 +424,7 @@ function ConsultantStudentShortlistContent() {
               </div>
 
               <div>
-                <Label className="text-xs text-[#64748B]">Program Name</Label>
+                <Label className="text-xs text-muted-foreground">Program Name</Label>
                 <Input
                   value={manualForm.program_name}
                   onChange={(e) => setManualForm((f) => ({ ...f, program_name: e.target.value }))}
@@ -435,7 +435,7 @@ function ConsultantStudentShortlistContent() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs text-[#64748B]">Tuition Fee</Label>
+                  <Label className="text-xs text-muted-foreground">Tuition Fee</Label>
                   <Input
                     type="number"
                     value={manualForm.tuition_fee}
@@ -445,7 +445,7 @@ function ConsultantStudentShortlistContent() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#64748B]">Currency</Label>
+                  <Label className="text-xs text-muted-foreground">Currency</Label>
                   <Select
                     value={manualForm.currency}
                     onValueChange={(val) => setManualForm((f) => ({ ...f, currency: val ?? "USD" }))}
@@ -464,7 +464,7 @@ function ConsultantStudentShortlistContent() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs text-[#64748B]">Monthly Living Cost</Label>
+                  <Label className="text-xs text-muted-foreground">Monthly Living Cost</Label>
                   <Input
                     type="number"
                     value={manualForm.living_expense}
@@ -476,7 +476,7 @@ function ConsultantStudentShortlistContent() {
               </div>
 
               <div>
-                <Label className="text-xs text-[#64748B]">Consultant Notes</Label>
+                <Label className="text-xs text-muted-foreground">Consultant Notes</Label>
                 <Textarea
                   value={manualForm.note}
                   onChange={(e) => setManualForm((f) => ({ ...f, note: e.target.value }))}
@@ -506,7 +506,7 @@ function ConsultantStudentShortlistContent() {
         ) : items.length === 0 ? (
           <GlassCard className="text-center py-16">
             <Bookmark size={40} className="text-slate-600 mx-auto mb-4" />
-            <p className="text-[#64748B] text-sm mb-4">No universities saved yet</p>
+            <p className="text-muted-foreground text-sm mb-4">No universities saved yet</p>
             <Button
               size="sm"
               onClick={() => setShowAddModal(true)}
@@ -525,7 +525,7 @@ function ConsultantStudentShortlistContent() {
                   <button
                     onClick={() => removeMutation.mutate(item.university_id)}
                     disabled={removeMutation.isPending}
-                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-[#64748B] hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
                     title="Remove from shortlist"
                   >
                     <X size={14} />
@@ -537,10 +537,10 @@ function ConsultantStudentShortlistContent() {
                         <Building2 size={18} className="text-blue-600" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-[#1E293B] font-semibold text-sm leading-snug line-clamp-2">
+                        <h3 className="text-foreground font-semibold text-sm leading-snug line-clamp-2">
                           {uni.name}
                         </h3>
-                        <p className="text-[#64748B] text-xs mt-0.5">
+                        <p className="text-muted-foreground text-xs mt-0.5">
                           {uni.city ? `${uni.city}, ` : ""}
                           {uni.country}
                         </p>
@@ -573,7 +573,7 @@ function ConsultantStudentShortlistContent() {
                     </div>
 
                     {item.program_name && (
-                      <p className="text-[#1E293B] text-xs font-medium mb-2">
+                      <p className="text-foreground text-xs font-medium mb-2">
                         <GraduationCap size={11} className="inline mr-1 text-indigo-500" />
                         {item.program_name}
                       </p>
@@ -599,19 +599,19 @@ function ConsultantStudentShortlistContent() {
 
                     <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-200 pt-3">
                       {uni.tuition_usd_per_year ? (
-                        <div className="flex items-center gap-1 text-[#64748B]">
-                          <DollarSign size={11} className="text-[#64748B]" />
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <DollarSign size={11} className="text-muted-foreground" />
                           ${uni.tuition_usd_per_year.toLocaleString()}/yr
                         </div>
                       ) : <span />}
                       {uni.min_ielts && (
-                        <div className="text-[#64748B]">
-                          IELTS: <span className="text-[#1E293B] font-medium">{uni.min_ielts}+</span>
+                        <div className="text-muted-foreground">
+                          IELTS: <span className="text-foreground font-medium">{uni.min_ielts}+</span>
                         </div>
                       )}
                       {uni.min_gpa_percentage && (
-                        <div className="text-[#64748B]">
-                          GPA: <span className="text-[#1E293B] font-medium">{uni.min_gpa_percentage}%+</span>
+                        <div className="text-muted-foreground">
+                          GPA: <span className="text-foreground font-medium">{uni.min_gpa_percentage}%+</span>
                         </div>
                       )}
                       {uni.acceptance_rate_bd && (
@@ -620,7 +620,7 @@ function ConsultantStudentShortlistContent() {
                     </div>
 
                     {item.note && (
-                      <p className="text-[#64748B] text-xs mt-2 italic border-l-2 border-slate-200 pl-2">
+                      <p className="text-muted-foreground text-xs mt-2 italic border-l-2 border-slate-200 pl-2">
                         {item.note}
                       </p>
                     )}
@@ -636,7 +636,7 @@ function ConsultantStudentShortlistContent() {
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-3">
               <GraduationCap size={20} className="text-indigo-600" />
-              <h2 className="text-xl font-bold text-[#1E293B]">Recommended Programs</h2>
+              <h2 className="text-xl font-bold text-foreground">Recommended Programs</h2>
             </div>
             <Button
               size="sm"
@@ -646,7 +646,7 @@ function ConsultantStudentShortlistContent() {
               <Send size={14} className="mr-1.5" /> Recommend Program
             </Button>
           </div>
-          <p className="text-[#64748B] text-sm mb-5">
+          <p className="text-muted-foreground text-sm mb-5">
             {recommendations.length > 0
               ? `${recommendations.length} program${recommendations.length !== 1 ? "s" : ""} recommended`
               : "Recommend specific programs for the student to review and approve"}
@@ -657,12 +657,12 @@ function ConsultantStudentShortlistContent() {
         {showRecommendModal && (
           <GlassCard className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[#1E293B] font-semibold">
+              <h3 className="text-foreground font-semibold">
                 {selectedUni ? (
                   <span className="flex items-center gap-2">
                     <button
                       onClick={() => { setSelectedUni(null); setSelectedProgramId(""); }}
-                      className="text-[#64748B] hover:text-[#1E293B]"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       <ArrowLeft size={14} />
                     </button>
@@ -674,7 +674,7 @@ function ConsultantStudentShortlistContent() {
               </h3>
               <button
                 onClick={resetRecommendModal}
-                className="text-[#64748B] hover:text-[#1E293B]"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X size={16} />
               </button>
@@ -683,12 +683,12 @@ function ConsultantStudentShortlistContent() {
             {!selectedUni ? (
               <>
                 <div className="relative mb-3">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Search universities..."
                     value={recSearch}
                     onChange={(e) => setRecSearch(e.target.value)}
-                    className="pl-8 bg-slate-50 border-slate-200 text-[#1E293B] placeholder:text-[#64748B]"
+                    className="pl-8 bg-slate-50 border-slate-200 text-foreground placeholder:text-muted-foreground"
                     autoFocus
                   />
                 </div>
@@ -701,25 +701,25 @@ function ConsultantStudentShortlistContent() {
                         className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-indigo-50 transition-colors text-left"
                       >
                         <div>
-                          <div className="text-[#1E293B] text-sm font-medium">{uni.name}</div>
-                          <div className="text-[#64748B] text-xs">
+                          <div className="text-foreground text-sm font-medium">{uni.name}</div>
+                          <div className="text-muted-foreground text-xs">
                             {uni.city ? `${uni.city}, ` : ""}{uni.country}
                             {uni.ranking_qs ? ` · QS #${uni.ranking_qs}` : ""}
                           </div>
                         </div>
-                        <ChevronRight size={14} className="text-[#64748B]" />
+                        <ChevronRight size={14} className="text-muted-foreground" />
                       </button>
                     ))}
                   </div>
                 )}
                 {recSearch.length >= 2 && recSearchResults.length === 0 && (
-                  <p className="text-[#64748B] text-sm text-center py-4">No universities found</p>
+                  <p className="text-muted-foreground text-sm text-center py-4">No universities found</p>
                 )}
               </>
             ) : (
               <>
                 {activePrograms.length === 0 ? (
-                  <p className="text-[#64748B] text-sm text-center py-6">No active programs found at this university</p>
+                  <p className="text-muted-foreground text-sm text-center py-6">No active programs found at this university</p>
                 ) : (
                   <div className="space-y-2 mb-4">
                     {activePrograms.map((prog) => (
@@ -733,8 +733,8 @@ function ConsultantStudentShortlistContent() {
                         }`}
                       >
                         <div>
-                          <div className="text-[#1E293B] text-sm font-medium">{prog.name}</div>
-                          <div className="text-[#64748B] text-xs flex items-center gap-2">
+                          <div className="text-foreground text-sm font-medium">{prog.name}</div>
+                          <div className="text-muted-foreground text-xs flex items-center gap-2">
                             <span className="capitalize">{prog.degree_level}</span>
                             <span>·</span>
                             <span className="capitalize">{prog.field}</span>
@@ -761,7 +761,7 @@ function ConsultantStudentShortlistContent() {
                       onChange={(e) => setRecNotes(e.target.value)}
                       placeholder="Add a note for the student (optional) — e.g., why this program is a good fit..."
                       rows={2}
-                      className="w-full bg-slate-50 border border-slate-200 text-[#1E293B] placeholder:text-[#64748B] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none mb-3 transition-colors"
+                      className="w-full bg-slate-50 border border-slate-200 text-foreground placeholder:text-muted-foreground rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none mb-3 transition-colors"
                     />
                     <Button
                       onClick={handleSubmitRecommendation}
@@ -787,7 +787,7 @@ function ConsultantStudentShortlistContent() {
               return (
                 <div
                   key={rec.id}
-                  className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-start gap-4"
+                  className="bg-card rounded-xl border border-slate-200 shadow-sm p-4 flex items-start gap-4"
                 >
                   <div className="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <GraduationCap size={16} className="text-indigo-600" />
@@ -795,10 +795,10 @@ function ConsultantStudentShortlistContent() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="text-[#1E293B] text-sm font-semibold truncate">
+                        <div className="text-foreground text-sm font-semibold truncate">
                           {prog?.name ?? "Program"}
                         </div>
-                        <div className="text-[#64748B] text-xs mt-0.5">
+                        <div className="text-muted-foreground text-xs mt-0.5">
                           {uni?.name ?? "University"}
                           {uni?.country ? ` · ${uni.country}` : ""}
                           {prog?.degree_level ? ` · ${prog.degree_level}` : ""}
@@ -815,7 +815,7 @@ function ConsultantStudentShortlistContent() {
                       </Badge>
                     </div>
                     {rec.notes && (
-                      <p className="text-[#64748B] text-xs mt-2 italic border-l-2 border-slate-200 pl-2 line-clamp-2">
+                      <p className="text-muted-foreground text-xs mt-2 italic border-l-2 border-slate-200 pl-2 line-clamp-2">
                         {rec.notes}
                       </p>
                     )}
@@ -833,7 +833,7 @@ function ConsultantStudentShortlistContent() {
         {recommendations.length === 0 && !showRecommendModal && (
           <GlassCard className="text-center py-12">
             <GraduationCap size={36} className="text-slate-300 mx-auto mb-3" />
-            <p className="text-[#64748B] text-sm mb-3">No programs recommended yet</p>
+            <p className="text-muted-foreground text-sm mb-3">No programs recommended yet</p>
             <Button
               size="sm"
               onClick={() => setShowRecommendModal(true)}

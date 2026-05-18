@@ -152,7 +152,7 @@ function ApplicationCard({ app, onStatusChange, onMarkJunk }: {
     <div className="glass-card p-4 mb-2 glass-card-hover">
       <Link href={`/consultant/applications/${app.id}`} className="block mb-3">
         <div className="flex items-center gap-1.5">
-          <span className="text-[#1E293B] font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</span>
+          <span className="text-foreground font-black tracking-tight text-sm">{app.student?.full_name ?? "Student"}</span>
           {app.assigned_source === "admin" && (
             <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-violet-700 shrink-0">
               Admin
@@ -164,8 +164,8 @@ function ApplicationCard({ app, onStatusChange, onMarkJunk }: {
             </span>
           )}
         </div>
-        <div className="text-[#64748B] text-xs font-medium mt-0.5">{app.university?.name}</div>
-        <div className="text-[#64748B] text-xs">{app.program?.name}</div>
+        <div className="text-muted-foreground text-xs font-medium mt-0.5">{app.university?.name}</div>
+        <div className="text-muted-foreground text-xs">{app.program?.name}</div>
       </Link>
 
       <div className="flex items-center gap-2">
@@ -191,17 +191,17 @@ function ApplicationCard({ app, onStatusChange, onMarkJunk }: {
           <div className="relative flex-1">
             <button
               onClick={() => setOpen(!open)}
-              className="w-full text-xs text-[#64748B] hover:text-[#1E293B] flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-500/30 bg-white transition-colors"
+              className="w-full text-xs text-muted-foreground hover:text-foreground flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-500/30 bg-card transition-colors"
             >
               Move to... <ChevronDown size={11} />
             </button>
             {open && (
-              <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl shadow-black/10">
+              <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-card border border-slate-200 rounded-xl overflow-hidden shadow-2xl shadow-black/10">
                 {next.map((s) => (
                   <button
                     key={s}
                     onClick={() => { onStatusChange(app.id, s); setOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs text-[#64748B] hover:bg-slate-50 hover:text-[#1E293B] transition-colors font-medium capitalize"
+                    className="w-full text-left px-3 py-2.5 text-xs text-muted-foreground hover:bg-slate-50 hover:text-foreground transition-colors font-medium capitalize"
                   >
                     → {s.replace(/_/g, " ")}
                   </button>
@@ -376,7 +376,7 @@ export default function ConsultantApplicationsPage() {
       title="Applications"
       subtitle={subtitle}
       actions={
-        <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white">
+        <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-card">
           <button
             onClick={() => setView("list")}
             className={`px-3.5 py-2 flex items-center gap-1.5 text-sm font-semibold transition-colors ${view === "list" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
@@ -402,7 +402,7 @@ export default function ConsultantApplicationsPage() {
               placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
             />
           </div>
 
@@ -410,7 +410,7 @@ export default function ConsultantApplicationsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
           >
             <option value="">All Statuses</option>
             {ALL_STATUSES.map((s) => (
@@ -422,7 +422,7 @@ export default function ConsultantApplicationsPage() {
           <select
             value={universityFilter}
             onChange={(e) => setUniversityFilter(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
           >
             <option value="">All Universities</option>
             {universities.map((u) => (
@@ -434,7 +434,7 @@ export default function ConsultantApplicationsPage() {
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+            className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
           >
             <option value="">All Sources</option>
             <option value="tracking_link">Tracking Link</option>
@@ -454,7 +454,7 @@ export default function ConsultantApplicationsPage() {
       {/* ─── Content ────────────────────────────────────────────────────── */}
       {isLoading ? (
         /* Skeleton loading */
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100">
             <Skeleton className="w-4 h-4 rounded" />
             <Skeleton className="h-3 w-16" />
@@ -489,7 +489,7 @@ export default function ConsultantApplicationsPage() {
         />
       ) : view === "list" ? (
         /* ─── List View ───────────────────────────────────────────────── */
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Table header */}
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-200 bg-slate-50/50">
             <input
@@ -642,7 +642,7 @@ export default function ConsultantApplicationsPage() {
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-widest ${COLUMN_HEADER_COLORS[status]}`}>
                     {COLUMN_LABELS[status]}
                   </div>
-                  <span className="text-xs text-[#64748B] bg-slate-100 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs text-muted-foreground bg-slate-100 px-2 py-0.5 rounded-full font-bold">
                     {col.length}
                   </span>
                 </div>

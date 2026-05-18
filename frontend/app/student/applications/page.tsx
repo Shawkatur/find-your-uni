@@ -151,7 +151,7 @@ export default function ApplicationsPage() {
 
             return (
               <Link key={app.id} href={`/student/applications/${app.id}`}>
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 p-5 cursor-pointer group">
+                <div className="bg-card rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 p-5 cursor-pointer group">
                   {/* Header row */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3 min-w-0">

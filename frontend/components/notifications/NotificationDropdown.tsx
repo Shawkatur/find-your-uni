@@ -90,9 +90,9 @@ export function NotificationDropdown() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg hover:bg-[#F1F5F9] transition-colors"
+        className="relative p-2 rounded-lg hover:bg-secondary transition-colors"
       >
-        <Bell size={18} className="text-[#64748B]" />
+        <Bell size={18} className="text-muted-foreground" />
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold bg-emerald-500 text-white rounded-full">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -103,7 +103,7 @@ export function NotificationDropdown() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
               <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
               {unreadCount > 0 && (

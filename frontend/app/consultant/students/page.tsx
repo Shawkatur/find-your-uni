@@ -150,7 +150,7 @@ export default function ConsultantStudentsPage() {
               className={`rounded-xl border p-3 text-center transition-all ${
                 isActive
                   ? `${PIPELINE_STYLE[stage]} ring-2 ring-offset-1 ring-current`
-                  : "bg-white border-slate-200 hover:border-slate-300"
+                  : "bg-card border-slate-200 hover:border-slate-300"
               }`}
             >
               <div className={`text-2xl font-bold tracking-tight ${isActive ? "" : "text-slate-900"}`}>
@@ -173,14 +173,14 @@ export default function ConsultantStudentsPage() {
             placeholder="Search by name or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
           />
         </div>
 
         <select
           value={stageFilter}
           onChange={(e) => setStageFilter(e.target.value)}
-          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
         >
           <option value="">All Stages</option>
           {PIPELINE_STAGES.map((s) => (
@@ -191,7 +191,7 @@ export default function ConsultantStudentsPage() {
         <select
           value={sourceFilter}
           onChange={(e) => setSourceFilter(e.target.value)}
-          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
+          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-card text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
         >
           <option value="">All Sources</option>
           <option value="tracking_link">Tracking Link</option>
@@ -210,7 +210,7 @@ export default function ConsultantStudentsPage() {
 
       {/* ─── Data Table ──────────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100">
             <Skeleton className="h-3 w-16" />
             <div className="flex-1" />
@@ -238,7 +238,7 @@ export default function ConsultantStudentsPage() {
           className="py-24"
         />
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Table header */}
           <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-200 bg-slate-50/50">
             <span className="w-8" />

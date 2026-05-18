@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { I18nProvider } from "@/lib/i18n";
 import { useState } from "react";
 
@@ -13,12 +12,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <ThemeProvider>
-      <I18nProvider>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </I18nProvider>
-    </ThemeProvider>
+    <I18nProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </I18nProvider>
   );
 }

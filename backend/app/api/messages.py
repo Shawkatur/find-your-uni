@@ -17,6 +17,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
+from app.models.responses import ChatMessageOut
 
 router = APIRouter(tags=["messages"])
 
@@ -50,7 +51,7 @@ async def _get_consultant_for_student(student_id: str, client: AsyncClient) -> s
 
 # ─── Student endpoints ────────────────────────────────────────────────────────
 
-@router.get("/messages", response_model=list[dict])
+@router.get("/messages", response_model=list[ChatMessageOut])
 async def student_get_messages(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -74,7 +75,7 @@ async def student_get_messages(
     return list(reversed(res.data)) if res.data else []
 
 
-@router.post("/messages", response_model=dict, status_code=201)
+@router.post("/messages", response_model=ChatMessageOut, status_code=201)
 async def student_send_message(
     body: MessageSend,
     user: dict = Depends(get_current_user),
@@ -137,7 +138,7 @@ async def _verify_consultant_student_link(client: AsyncClient, consultant_id: st
         raise HTTPException(status_code=403, detail="Student is not assigned to you")
 
 
-@router.get("/students/{student_id}/messages", response_model=list[dict])
+@router.get("/students/{student_id}/messages", response_model=list[ChatMessageOut])
 async def consultant_get_messages(
     student_id: str,
     user: dict = Depends(get_current_user),
@@ -164,7 +165,7 @@ async def consultant_get_messages(
     return list(reversed(res.data)) if res.data else []
 
 
-@router.post("/students/{student_id}/messages", response_model=dict, status_code=201)
+@router.post("/students/{student_id}/messages", response_model=ChatMessageOut, status_code=201)
 async def consultant_send_message(
     student_id: str,
     body: MessageSend,

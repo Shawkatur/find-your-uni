@@ -21,10 +21,10 @@ function AgencyList() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <div className="border-b border-[#E2E8F0] bg-white/90 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-card/90 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-[#64748B] hover:text-[#333] text-sm transition-colors">← Home</Link>
+          <Link href="/" className="text-muted-foreground hover:text-foreground text-sm transition-colors">← Home</Link>
           <Link href="/auth/register/consultant">
             <Button size="sm">Join as Consultant</Button>
           </Link>
@@ -32,8 +32,8 @@ function AgencyList() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-[#333] mb-2">Verified Agencies</h1>
-        <p className="text-[#64748B] mb-8">Connect with licensed education consultants.</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Verified Agencies</h1>
+        <p className="text-muted-foreground mb-8">Connect with licensed education consultants.</p>
 
         {isLoading ? (
           <div className="flex justify-center py-20">
@@ -50,23 +50,23 @@ function AgencyList() {
                     <Building2 size={18} className="text-[#10B981]" />
                   </div>
                   <div>
-                    <h3 className="text-[#333] font-semibold">{agency.name}</h3>
-                    {agency.city && <p className="text-[#64748B] text-xs">{agency.city}</p>}
+                    <h3 className="text-foreground font-semibold">{agency.name}</h3>
+                    {agency.city && <p className="text-muted-foreground text-xs">{agency.city}</p>}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm text-[#64748B] mb-4">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                   {(agency.avg_rating ?? 0) > 0 && (
                     <span className="flex items-center gap-1 text-[#D97706]">
                       <Star size={13} fill="currentColor" />
                       {agency.avg_rating!.toFixed(1)}
-                      {(agency.review_count ?? 0) > 0 && <span className="text-[#64748B]">({agency.review_count})</span>}
+                      {(agency.review_count ?? 0) > 0 && <span className="text-muted-foreground">({agency.review_count})</span>}
                     </span>
                   )}
                 </div>
 
                 {agency.license_no && (
-                  <p className="text-[#64748B] text-xs mb-4">License: {agency.license_no}</p>
+                  <p className="text-muted-foreground text-xs mb-4">License: {agency.license_no}</p>
                 )}
 
                 {agency.website && (

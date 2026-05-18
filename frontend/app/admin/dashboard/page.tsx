@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
             <div
               key={card.label}
               onClick={card.onClick}
-              className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-5 ${card.onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
+              className={`bg-card rounded-2xl border border-slate-200 shadow-sm p-5 ${card.onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-slate-500">{card.label}</span>

@@ -59,7 +59,7 @@ export default function ApplicationDetailPage() {
   });
 
   if (isLoading) return <LoadingSpinner size="lg" className="mt-20" />;
-  if (!app) return <div className="text-[#64748B] text-center mt-20">Application not found.</div>;
+  if (!app) return <div className="text-muted-foreground text-center mt-20">Application not found.</div>;
 
   const whatsappLink = app.consultant?.whatsapp
     ? `https://wa.me/${app.consultant.whatsapp.replace(/\D/g, "")}`
@@ -86,9 +86,9 @@ export default function ApplicationDetailPage() {
                 <Building2 size={22} className="text-[#10B981]" />
               </div>
               <div className="flex-1">
-                <h2 className="text-[#333] font-black tracking-tight text-lg">{app.university?.name}</h2>
-                <p className="text-[#64748B] text-sm font-medium">{app.program?.name}</p>
-                <p className="text-[#64748B] text-xs mt-0.5">{app.university?.country}</p>
+                <h2 className="text-foreground font-black tracking-tight text-lg">{app.university?.name}</h2>
+                <p className="text-muted-foreground text-sm font-medium">{app.program?.name}</p>
+                <p className="text-muted-foreground text-xs mt-0.5">{app.university?.country}</p>
               </div>
               <StatusBadge status={app.status} />
             </div>
@@ -101,16 +101,16 @@ export default function ApplicationDetailPage() {
                 <div className="w-7 h-7 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] flex items-center justify-center">
                   <CheckCircle2 size={14} className="text-[#10B981]" />
                 </div>
-                <h3 className="text-[#333] font-black tracking-tight">Your Journey</h3>
+                <h3 className="text-foreground font-black tracking-tight">Your Journey</h3>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-20 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
+                <div className="w-20 h-1.5 bg-secondary rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-[#10B981] to-[#34D399] rounded-full transition-all duration-700"
                     style={{ width: `${(completedCount / journeySteps.length) * 100}%` }}
                   />
                 </div>
-                <span className="text-xs text-[#64748B] font-bold">
+                <span className="text-xs text-muted-foreground font-bold">
                   {completedCount}/{journeySteps.length}
                 </span>
               </div>
@@ -176,7 +176,7 @@ export default function ApplicationDetailPage() {
                           state === "done"
                             ? "text-[#059669]"
                             : state === "current"
-                            ? "text-[#333]"
+                            ? "text-foreground"
                             : "text-[#94A3B8]"
                         }`}
                       >
@@ -189,7 +189,7 @@ export default function ApplicationDetailPage() {
                       </div>
                       <p
                         className={`text-xs mt-0.5 font-normal ${
-                          state === "future" ? "text-[#E2E8F0]" : "text-[#64748B]"
+                          state === "future" ? "text-[#E2E8F0]" : "text-muted-foreground"
                         }`}
                       >
                         {step.desc}
@@ -219,7 +219,7 @@ export default function ApplicationDetailPage() {
                 <div className="w-7 h-7 rounded-lg bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)] flex items-center justify-center">
                   <FileText size={13} className="text-[#3B82F6]" />
                 </div>
-                <h3 className="text-[#333] font-black tracking-tight">Documents</h3>
+                <h3 className="text-foreground font-black tracking-tight">Documents</h3>
               </div>
               <Link href="/student/documents">
                 <Button size="sm" variant="outline">
@@ -237,10 +237,10 @@ export default function ApplicationDetailPage() {
                     <div className="flex items-center gap-3">
                       <CheckCircle2 size={15} className="text-[#10B981] shrink-0" />
                       <div>
-                        <div className="text-[#333] text-sm font-semibold capitalize">
+                        <div className="text-foreground text-sm font-semibold capitalize">
                           {doc.doc_type.replace(/_/g, " ")}
                         </div>
-                        <div className="text-[#64748B] text-xs">{doc.filename}</div>
+                        <div className="text-muted-foreground text-xs">{doc.filename}</div>
                       </div>
                     </div>
                     {doc.url && (
@@ -253,7 +253,7 @@ export default function ApplicationDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-[#64748B] text-sm">No documents uploaded for this application yet.</p>
+              <p className="text-muted-foreground text-sm">No documents uploaded for this application yet.</p>
             )}
           </GlassCard>
         </div>
@@ -263,7 +263,7 @@ export default function ApplicationDetailPage() {
           {/* Consultant */}
           {app.consultant && (
             <GlassCard>
-              <h3 className="text-[#333] font-black tracking-tight mb-4">Your Consultant</h3>
+              <h3 className="text-foreground font-black tracking-tight mb-4">Your Consultant</h3>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-[rgba(16,185,129,0.08)] rounded-2xl flex items-center justify-center border border-[rgba(16,185,129,0.15)]">
                   <span className="text-[#10B981] font-black text-sm">
@@ -271,8 +271,8 @@ export default function ApplicationDetailPage() {
                   </span>
                 </div>
                 <div>
-                  <div className="text-[#333] font-bold text-sm">{app.consultant.full_name}</div>
-                  <div className="text-[#64748B] text-xs">{app.consultant.role_title ?? "Consultant"}</div>
+                  <div className="text-foreground font-bold text-sm">{app.consultant.full_name}</div>
+                  <div className="text-muted-foreground text-xs">{app.consultant.role_title ?? "Consultant"}</div>
                 </div>
               </div>
               {whatsappLink && (
@@ -292,21 +292,21 @@ export default function ApplicationDetailPage() {
 
           {/* Application Info */}
           <GlassCard>
-            <h3 className="text-[#333] font-black tracking-tight mb-4">App Info</h3>
+            <h3 className="text-foreground font-black tracking-tight mb-4">App Info</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-[#64748B] font-medium">Status</span>
+                <span className="text-muted-foreground font-medium">Status</span>
                 <StatusBadge status={app.status} />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#64748B] font-medium">Created</span>
-                <span className="text-[#333] font-semibold">
+                <span className="text-muted-foreground font-medium">Created</span>
+                <span className="text-foreground font-semibold">
                   {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#64748B] font-medium">Last Updated</span>
-                <span className="text-[#333] font-semibold">
+                <span className="text-muted-foreground font-medium">Last Updated</span>
+                <span className="text-foreground font-semibold">
                   {new Date(app.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               </div>

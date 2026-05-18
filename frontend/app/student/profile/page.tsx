@@ -444,8 +444,8 @@ export default function StudentProfilePage() {
     setWorkEntries(updated);
   };
 
-  const inputClass = "bg-slate-50 border-slate-200 focus-visible:bg-white focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20 rounded-xl h-11";
-  const selectClass = "w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all";
+  const inputClass = "bg-slate-50 border-slate-200 focus-visible:bg-card focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20 rounded-xl h-11";
+  const selectClass = "w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:bg-card focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all";
 
   const renderField = (label: string, name: keyof FormData, type = "text", placeholder?: string) => (
     <div key={name}>
@@ -475,7 +475,7 @@ export default function StudentProfilePage() {
   return (
     <PageWrapper title="My Profile" subtitle="Update your info so we can find better matches.">
       {/* Profile Completion Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+      <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-slate-900">Profile Completion</span>
@@ -533,7 +533,7 @@ export default function StudentProfilePage() {
         {/* ── Personal ────────────────────────────────────── */}
         <TabsContent value="personal">
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
               <SectionHeader title="Basic Information" icon={User} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {renderField("Full Name", "full_name", "text", "Your full name")}
@@ -548,7 +548,7 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
               <SectionHeader title="Passport Information" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {renderField("Passport Number", "passport_number", "text", "Enter number")}
@@ -558,7 +558,7 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
               <SectionHeader title="Address" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {renderField("City", "address_city", "text", "Enter city")}
@@ -567,7 +567,7 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
               <SectionHeader title="Emergency Contact" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {renderField("Contact Name", "emergency_name", "text", "Enter name")}
@@ -691,7 +691,7 @@ export default function StudentProfilePage() {
         <TabsContent value="work">
           <div className="space-y-4">
             {workEntries.map((entry, index) => (
-              <div key={index} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div key={index} className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-slate-800">Experience {index + 1}</h3>
                   <Button
@@ -777,7 +777,7 @@ export default function StudentProfilePage() {
 
         {/* ── Preferences ─────────────────────────────────── */}
         <TabsContent value="preferences">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="space-y-5">
               <div>
                 <Label className="text-slate-600 mb-1.5 block text-sm font-medium">Target Degree</Label>
@@ -802,7 +802,7 @@ export default function StudentProfilePage() {
       {/* Sticky save bar */}
       {isDirty && (
         <div className="fixed bottom-0 left-0 right-0 md:left-64 z-40 animate-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-white/95 backdrop-blur-sm border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] px-6 py-3">
+          <div className="bg-card/95 backdrop-blur-sm border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] px-6 py-3">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <span className="w-2 h-2 rounded-full bg-amber-400" />

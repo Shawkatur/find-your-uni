@@ -12,11 +12,12 @@ from supabase import AsyncClient
 from app.core.security import get_current_user
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
+from app.models.application import ScholarshipOut
 
 router = APIRouter(prefix="/scholarships", tags=["scholarships"])
 
 
-@router.get("", response_model=list[dict])
+@router.get("", response_model=list[ScholarshipOut])
 async def list_scholarships(
     country: str | None = None,
     degree: str | None = None,
@@ -56,7 +57,7 @@ async def list_scholarships(
 
 # NOTE: /saved/me MUST be registered before /{scholarship_id} to avoid
 # FastAPI matching "saved" as a scholarship_id path parameter.
-@router.get("/saved/me", response_model=list[dict])
+@router.get("/saved/me", response_model=list[ScholarshipOut])
 async def get_saved_scholarships(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -75,7 +76,7 @@ async def get_saved_scholarships(
     return [row["scholarships"] for row in (res.data or []) if row.get("scholarships")]
 
 
-@router.get("/{scholarship_id}", response_model=dict)
+@router.get("/{scholarship_id}", response_model=ScholarshipOut)
 async def get_scholarship(
     scholarship_id: str,
     client: AsyncClient = Depends(get_client),

@@ -93,7 +93,7 @@ export default function ComparePage() {
 
       {/* Selector */}
       {selected.length < 4 && available.length > 0 && (
-        <div className="mb-6 p-4 bg-white rounded-xl border border-slate-200">
+        <div className="mb-6 p-4 bg-card rounded-xl border border-slate-200">
           <p className="text-sm font-medium text-slate-600 mb-2">Add a university to compare ({selected.length}/4)</p>
           <div className="flex flex-wrap gap-2">
             {available.map((item) => (
@@ -116,7 +116,7 @@ export default function ComparePage() {
           <p className="text-sm mt-1">Choose 2–4 universities from your shortlist above</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+        <div className="bg-card rounded-xl border border-slate-200 overflow-x-auto">
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">

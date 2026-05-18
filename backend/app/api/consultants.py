@@ -16,6 +16,7 @@ from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
 from app.models.application import ReviewCreate, ReviewOut, AgencyOut, AgencyCreate, ConsultantOut, ConsultantMeOut, ConsultantPublicOut
 from app.models.student import ConsultantStudentOut, PipelineStatus
+from app.models.responses import ConsultantListOut, ConsultantDetailOut
 
 
 class ConsultantProfileUpdate(BaseModel):
@@ -200,7 +201,7 @@ async def get_my_students(
     return result
 
 
-@router.patch("/consultants/me/students/{student_id}/pipeline", response_model=dict)
+@router.patch("/consultants/me/students/{student_id}/pipeline", response_model=ConsultantStudentOut)
 async def update_student_pipeline(
     student_id: str,
     body: PipelineStatusUpdate,
@@ -246,7 +247,7 @@ async def update_student_pipeline(
 
 # ─── Consultants ──────────────────────────────────────────────────────────────
 
-@router.get("/consultants", response_model=list[dict])
+@router.get("/consultants", response_model=list[ConsultantListOut])
 async def list_consultants(
     agency_id: str | None = None,
     page: int = Query(1, ge=1),
@@ -267,7 +268,7 @@ async def list_consultants(
     return res.data or []
 
 
-@router.get("/consultants/{consultant_id}", response_model=dict)
+@router.get("/consultants/{consultant_id}", response_model=ConsultantDetailOut)
 async def get_consultant(
     consultant_id: str,
     client: AsyncClient = Depends(get_client),

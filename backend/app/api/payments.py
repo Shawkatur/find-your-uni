@@ -16,6 +16,7 @@ from app.core.constants import MIN_PAYMENT_BDT, MAX_PAYMENT_BDT, PAYMENT_AMOUNT_
 from app.core.limiter import limiter
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
+from app.models.responses import PaymentInitiateResponse, PaymentVerifyResponse
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 get_student = get_current_student_dep()
@@ -27,7 +28,7 @@ class PaymentInitBody(BaseModel):
     application_id: str | None = None
 
 
-@router.post("/initiate", response_model=dict)
+@router.post("/initiate", response_model=PaymentInitiateResponse)
 @limiter.limit("10/minute")
 async def initiate_payment(
     request: Request,
@@ -105,7 +106,7 @@ async def initiate_payment(
     }
 
 
-@router.get("/verify/{payment_id}", response_model=dict)
+@router.get("/verify/{payment_id}", response_model=PaymentVerifyResponse)
 async def verify_payment(
     payment_id: str,
     status: str = "success",

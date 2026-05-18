@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n";
 
 interface FieldDef {
   name: string;
@@ -127,6 +128,7 @@ function StudentRegisterForm() {
   const router = useRouter();
   const refCode = usePersistedRef();
   const supabase = createClient();
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<FormValues>({ target_degree: "master" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -227,17 +229,17 @@ function StudentRegisterForm() {
   const progress = ((step + 1) / 5) * 100;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-[#10B981] rounded-xl flex items-center justify-center mb-3">
             <GraduationCap size={22} className="text-white" />
           </div>
-          <h1 className="text-xl font-bold text-[#333]">Create your account</h1>
-          <p className="text-[#64748B] text-sm mt-1">Step {step + 1} of 5 — {stepTitles[step]}</p>
+          <h1 className="text-xl font-bold text-foreground">{t("auth.createAccount")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">Step {step + 1} of 5 — {stepTitles[step]}</p>
         </div>
 
-        <Progress value={progress} className="mb-6 h-1.5 bg-[#E2E8F0]" />
+        <Progress value={progress} className="mb-6 h-1.5 bg-border" />
 
         <div className="flex justify-between mb-8 px-2">
           {stepTitles.map((title, i) => (
@@ -246,11 +248,11 @@ function StudentRegisterForm() {
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
                 i < step ? "bg-[#10B981] text-white" :
                 i === step ? "bg-[#10B981] text-white ring-2 ring-[#10B981]/30" :
-                "bg-[#E2E8F0] text-[#64748B]"
+                "bg-border text-muted-foreground"
               )}>
                 {i < step ? <Check size={14} /> : i + 1}
               </div>
-              <span className={cn("text-xs hidden sm:block", i === step ? "text-[#333]" : "text-[#64748B]")}>
+              <span className={cn("text-xs hidden sm:block", i === step ? "text-foreground" : "text-muted-foreground")}>
                 {title}
               </span>
             </div>
@@ -267,11 +269,11 @@ function StudentRegisterForm() {
                   if (field.name === "gender") {
                     return (
                       <div key={field.name}>
-                        <Label className="text-[#475569] mb-1.5 block">{field.label}</Label>
+                        <Label className="text-secondary-foreground mb-1.5 block">{field.label}</Label>
                         <select
                           value={values.gender ?? ""}
                           onChange={(e) => setValue("gender", e.target.value)}
-                          className="w-full bg-white border border-[#CBD5E1] text-[#333] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
+                          className="w-full bg-card border border-[#CBD5E1] text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
                         >
                           <option value="">Select</option>
                           <option value="male">Male</option>
@@ -283,7 +285,7 @@ function StudentRegisterForm() {
                   }
                   return (
                     <div key={field.name} className={spanFull ? "col-span-2" : ""}>
-                      <Label className="text-[#475569] mb-1.5 block">{field.label}</Label>
+                      <Label className="text-secondary-foreground mb-1.5 block">{field.label}</Label>
                       <Input
                         type={field.type ?? "text"}
                         placeholder={field.placeholder}
@@ -305,7 +307,7 @@ function StudentRegisterForm() {
                   />
                 )}
                 {step === 3 && (
-                  <p className="text-[#64748B] text-xs">Leave blank if not taken. You can update later.</p>
+                  <p className="text-muted-foreground text-xs">Leave blank if not taken. You can update later.</p>
                 )}
               </div>
             )}
@@ -313,11 +315,11 @@ function StudentRegisterForm() {
             {step === 4 && (
               <div className="space-y-5">
                 <div>
-                  <Label className="text-[#475569] mb-1.5 block">Target Degree</Label>
+                  <Label className="text-secondary-foreground mb-1.5 block">Target Degree</Label>
                   <select
                     value={values.target_degree ?? "masters"}
                     onChange={(e) => setValue("target_degree", e.target.value)}
-                    className="w-full bg-white border border-[#CBD5E1] text-[#333] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
+                    className="w-full bg-card border border-[#CBD5E1] text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#10B981]"
                   >
                     <option value="bachelor">Bachelor&apos;s</option>
                     <option value="master">Master&apos;s</option>
@@ -326,17 +328,17 @@ function StudentRegisterForm() {
                   </select>
                 </div>
                 <div>
-                  <Label className="text-[#475569] mb-1.5 block">Annual Budget (USD)</Label>
+                  <Label className="text-secondary-foreground mb-1.5 block">Annual Budget (USD)</Label>
                   <Input type="number" placeholder="25000" value={values.budget_usd ?? ""}
                     onChange={(e) => setValue("budget_usd", e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-[#475569] mb-1.5 block">Target Countries (comma-separated)</Label>
+                  <Label className="text-secondary-foreground mb-1.5 block">Target Countries (comma-separated)</Label>
                   <Input placeholder="Canada, Germany, UK, Australia" value={values.target_countries ?? ""}
                     onChange={(e) => setValue("target_countries", e.target.value)} />
                 </div>
                 <div>
-                  <Label className="text-[#475569] mb-1.5 block">Fields of Interest (comma-separated)</Label>
+                  <Label className="text-secondary-foreground mb-1.5 block">Fields of Interest (comma-separated)</Label>
                   <Input placeholder="Computer Science, Data Science" value={values.target_fields ?? ""}
                     onChange={(e) => setValue("target_fields", e.target.value)} />
                 </div>
@@ -364,8 +366,8 @@ function StudentRegisterForm() {
           </div>
         </div>
 
-        <p className="text-center text-[#64748B] text-sm mt-4">
-          Already have an account?{" "}
+        <p className="text-center text-muted-foreground text-sm mt-4">
+          {t("auth.hasAccount")}{" "}
           <Link href="/auth/login/student" className="text-[#10B981] hover:text-[#059669]">Sign in</Link>
         </p>
       </div>

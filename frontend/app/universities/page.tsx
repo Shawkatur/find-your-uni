@@ -37,7 +37,7 @@ function UniversitiesList() {
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white/90 sticky top-0 z-30 backdrop-blur-sm shadow-sm">
+      <div className="border-b border-slate-200 bg-card/90 sticky top-0 z-30 backdrop-blur-sm shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {user ? (
             <Link
@@ -75,7 +75,7 @@ function UniversitiesList() {
               placeholder="Search universities..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 bg-slate-50 border-slate-200 rounded-xl h-11 focus-visible:bg-white focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              className="pl-9 bg-slate-50 border-slate-200 rounded-xl h-11 focus-visible:bg-card focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
             />
           </div>
           <div className="relative">
@@ -84,7 +84,7 @@ function UniversitiesList() {
               placeholder="Filter by country..."
               value={country}
               onChange={(e) => { setCountry(e.target.value); setPage(1); }}
-              className="pl-9 w-full sm:w-48 bg-slate-50 border-slate-200 rounded-xl h-11 focus-visible:bg-white focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              className="pl-9 w-full sm:w-48 bg-slate-50 border-slate-200 rounded-xl h-11 focus-visible:bg-card focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
             />
           </div>
         </div>
@@ -98,7 +98,7 @@ function UniversitiesList() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {universities.map((uni) => (
               <Link key={uni.id} href={`/universities/${uni.id}`}>
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden h-full flex flex-col group">
+                <div className="bg-card rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden h-full flex flex-col group">
                   {/* Campus Cover Image Placeholder */}
                   <div className="relative h-[120px] bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">

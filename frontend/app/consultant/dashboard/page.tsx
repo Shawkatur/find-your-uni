@@ -67,7 +67,7 @@ function ShareInviteLink() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+      <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
         <Skeleton className="h-5 w-40 mb-3" />
         <Skeleton className="h-10 w-full" />
       </div>
@@ -76,7 +76,7 @@ function ShareInviteLink() {
 
   if (!inviteUrl) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+      <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
         <div className="flex items-center gap-2 mb-2">
           <Link2 size={16} className="text-emerald-600" />
           <h3 className="text-sm font-semibold text-slate-900">Share Invite Link</h3>
@@ -95,7 +95,7 @@ function ShareInviteLink() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+    <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
       <div className="flex items-center gap-2 mb-3">
         <Link2 size={16} className="text-emerald-600" />
         <h3 className="text-sm font-semibold text-slate-900">Share Invite Link</h3>
@@ -178,7 +178,7 @@ export default function ConsultantDashboard() {
         {/* KPI skeletons */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div key={i} className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
               <Skeleton className="w-10 h-10 rounded-full mb-3" />
               <Skeleton className="h-8 w-16 mb-1" />
               <Skeleton className="h-3 w-12" />
@@ -186,7 +186,7 @@ export default function ConsultantDashboard() {
           ))}
         </div>
         {/* Recent applications skeleton */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
           <Skeleton className="h-7 w-48 mb-6" />
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center justify-between p-3 border-b border-slate-100 last:border-0">
@@ -214,7 +214,7 @@ export default function ConsultantDashboard() {
           return (
             <div
               key={card.label}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md p-5"
+              className="bg-card rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md p-5"
             >
               <div className={`${card.color} p-2 rounded-full w-10 h-10 flex items-center justify-center mb-3`}>
                 <Icon size={18} />
@@ -229,7 +229,7 @@ export default function ConsultantDashboard() {
       </div>
 
       {/* Recent Applications */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
             Recent Applications

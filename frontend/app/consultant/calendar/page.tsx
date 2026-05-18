@@ -124,14 +124,14 @@ export default function ConsultantCalendarPage() {
       {/* Add Slot Form */}
       {showAddForm && (
         <div className="glass-card mb-6 p-5">
-          <h3 className="text-[#333] font-semibold mb-4">Add Availability Slot</h3>
+          <h3 className="text-foreground font-semibold mb-4">Add Availability Slot</h3>
           <div className="flex flex-wrap items-end gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#64748B] mb-1">Day</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
               <select
                 value={newSlot.day_of_week}
                 onChange={(e) => setNewSlot({ ...newSlot, day_of_week: parseInt(e.target.value) })}
-                className="border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               >
                 {DAYS.map((day, idx) => (
                   <option key={idx} value={idx}>
@@ -141,21 +141,21 @@ export default function ConsultantCalendarPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#64748B] mb-1">Start Time</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Start Time</label>
               <input
                 type="time"
                 value={newSlot.start_time}
                 onChange={(e) => setNewSlot({ ...newSlot, start_time: e.target.value })}
-                className="border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#64748B] mb-1">End Time</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">End Time</label>
               <input
                 type="time"
                 value={newSlot.end_time}
                 onChange={(e) => setNewSlot({ ...newSlot, end_time: e.target.value })}
-                className="border border-[#E2E8F0] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
             <div className="flex gap-2">
@@ -168,7 +168,7 @@ export default function ConsultantCalendarPage() {
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 text-sm text-[#64748B] hover:text-[#333] transition-colors"
+                className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
@@ -182,22 +182,22 @@ export default function ConsultantCalendarPage() {
 
       {/* Section 1: Weekly Availability */}
       <div className="mb-8">
-        <h2 className="text-lg font-bold text-[#333] mb-4 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
           <CalendarDays size={20} className="text-[#10B981]" />
           Weekly Availability
         </h2>
         {slotsLoading ? (
-          <div className="glass-card p-8 text-center text-[#64748B]">Loading availability...</div>
+          <div className="glass-card p-8 text-center text-muted-foreground">Loading availability...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {DAYS.map((day, idx) => (
               <div key={idx} className="glass-card p-4">
-                <h3 className="text-sm font-semibold text-[#333] mb-3 border-b border-[#E2E8F0] pb-2">
+                <h3 className="text-sm font-semibold text-foreground mb-3 border-b border-border pb-2">
                   {day}
                 </h3>
                 <div className="space-y-2">
                   {slotsByDay[idx].length === 0 ? (
-                    <p className="text-xs text-[#64748B] italic">No slots</p>
+                    <p className="text-xs text-muted-foreground italic">No slots</p>
                   ) : (
                     slotsByDay[idx].map((slot) => (
                       <div
@@ -227,14 +227,14 @@ export default function ConsultantCalendarPage() {
 
       {/* Section 2: Upcoming Bookings */}
       <div>
-        <h2 className="text-lg font-bold text-[#333] mb-4 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
           <Clock size={20} className="text-[#10B981]" />
           Upcoming Bookings
         </h2>
         {bookingsLoading ? (
-          <div className="glass-card p-8 text-center text-[#64748B]">Loading bookings...</div>
+          <div className="glass-card p-8 text-center text-muted-foreground">Loading bookings...</div>
         ) : sortedBookings.length === 0 ? (
-          <div className="glass-card p-8 text-center text-[#64748B]">
+          <div className="glass-card p-8 text-center text-muted-foreground">
             No bookings yet. Students will be able to book once you set your availability.
           </div>
         ) : (
@@ -242,21 +242,21 @@ export default function ConsultantCalendarPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#E2E8F0] bg-slate-50/50">
-                    <th className="text-left px-4 py-3 text-[#64748B] font-semibold">Date & Time</th>
-                    <th className="text-left px-4 py-3 text-[#64748B] font-semibold">Duration</th>
-                    <th className="text-left px-4 py-3 text-[#64748B] font-semibold">Status</th>
-                    <th className="text-left px-4 py-3 text-[#64748B] font-semibold">Notes</th>
-                    <th className="text-right px-4 py-3 text-[#64748B] font-semibold">Actions</th>
+                  <tr className="border-b border-border bg-slate-50/50">
+                    <th className="text-left px-4 py-3 text-muted-foreground font-semibold">Date & Time</th>
+                    <th className="text-left px-4 py-3 text-muted-foreground font-semibold">Duration</th>
+                    <th className="text-left px-4 py-3 text-muted-foreground font-semibold">Status</th>
+                    <th className="text-left px-4 py-3 text-muted-foreground font-semibold">Notes</th>
+                    <th className="text-right px-4 py-3 text-muted-foreground font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedBookings.map((booking) => (
-                    <tr key={booking.id} className="border-b border-[#E2E8F0] last:border-0 hover:bg-slate-50/50">
-                      <td className="px-4 py-3 text-[#333] font-medium">
+                    <tr key={booking.id} className="border-b border-border last:border-0 hover:bg-slate-50/50">
+                      <td className="px-4 py-3 text-foreground font-medium">
                         {format(parseISO(booking.scheduled_at), "MMM d, yyyy 'at' h:mm a")}
                       </td>
-                      <td className="px-4 py-3 text-[#64748B]">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {booking.duration_minutes} min
                       </td>
                       <td className="px-4 py-3">
@@ -264,7 +264,7 @@ export default function ConsultantCalendarPage() {
                           {booking.status.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-[#64748B] max-w-[200px] truncate">
+                      <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">
                         {booking.notes || "—"}
                       </td>
                       <td className="px-4 py-3 text-right">

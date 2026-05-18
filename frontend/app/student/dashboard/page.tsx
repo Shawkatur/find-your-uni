@@ -97,7 +97,7 @@ function ConciergeProgress({ steps }: { steps: StepState }) {
               ${step.done
                 ? "bg-slate-50/50 border-slate-200 opacity-70"
                 : isNext
-                  ? "bg-white border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-300"
+                  ? "bg-card border-emerald-200 shadow-sm hover:shadow-md hover:border-emerald-300"
                   : "bg-slate-50 border-slate-200 opacity-60"
               }
             `}>
@@ -186,7 +186,7 @@ function WaitStateHero() {
             return (
               <div
                 key={guide.title}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200"
+                className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200"
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${guide.color}`}>
                   <Icon size={18} />
@@ -269,7 +269,7 @@ function RecommendationsWidget() {
           return (
             <div
               key={rec.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-indigo-200 transition-all duration-200"
+              className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-indigo-200 transition-all duration-200"
             >
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
@@ -574,7 +574,7 @@ export default function StudentDashboard() {
       {/* Stats Row — only show when unlocked */}
       {isUnlocked && (
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                 <Send size={13} className="text-emerald-600" />
@@ -583,7 +583,7 @@ export default function StudentDashboard() {
             </div>
             <div className="text-2xl font-bold text-slate-900">{visibleApplications.length}</div>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
                 <Clock size={13} className="text-blue-600" />
@@ -592,7 +592,7 @@ export default function StudentDashboard() {
             </div>
             <div className="text-2xl font-bold text-slate-900">{activeCount}</div>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                 <Trophy size={13} className="text-emerald-600" />
@@ -619,7 +619,7 @@ export default function StudentDashboard() {
       {isUnlocked && (
         <>
           <div className="grid lg:grid-cols-2 gap-5">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                   <FileText size={15} className="text-emerald-600" />
@@ -647,7 +647,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
                   <CheckCircle2 size={15} className="text-slate-500" />

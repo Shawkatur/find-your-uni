@@ -13,7 +13,6 @@ import { LogOut, User, Settings, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 export function Header() {
@@ -31,35 +30,34 @@ export function Header() {
         <div className="w-8 h-8 bg-[#10B981] rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/20">
           <GraduationCap size={16} className="text-white" />
         </div>
-        <span className="font-black tracking-tight text-[#333] text-sm">Find Your Uni</span>
+        <span className="font-black tracking-tight text-foreground text-sm">Find Your Uni</span>
       </Link>
       <div className="hidden md:block" />
       <div className="flex items-center gap-4">
         <LanguageToggle />
-        <ThemeToggle />
         <NotificationDropdown />
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#F1F5F9] transition-colors outline-none">
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-secondary transition-colors outline-none">
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-[#10B981] text-white text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="hidden sm:block text-left">
-              <p className="text-sm font-medium text-[#333] leading-none">
+              <p className="text-sm font-medium text-foreground leading-none">
                 {profile?.full_name ?? user?.email?.split("@")[0] ?? "User"}
               </p>
-              <p className="text-xs text-[#64748B] mt-0.5 capitalize">{profile?.role ?? "student"}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 capitalize">{profile?.role ?? "student"}</p>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-white border-[#E2E8F0]">
+          <DropdownMenuContent align="end" className="w-48 bg-card border-border">
             <DropdownMenuItem
               onClick={() => {
                 const base = profile?.role === "consultant" ? "/consultant" : "/student";
                 router.push(`${base}/profile`);
               }}
-              className="text-[#333] hover:bg-[#F1F5F9] cursor-pointer"
+              className="text-foreground hover:bg-secondary cursor-pointer"
             >
               <User size={14} className="mr-2" /> Profile
             </DropdownMenuItem>
@@ -68,11 +66,11 @@ export function Header() {
                 const base = profile?.role === "consultant" ? "/consultant" : "/student";
                 router.push(`${base}/settings`);
               }}
-              className="text-[#333] hover:bg-[#F1F5F9] cursor-pointer"
+              className="text-foreground hover:bg-secondary cursor-pointer"
             >
               <Settings size={14} className="mr-2" /> Settings
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#E2E8F0]" />
+            <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuItem
               onClick={signOut}
               className="text-red-500 hover:bg-red-50 cursor-pointer"

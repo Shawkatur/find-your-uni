@@ -91,7 +91,7 @@ function ShortlistSummaryCard({ studentId }: { studentId: string }) {
   });
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
       <div className="flex items-center gap-2 mb-3">
         <Bookmark size={15} className="text-emerald-600" />
         <h3 className="text-slate-900 font-semibold text-sm">Shortlist</h3>
@@ -179,7 +179,7 @@ export default function ConsultantApplicationDetailPage() {
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
               <Skeleton className="h-5 w-32 mb-4" />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -190,7 +190,7 @@ export default function ConsultantApplicationDetailPage() {
                 ))}
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
               <Skeleton className="h-5 w-28 mb-4" />
               <Skeleton className="h-16 w-full mb-3" />
               <div className="flex gap-2">
@@ -200,11 +200,11 @@ export default function ConsultantApplicationDetailPage() {
             </div>
           </div>
           <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
               <Skeleton className="h-4 w-32 mb-3" />
               <Skeleton className="h-9 w-full" />
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
               <Skeleton className="h-4 w-24 mb-2" />
               <Skeleton className="h-3 w-40 mb-1" />
               <Skeleton className="h-3 w-28" />
@@ -263,7 +263,7 @@ export default function ConsultantApplicationDetailPage() {
 
           {/* Student Profile Card */}
           {student && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
               <h3 className="text-slate-900 font-semibold mb-4">Student Profile</h3>
 
               {/* Personal section */}
@@ -327,7 +327,7 @@ export default function ConsultantApplicationDetailPage() {
 
           {/* ─── Action Center ───────────────────────────────────────────── */}
           {nextStatuses.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
               <h3 className="text-slate-900 font-semibold mb-4">Action Center</h3>
               <textarea
                 value={note}
@@ -360,7 +360,7 @@ export default function ConsultantApplicationDetailPage() {
 
           {/* ─── Activity Timeline ───────────────────────────────────────── */}
           {app.status_history && app.status_history.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Clock size={15} className="text-slate-400" />
                 <h3 className="text-slate-900 font-semibold">Activity</h3>
@@ -403,7 +403,7 @@ export default function ConsultantApplicationDetailPage() {
 
           {/* ─── Documents ───────────────────────────────────────────────── */}
           {app.documents && app.documents.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center gap-2 mb-4">
                 <FileText size={15} className="text-slate-400" />
                 <h3 className="text-slate-900 font-semibold">Documents</h3>
@@ -433,7 +433,7 @@ export default function ConsultantApplicationDetailPage() {
 
           {/* Contact */}
           {whatsapp && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
               <h3 className="text-slate-900 font-semibold text-sm mb-3">Contact Student</h3>
               <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="block">
                 <button className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-lg py-2.5 transition-colors">
@@ -445,7 +445,7 @@ export default function ConsultantApplicationDetailPage() {
           )}
 
           {/* University */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
             <h3 className="text-slate-900 font-semibold text-sm mb-3">University</h3>
             {app.university?.name ? (
               <>
@@ -469,7 +469,7 @@ export default function ConsultantApplicationDetailPage() {
 
           {/* Team / Forward */}
           {colleagues.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-card rounded-xl border border-slate-200 shadow-sm p-5">
               <h3 className="text-slate-900 font-semibold text-sm mb-3">Team</h3>
               <Dialog open={forwardOpen} onOpenChange={setForwardOpen}>
                 <DialogTrigger>
@@ -477,7 +477,7 @@ export default function ConsultantApplicationDetailPage() {
                     <UserRoundCog size={15} className="mr-2" /> Forward to Team
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-white border border-slate-200 text-slate-900">
+                <DialogContent className="bg-card border border-slate-200 text-slate-900">
                   <DialogHeader>
                     <DialogTitle className="text-slate-900">Forward Application</DialogTitle>
                   </DialogHeader>

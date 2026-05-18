@@ -124,7 +124,7 @@ export default function VerificationsPage() {
           {consultants.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow"
+              className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow"
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
@@ -190,7 +190,7 @@ export default function VerificationsPage() {
 
       {/* Reject Confirmation Dialog */}
       <Dialog open={!!rejectTarget} onOpenChange={(open) => { if (!open) { setRejectTarget(null); setRejectReason(""); } }}>
-        <DialogContent className="bg-white sm:max-w-md">
+        <DialogContent className="bg-card sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-slate-900">Reject Consultant</DialogTitle>
             <DialogDescription className="text-slate-500">
