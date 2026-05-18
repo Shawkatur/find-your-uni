@@ -23,6 +23,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
+from app.models.responses import AvailabilityOut, BookingOut, OkResponse
 
 router = APIRouter(prefix="/scheduling", tags=["scheduling"])
 
@@ -56,7 +57,7 @@ async def _get_student_id(client: AsyncClient, user_id: str) -> str:
 
 # ─── Consultant endpoints ─────────────────────────────────────────────────────
 
-@router.get("/availability")
+@router.get("/availability", response_model=list[AvailabilityOut])
 async def list_availability(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -74,7 +75,7 @@ async def list_availability(
     return res.data or []
 
 
-@router.post("/availability", status_code=201)
+@router.post("/availability", status_code=201, response_model=AvailabilityOut)
 async def add_availability(
     body: AvailabilityCreate,
     user: dict = Depends(get_current_user),
@@ -162,7 +163,7 @@ async def get_consultant_slots(
     return res.data or []
 
 
-@router.post("/book", status_code=201)
+@router.post("/book", status_code=201, response_model=BookingOut)
 async def book_slot(
     body: BookingCreate,
     user: dict = Depends(get_current_user),
@@ -201,7 +202,7 @@ async def book_slot(
     return res.data[0] if res.data else {"ok": True}
 
 
-@router.patch("/bookings/{booking_id}/cancel")
+@router.patch("/bookings/{booking_id}/cancel", response_model=OkResponse)
 async def cancel_booking(
     booking_id: str,
     user: dict = Depends(get_current_user),

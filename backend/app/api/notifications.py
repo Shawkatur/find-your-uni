@@ -11,11 +11,12 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
+from app.models.responses import NotificationOut, CountResponse, OkResponse
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
-@router.get("")
+@router.get("", response_model=list[NotificationOut])
 async def list_notifications(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -33,7 +34,7 @@ async def list_notifications(
     return res.data or []
 
 
-@router.get("/unread")
+@router.get("/unread", response_model=CountResponse)
 async def unread_count(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -48,7 +49,7 @@ async def unread_count(
     return {"count": res.count or 0}
 
 
-@router.patch("/{notification_id}/read")
+@router.patch("/{notification_id}/read", response_model=OkResponse)
 async def mark_read(
     notification_id: str,
     user: dict = Depends(get_current_user),
@@ -66,7 +67,7 @@ async def mark_read(
     return {"ok": True}
 
 
-@router.patch("/read-all")
+@router.patch("/read-all", response_model=OkResponse)
 async def mark_all_read(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),

@@ -54,6 +54,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="shortlist"
+        options={{
+          title: "Shortlist",
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🔖" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: "Chat",
+          tabBarIcon: ({ focused }) => <TabIcon emoji="💬" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="consultants"
         options={{
           title: "Consult",

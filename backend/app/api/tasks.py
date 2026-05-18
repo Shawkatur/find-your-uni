@@ -18,6 +18,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user
 from app.db.client import get_client
+from app.models.responses import TaskOut
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -43,7 +44,7 @@ async def _get_student_id(client: AsyncClient, user_id: str) -> str:
     return res.data[0]["id"]
 
 
-@router.get("")
+@router.get("", response_model=list[TaskOut])
 async def list_tasks(
     application_id: str = Query(...),
     user: dict = Depends(get_current_user),
@@ -82,7 +83,7 @@ async def upcoming_tasks(
     return res.data or []
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, response_model=TaskOut)
 async def create_task(
     body: TaskCreate,
     user: dict = Depends(get_current_user),
@@ -113,7 +114,7 @@ async def create_task(
     return res.data[0] if res.data else row
 
 
-@router.patch("/{task_id}")
+@router.patch("/{task_id}", response_model=TaskOut)
 async def update_task(
     task_id: str,
     body: TaskUpdate,
