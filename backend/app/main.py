@@ -15,7 +15,7 @@ from app.core.limiter import limiter
 from app.core.logger import logger
 from app.db.client import get_client
 from app.api import auth, match, universities, applications, consultants, documents
-from app.api import admin_routes, super_admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist, dossier, messages
+from app.api import admin_routes, super_admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist, dossier, messages, notifications, tasks, exports, scheduling
 
 settings = get_settings()
 
@@ -115,6 +115,10 @@ app.include_router(payments.router)
 app.include_router(shortlist.router)
 app.include_router(dossier.router)
 app.include_router(messages.router)
+app.include_router(notifications.router)
+app.include_router(tasks.router)
+app.include_router(exports.router)
+app.include_router(scheduling.router)
 
 
 # ─── Health ───────────────────────────────────────────────────────────────────

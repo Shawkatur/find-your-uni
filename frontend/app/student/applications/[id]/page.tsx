@@ -11,6 +11,7 @@ import { GlassCard } from "@/components/layout/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { TaskChecklist } from "@/components/tasks/TaskChecklist";
 
 // Full linear application journey (matches backend status flow)
 const JOURNEY_STEPS: { status: AppStatus; label: string; desc: string }[] = [
@@ -283,6 +284,11 @@ export default function ApplicationDetailPage() {
               )}
             </GlassCard>
           )}
+
+          {/* Task Checklist */}
+          <GlassCard>
+            <TaskChecklist applicationId={id as string} />
+          </GlassCard>
 
           {/* Application Info */}
           <GlassCard>

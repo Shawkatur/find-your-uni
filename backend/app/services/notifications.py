@@ -11,6 +11,31 @@ from app.core.logger import logger
 from app.services.push_service import send_push, get_student_tokens, get_tokens_by_user_id
 
 
+async def create_notification(
+    client: AsyncClient,
+    user_id: str,
+    title: str,
+    body: str | None = None,
+    type: str = "info",
+    data: dict | None = None,
+) -> None:
+    """Insert a persistent notification row for the in-app notification center."""
+    try:
+        await (
+            client.table("notifications")
+            .insert({
+                "user_id": user_id,
+                "title": title,
+                "body": body,
+                "type": type,
+                "data": data or {},
+            })
+            .execute()
+        )
+    except Exception as exc:
+        logger.error("Failed to create notification for user %s: %s", user_id, exc)
+
+
 async def notify_status_change(
     client: AsyncClient,
     application_id: str,
@@ -28,6 +53,29 @@ async def notify_status_change(
     When source="system", notifications are worded as automated events
     with no admin attribution.
     """
+    # 0. Persist in notification center
+    status_labels = {
+        "lead":              "Enquiry Received",
+        "pre_evaluation":    "Profile Evaluated",
+        "docs_collection":   "Documents Needed",
+        "applied":           "Application Submitted",
+        "offer_received":    "Offer Letter Received!",
+        "conditional_offer": "Conditional Offer",
+        "visa_stage":        "Visa Stage",
+        "enrolled":          "Enrolled — Congrats!",
+        "rejected":          "Application Update",
+        "withdrawn":         "Application Withdrawn",
+    }
+    label = status_labels.get(new_status, new_status)
+    await create_notification(
+        client,
+        user_id=student_user_id,
+        title=f"Application Update: {label}",
+        body=note or "Your application status has been updated.",
+        type="status_change",
+        data={"application_id": application_id, "status": new_status},
+    )
+
     # 1. Realtime broadcast
     channel = client.channel(f"application:{student_user_id}")
     try:

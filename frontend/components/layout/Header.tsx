@@ -9,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, User, Settings, GraduationCap } from "lucide-react";
+import { LogOut, User, Settings, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
@@ -32,10 +33,7 @@ export function Header() {
       </Link>
       <div className="hidden md:block" />
       <div className="flex items-center gap-4">
-        <button className="relative p-2 rounded-lg hover:bg-[#F1F5F9] transition-colors">
-          <Bell size={18} className="text-[#64748B]" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#10B981] rounded-full" />
-        </button>
+        <NotificationDropdown />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#F1F5F9] transition-colors outline-none">

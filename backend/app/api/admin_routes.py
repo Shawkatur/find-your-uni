@@ -92,6 +92,53 @@ async def junk_stats_by_ref_code(client: AsyncClient = Depends(get_client)):
     ]
 
 
+# ─── Analytics ────────────────────────────────────────────────────────────────────
+
+@router.get("/analytics")
+async def analytics_overview(client: AsyncClient = Depends(get_client)):
+    """Comprehensive analytics: funnel, registrations over time, demographics."""
+    all_apps = await client.table("applications").select("status, created_at, students(country_of_residence)").execute()
+    apps_data = all_apps.data or []
+
+    funnel: dict[str, int] = {}
+    for a in apps_data:
+        s = a["status"]
+        funnel[s] = funnel.get(s, 0) + 1
+
+    students_all = await client.table("students").select("created_at").execute()
+    monthly_regs: dict[str, int] = {}
+    for s in (students_all.data or []):
+        month = s["created_at"][:7]
+        monthly_regs[month] = monthly_regs.get(month, 0) + 1
+    sorted_months = sorted(monthly_regs.items())[-12:]
+
+    country_counts: dict[str, int] = {}
+    for a in apps_data:
+        country = (a.get("students") or {}).get("country_of_residence") or "Unknown"
+        country_counts[country] = country_counts.get(country, 0) + 1
+    top_countries = sorted(country_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    try:
+        paid_res = await (
+            client.table("payments")
+            .select("amount, currency, created_at")
+            .eq("status", "paid")
+            .execute()
+        )
+        total_revenue = sum(p["amount"] for p in (paid_res.data or []))
+        payment_count = len(paid_res.data or [])
+    except Exception:
+        total_revenue = 0
+        payment_count = 0
+
+    return {
+        "funnel": funnel,
+        "registrations_monthly": [{"month": m, "count": c} for m, c in sorted_months],
+        "demographics": [{"country": co, "count": ct} for co, ct in top_countries],
+        "revenue": {"total": total_revenue, "transactions": payment_count},
+    }
+
+
 # ─── Consultants ──────────────────────────────────────────────────────────────
 
 @router.get("/consultants")

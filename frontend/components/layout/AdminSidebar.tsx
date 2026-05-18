@@ -13,6 +13,7 @@ import {
   Building2,
   FileText,
   Settings,
+  BarChart3,
 } from "lucide-react";
 
 interface NavItem {
@@ -38,6 +39,7 @@ export function AdminSidebar() {
 
   const adminNav: NavItem[] = [
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
     { label: "Verifications", href: "/admin/verifications", icon: ShieldCheck, badge: pendingCount },
     { label: "Consultants", href: "/admin/consultants", icon: Users },
     { label: "Students", href: "/admin/students", icon: GraduationCap },

@@ -15,6 +15,7 @@ import {
   PenLine,
   Wallet,
   GraduationCap,
+  Download,
 } from "lucide-react";
 import api from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -92,12 +93,30 @@ function StudentShortlistContent() {
             </div>
           </div>
           {items.length >= 2 && (
-            <Link
-              href="/student/compare"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors"
-            >
-              <BarChart3 size={14} /> Compare
-            </Link>
+            <div className="flex items-center gap-2 mt-3">
+              <Link
+                href="/student/compare"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors"
+              >
+                <BarChart3 size={14} /> Compare
+              </Link>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await api.get("/exports/shortlist-pdf", { responseType: "blob" });
+                    const url = URL.createObjectURL(res.data);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "shortlist.pdf";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch { toast.error("Failed to download PDF"); }
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                <Download size={14} /> Export PDF
+              </button>
+            </div>
           )}
         </div>
 
