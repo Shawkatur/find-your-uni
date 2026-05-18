@@ -78,6 +78,11 @@ async def upload_document(
     if doc_type not in VALID_DOC_TYPES:
         raise HTTPException(status_code=422, detail=f"Invalid doc_type: {doc_type!r}")
 
+    if application_id:
+        ownership = await client.table("applications").select("id").eq("id", application_id).eq("student_id", student["id"]).limit(1).execute()
+        if not ownership.data:
+            raise HTTPException(status_code=403, detail="Application does not belong to you")
+
     # Read in chunks to avoid buffering oversized files entirely into memory
     chunks = []
     total = 0

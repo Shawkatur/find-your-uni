@@ -27,7 +27,7 @@ class TestGetCurrentUser:
         user = get_current_user(credentials=None)
         assert user is not None
 
-    @patch.dict(os.environ, {"APP_ENV": "production"})
+    @patch.dict(os.environ, {"APP_ENV": "production", "TURNSTILE_SECRET_KEY": "test-secret", "APP_SECRET": "strong-prod-secret-value"})
     def test_bypass_auth_blocked_in_production(self):
         """In production with BYPASS_AUTH, should refuse with 500 (server misconfiguration)."""
         from app.core.config import get_settings

@@ -58,6 +58,14 @@ class Settings(BaseSettings):
     # ── Cloudflare Turnstile ─────────────────────────────────────────────────
     TURNSTILE_SECRET_KEY: str = ""
 
+    @field_validator("TURNSTILE_SECRET_KEY")
+    @classmethod
+    def _check_turnstile(cls, v: str, info) -> str:
+        env = info.data.get("APP_ENV", "development")
+        if env == "production" and not v:
+            raise ValueError("TURNSTILE_SECRET_KEY must be set in production")
+        return v
+
     # ── Rate limiting ─────────────────────────────────────────────────────────
     MATCH_RATE_LIMIT: str = "10/minute"
 
@@ -85,6 +93,8 @@ class Settings(BaseSettings):
             origins.append(self.ADMIN_FRONTEND_URL)
         if self.STUDENT_FRONTEND_URL and self.STUDENT_FRONTEND_URL not in origins:
             origins.append(self.STUDENT_FRONTEND_URL)
+        if self.APP_ENV == "production":
+            origins = [o for o in origins if "localhost" not in o and "127.0.0.1" not in o]
         return origins
 
 

@@ -80,12 +80,13 @@ async def list_applications(
 
     if role == "consultant":
         # Consultant sees all applications in their agency; must be active
-        consultant_res = await client.table("consultants").select("agency_id, status").eq("user_id", user_id).single().execute()
+        consultant_res = await client.table("consultants").select("agency_id, status").eq("user_id", user_id).limit(1).execute()
         if not consultant_res.data:
             raise HTTPException(status_code=404, detail="Consultant profile not found")
-        if consultant_res.data.get("status") != "active":
+        consultant_row = consultant_res.data[0]
+        if consultant_row.get("status") != "active":
             raise HTTPException(status_code=403, detail="Consultant account is not yet approved. Please wait for admin approval.")
-        agency_id = consultant_res.data["agency_id"]
+        agency_id = consultant_row["agency_id"]
         res = await (
             client.table("applications")
             .select("*, programs(name, universities(name, country)), students(full_name, phone)")
@@ -120,13 +121,13 @@ async def get_application_detail(
         client.table("applications")
         .select("*, programs(*, universities(*)), students(full_name, phone, academic_history, test_scores)")
         .eq("id", app_id)
-        .single()
+        .limit(1)
         .execute()
     )
     if not res.data:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    app = res.data
+    app = res.data[0]
     role = (user.get("app_metadata") or {}).get("role", "student")
     user_id = user["sub"]
 
@@ -336,14 +337,16 @@ async def get_whatsapp_link(
     return {"whatsapp_url": whatsapp_link(phone, message)}
 
 
+_active_consultant = get_active_consultant_dep()
+
+
 @router.patch("/{app_id}/junk")
 async def mark_as_junk(
     app_id: str,
-    user: dict = Depends(get_current_user),
+    consultant: dict = Depends(_active_consultant),
     client: AsyncClient = Depends(get_client),
 ):
     """Consultant marks a lead as junk — removes it from their board."""
-    consultant = await get_active_consultant_dep(user, client)
 
     res = await (
         client.table("applications")

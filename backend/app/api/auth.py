@@ -4,9 +4,11 @@ POST /auth/consultant/register — create consultant profile + link to agency
 POST /auth/verify-otp          — promote unverified lead to lead after OTP
 GET  /auth/me                  — return current user's profile
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from supabase import AsyncClient
 import httpx
+
+from app.core.limiter import limiter
 
 from app.core.config import get_settings
 from app.core.security import get_current_user
@@ -42,7 +44,9 @@ async def _verify_turnstile(token: str) -> bool:
 
 
 @router.post("/student/register", response_model=StudentOut, status_code=201)
+@limiter.limit("5/minute")
 async def register_student(
+    request: Request,
     body: StudentCreate,
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
@@ -149,7 +153,9 @@ async def verify_otp_promote_lead(
 
 
 @router.post("/consultant/register", response_model=ConsultantOut, status_code=201)
+@limiter.limit("3/minute")
 async def register_consultant(
+    request: Request,
     body: ConsultantCreate,
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),

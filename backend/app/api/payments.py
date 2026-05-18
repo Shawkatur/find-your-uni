@@ -12,6 +12,7 @@ from supabase import AsyncClient
 
 from app.core.security import get_current_user, get_current_student_dep
 from app.core.config import get_settings
+from app.core.limiter import limiter
 from app.db.client import get_client
 from app.db.queries import get_student_by_user_id
 
@@ -26,7 +27,9 @@ class PaymentInitBody(BaseModel):
 
 
 @router.post("/initiate", response_model=dict)
+@limiter.limit("10/minute")
 async def initiate_payment(
+    request: Request,
     body: PaymentInitBody,
     student: dict = Depends(get_student),
     client: AsyncClient = Depends(get_client),
@@ -157,12 +160,31 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
     Instant Payment Notification from SSLCommerz.
     Validates the response and marks payment as paid.
     """
+    from app.core.logger import logger
+
     settings = get_settings()
     form = await request.form()
     tran_id  = form.get("tran_id")
     status   = form.get("status")
     val_id   = form.get("val_id")
     store_pass = settings.SSLCOMMERZ_STORE_PASS
+
+    # Verify SSLCommerz signature to prevent forged IPN calls
+    verify_sign = form.get("verify_sign")
+    verify_key = form.get("verify_key")
+    if verify_sign and verify_key and store_pass:
+        key_fields = str(verify_key).split(",")
+        hash_input = "&".join(
+            f"{k}={form.get(k, '')}" for k in sorted(key_fields)
+        )
+        hash_input += f"&store_passwd={hashlib.md5(store_pass.encode()).hexdigest()}"
+        expected_sign = hashlib.md5(hash_input.encode()).hexdigest()
+        if expected_sign != verify_sign:
+            logger.warning("IPN signature mismatch for tran_id=%s", tran_id)
+            return {"status": "rejected", "reason": "invalid signature"}
+    elif settings.APP_ENV == "production":
+        logger.warning("IPN missing verify_sign/verify_key for tran_id=%s", tran_id)
+        return {"status": "rejected", "reason": "missing signature"}
 
     # Verify via SSLCommerz validation API
     if status == "VALID" and tran_id and val_id:
@@ -174,8 +196,9 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
                     f"&store_passwd={store_pass}&v=1&format=json"
                 )
                 vdata = vr.json()
-        except Exception:
-            return {"status": "ignored"}
+        except Exception as exc:
+            logger.error("SSLCommerz validation failed for tran_id=%s: %s", tran_id, exc)
+            return {"status": "ignored", "reason": "validation request failed"}
 
         if vdata.get("status") == "VALID":
             # Verify the paid amount matches the original payment record
