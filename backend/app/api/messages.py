@@ -54,21 +54,24 @@ async def _get_consultant_for_student(student_id: str, client: AsyncClient) -> s
 async def student_get_messages(
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
+    limit: int = Query(50, ge=1, le=200),
+    before: str | None = Query(None, description="ISO timestamp cursor — fetch messages before this time"),
 ):
     student_id = await _get_student_id(user, client)
     consultant_id = await _get_consultant_for_student(student_id, client)
     if not consultant_id:
         return []
 
-    res = await (
+    q = (
         client.table("messages")
         .select("id, student_id, consultant_id, sender_type, content, is_read, created_at")
         .eq("student_id", student_id)
         .eq("consultant_id", consultant_id)
-        .order("created_at", desc=False)
-        .execute()
     )
-    return res.data or []
+    if before:
+        q = q.lt("created_at", before)
+    res = await q.order("created_at", desc=True).limit(limit).execute()
+    return list(reversed(res.data)) if res.data else []
 
 
 @router.post("/messages", response_model=dict, status_code=201)
@@ -139,6 +142,8 @@ async def consultant_get_messages(
     student_id: str,
     user: dict = Depends(get_current_user),
     client: AsyncClient = Depends(get_client),
+    limit: int = Query(50, ge=1, le=200),
+    before: str | None = Query(None, description="ISO timestamp cursor — fetch messages before this time"),
 ):
     c_res = await client.table("consultants").select("id").eq("user_id", user["sub"]).limit(1).execute()
     if not c_res.data:
@@ -147,15 +152,16 @@ async def consultant_get_messages(
 
     await _verify_consultant_student_link(client, consultant_id, student_id)
 
-    res = await (
+    q = (
         client.table("messages")
         .select("id, student_id, consultant_id, sender_type, content, is_read, created_at")
         .eq("student_id", student_id)
         .eq("consultant_id", consultant_id)
-        .order("created_at", desc=False)
-        .execute()
     )
-    return res.data or []
+    if before:
+        q = q.lt("created_at", before)
+    res = await q.order("created_at", desc=True).limit(limit).execute()
+    return list(reversed(res.data)) if res.data else []
 
 
 @router.post("/students/{student_id}/messages", response_model=dict, status_code=201)

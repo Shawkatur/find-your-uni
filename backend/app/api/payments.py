@@ -245,7 +245,44 @@ async def ipn_webhook(request: Request, client: AsyncClient = Depends(get_client
                 .execute()
             )
 
+            # Fulfil the paid product
+            await _on_payment_success(client, tran_id, pay_res.data[0])
+
     return {"status": "received"}
+
+
+async def _on_payment_success(client: AsyncClient, payment_id: str, payment: dict) -> None:
+    """Trigger business logic after a confirmed payment."""
+    from app.core.logger import logger
+    from app.services.notifications import notify_status_change
+
+    product = payment.get("product", "")
+    student_id = payment.get("student_id")
+
+    try:
+        if product == "application_fee" and payment.get("application_id"):
+            await (
+                client.table("applications")
+                .update({"payment_status": "paid"})
+                .eq("id", payment["application_id"])
+                .eq("student_id", student_id)
+                .execute()
+            )
+
+        # Notify the student
+        if student_id:
+            student_res = await client.table("students").select("user_id").eq("id", student_id).limit(1).execute()
+            if student_res.data:
+                await notify_status_change(
+                    client,
+                    application_id=payment.get("application_id"),
+                    student_user_id=student_res.data[0]["user_id"],
+                    new_status=f"payment_confirmed:{product}",
+                    student_id=student_id,
+                    note=f"Payment of {payment.get('amount_bdt', 0)} BDT confirmed for {product}",
+                )
+    except Exception as exc:
+        logger.error("Payment fulfilment failed for %s: %s", payment_id, exc)
 
 
 @router.get("/history", response_model=list[dict])

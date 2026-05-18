@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { FullPageLoader } from "@/components/ui/LoadingSpinner";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Clock, ShieldX, LogOut } from "lucide-react";
 import api from "@/lib/api";
 
@@ -73,9 +73,6 @@ function PendingApprovalGate({ children }: { children: React.ReactNode }) {
 export default function ConsultantLayout({ children }: { children: React.ReactNode }) {
   const { role, loading } = useAuth();
   const router = useRouter();
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
-  }));
 
   useEffect(() => {
     if (!loading && role !== "consultant") {
@@ -87,17 +84,15 @@ export default function ConsultantLayout({ children }: { children: React.ReactNo
   if (role !== "consultant") return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <PendingApprovalGate>
-        <div className="min-h-screen bg-[#FAFAFA] flex">
-          <Sidebar role="consultant" />
-          <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-1">{children}</main>
-          </div>
-          <MobileBottomNav role="consultant" />
+    <PendingApprovalGate>
+      <div className="min-h-screen bg-[#FAFAFA] flex">
+        <Sidebar role="consultant" />
+        <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-1">{children}</main>
         </div>
-      </PendingApprovalGate>
-    </QueryClientProvider>
+        <MobileBottomNav role="consultant" />
+      </div>
+    </PendingApprovalGate>
   );
 }

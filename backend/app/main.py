@@ -13,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.config import get_settings
 from app.core.limiter import limiter
 from app.core.logger import logger
+from app.db.client import get_client
 from app.api import auth, match, universities, applications, consultants, documents
 from app.api import admin_routes, super_admin_routes, tracking, push_notifications, scholarships, deadlines, payments, shortlist, dossier, messages
 
@@ -106,6 +107,36 @@ app.include_router(messages.router)
 @app.get("/health", tags=["meta"])
 async def health():
     return {"status": "ok", "version": "1.0.0"}
+
+
+@app.get("/health/deep", tags=["meta"])
+async def health_deep():
+    """Verify connectivity to external services."""
+    import time
+    checks = {}
+
+    # Supabase
+    try:
+        t0 = time.monotonic()
+        client = await get_client()
+        await client.table("universities").select("id").limit(1).execute()
+        checks["supabase"] = {"status": "ok", "latency_ms": round((time.monotonic() - t0) * 1000)}
+    except Exception as exc:
+        checks["supabase"] = {"status": "error", "detail": str(exc)}
+
+    # OpenAI
+    try:
+        import httpx
+        t0 = time.monotonic()
+        async with httpx.AsyncClient(timeout=5.0) as http:
+            r = await http.get("https://api.openai.com/v1/models", headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}"})
+            r.raise_for_status()
+        checks["openai"] = {"status": "ok", "latency_ms": round((time.monotonic() - t0) * 1000)}
+    except Exception as exc:
+        checks["openai"] = {"status": "error", "detail": str(exc)}
+
+    overall = "ok" if all(c["status"] == "ok" for c in checks.values()) else "degraded"
+    return {"status": overall, "checks": checks}
 
 
 # ─── Global error handler ─────────────────────────────────────────────────────

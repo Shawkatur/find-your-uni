@@ -934,18 +934,24 @@ async def admin_universities_bulk_import(
                     university_id, None, uni_payload,
                 )
 
+            program_batch = []
+            batch_row_indices = []
             for row_idx, payload in items:
+                program_batch.append({**payload["program"], "university_id": university_id})
+                batch_row_indices.append(row_idx)
+
+            if program_batch:
                 try:
-                    program_payload = {**payload["program"], "university_id": university_id}
-                    p_ins = await client.table("programs").insert(program_payload).execute()
-                    summary["programs_created"] += 1
-                    if p_ins.data:
+                    p_ins = await client.table("programs").insert(program_batch).execute()
+                    summary["programs_created"] += len(p_ins.data or [])
+                    for p in (p_ins.data or []):
                         await ghost_audit(
                             client, ghost_ctx, "bulk_create_program", "program",
-                            p_ins.data[0]["id"], None, program_payload,
+                            p["id"], None, p,
                         )
                 except Exception as pe:
-                    errors.append({"row": row_idx, "field": "program", "message": str(pe)})
+                    for row_idx in batch_row_indices:
+                        errors.append({"row": row_idx, "field": "program", "message": str(pe)})
         except Exception as ue:
             for row_idx, _ in items:
                 errors.append({"row": row_idx, "field": "university", "message": str(ue)})
